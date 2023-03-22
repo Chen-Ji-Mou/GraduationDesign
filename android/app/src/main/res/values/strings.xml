@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="startPushStream">开始推流</string>
+    <string name="stopPushStream">停止推流</string>
+    <string name="switchCamera">翻转摄像头</string>
+    <string name="startRecord">开始录制</string>
+    <string name="stopRecord">停止录制</string>
+</resources>
