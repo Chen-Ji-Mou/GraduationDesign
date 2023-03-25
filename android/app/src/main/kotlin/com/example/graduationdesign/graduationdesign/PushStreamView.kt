@@ -3,8 +3,6 @@ package com.example.graduationdesign.graduationdesign
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.view.*
 import android.widget.*
 import com.pedro.encoder.input.video.CameraOpenException

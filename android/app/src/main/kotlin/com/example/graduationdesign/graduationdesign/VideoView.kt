@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
-import tv.danmaku.ijk.media.player.IMediaPlayer
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.io.IOException
 
@@ -118,30 +117,10 @@ class VideoView(context: Context) : FrameLayout(context, null, 0) {
             mMediaPlayer!!.release()
         }
         val ijkMediaPlayer = IjkMediaPlayer()
-        IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG)
-
-        // 设置播放前的探测时间 1,达到首屏秒开效果
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "fast", 1)
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", 1L)
-        ijkMediaPlayer.setOption(1, "analyzemaxduration", 100L)
-        ijkMediaPlayer.setOption(1, "probesize", 100L)
-        ijkMediaPlayer.setOption(1, "flush_packets", 0L)
-        ijkMediaPlayer.setOption(4, "framedrop", 0L)
-        ijkMediaPlayer.setOption(4, "packet-buffering", 0L)
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer")
-//            jkPlayer支持硬解码和软解码。 软解码时不会旋转视频角度这时需要你通过onInfo的
-//             what == IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED去获取角度，自己旋转画面。
-//             或者开启硬解硬解码，不过硬解码容易造成黑屏无声（硬件兼容问题），下面是设置硬解码相关的代码
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-hevc", 1)
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1)
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1)
-        ijkMediaPlayer.setOption(
-            IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1
-        );
-        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 0);
-
+        // 开启debug日志
+        // IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG)
         //开启硬解码
-        // ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
+        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1)
         mMediaPlayer = ijkMediaPlayer
         mMediaPlayer?.setOnVideoSizeChangedListener { mp, width, height, sarNum, sarDen ->
             if (width != 0 && height != 0) {
