@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graduationdesign/video_view.dart';
+import 'package:graduationdesign/pull_stream_widget.dart';
 
 class PullStreamScreen extends StatelessWidget {
   const PullStreamScreen({Key? key}) : super(key: key);
@@ -8,7 +8,7 @@ class PullStreamScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('拉流界面')),
-      body: const VideoViewWidget(),
+      body: const PullStreamWidget(),
     );
   }
 }

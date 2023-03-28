@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/pull_stream_screen.dart';
 import 'package:graduationdesign/push_stream_screen.dart';
+import 'package:graduationdesign/utils.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: {
+        '/home': (BuildContext context) => const MyHomePage(title: 'Test'),
+        '/pushStream': (BuildContext context) => const PushStreamScreen(),
+        '/pullStream': (BuildContext context) => const PullStreamScreen(),
+      },
+      initialRoute: '/home',
+      navigatorObservers: [routeObserver],
     );
   }
 }
@@ -42,17 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ElevatedButton(
-            onPressed: () =>
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return const PushStreamScreen();
-            })),
+            onPressed: () => Navigator.pushNamed(context, '/pushStream'),
             child: const Text('推流界面'),
           ),
           ElevatedButton(
-            onPressed: () =>
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return const PullStreamScreen();
-            })),
+            onPressed: () => Navigator.pushNamed(context, '/pullStream'),
             child: const Text('拉流界面'),
           )
         ],

@@ -1,8 +1,6 @@
 package com.example.graduationdesign.graduationdesign
 
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -11,15 +9,20 @@ class MainActivity : FlutterActivity() {
     private var mRequestPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
         flutterEngine.platformViewsController.registry.registerViewFactory(
-            "videoView", VideoViewPlatformFactory()
+            "pullStream", PullStreamPlatformFactory(messenger)
         )
         flutterEngine.platformViewsController.registry.registerViewFactory(
-            "pushStreamView", PushStreamViewPlatformFactory()
+            "pushStream", PushStreamPlatformFactory(messenger)
         )
-        PermissionChannel(flutterEngine.dartExecutor.binaryMessenger, this) {
+        PermissionChannel(messenger, this) {
             mRequestPermissionResult = it
         }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        mRequestPermissionResult = null
     }
 
     override fun onRequestPermissionsResult(
@@ -27,9 +30,7 @@ class MainActivity : FlutterActivity() {
     ) {
         when (requestCode) {
             PermissionChannel.REQUEST_PUSH_STREAM_PERMISSIONS -> {
-                if (grantResults.isNotEmpty()
-                    && !grantResults.contains(PackageManager.PERMISSION_DENIED)
-                ) {
+                if (grantResults.isNotEmpty() && !grantResults.contains(PackageManager.PERMISSION_DENIED)) {
                     mRequestPermissionResult?.success(true)
                 } else {
                     mRequestPermissionResult?.success(false)

@@ -67,7 +67,10 @@ flutter {
 }
 
 dependencies {
+    implementation files('/src/main/libs/ijkplayer.aar')
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.2'
-    implementation files('/src/main/libs/ijkplayer.aar')
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21'
 }

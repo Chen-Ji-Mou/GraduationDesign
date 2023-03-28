@@ -12,7 +12,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 class PermissionChannel(
-    flutterEngine: BinaryMessenger, activity: Activity, callback: (MethodChannel.Result) -> Unit
+    binaryMessenger: BinaryMessenger, activity: Activity, callback: (MethodChannel.Result) -> Unit
 ) : MethodChannel.MethodCallHandler {
     private val mChannelName = "permission"
     private var mChannel: MethodChannel
@@ -37,7 +37,7 @@ class PermissionChannel(
     }
 
     init {
-        mChannel = MethodChannel(flutterEngine, mChannelName)
+        mChannel = MethodChannel(binaryMessenger, mChannelName)
         mChannel.setMethodCallHandler(this)
         mActivity = activity
         mPendingPermissionResponse = callback
@@ -46,7 +46,7 @@ class PermissionChannel(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "requestPushStreamPermission" -> {
-                requestPushStreamPermission()
+                requestPushStreamPermission(result)
                 mPendingPermissionResponse(result)
             }
             else -> result.notImplemented()
@@ -54,18 +54,22 @@ class PermissionChannel(
     }
 
 
-    private fun requestPushStreamPermission() {
+    private fun requestPushStreamPermission(result: MethodChannel.Result) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (!hasPushStreamPermission(mActivity)) {
                 ActivityCompat.requestPermissions(
                     mActivity, mPushStreamPermissions13, REQUEST_PUSH_STREAM_PERMISSIONS
                 )
+            } else {
+                result.success(true)
             }
         } else {
             if (!hasPushStreamPermission(mActivity)) {
                 ActivityCompat.requestPermissions(
                     mActivity, mPushStreamPermissions, REQUEST_PUSH_STREAM_PERMISSIONS
                 )
+            } else {
+                result.success(true)
             }
         }
     }
