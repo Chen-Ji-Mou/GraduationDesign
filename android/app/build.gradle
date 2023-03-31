@@ -51,6 +51,18 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11" // OpenCV新版本用这个C++11的特效，由于我们用的是较新的OpenCV
+                // NDK从r16开始就切换到了llvm的libC++，所以opencv4从libstdC++切换到了libc++。
+                // 导致链接错误的根本原因是设置了-DANDRID_STL=gnustl_shared，
+                // 因为opencv利用的libc++编的，而非gnustl
+                // arguments "-DANDROID_STL=gnustl_static" // OpenCV旧版本用这个
+                arguments "-DANDROID_STL=c++_shared" // OpenCV新版本用这个，由于我们用的是较新的OpenCV
+                abiFilters 'arm64-v8a'
+            }
+        }
     }
 
     buildTypes {
@@ -60,6 +72,13 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
 }
 
 flutter {
@@ -67,10 +86,9 @@ flutter {
 }
 
 dependencies {
-    implementation files('/src/main/libs/ijkplayer.aar')
-
+    implementation files('/src/main/libs/ijkplayer.aar') // 拉流SDK
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.2'
-    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
-    implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21'
+    implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.2' // 推流SDK
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25' // 弹幕SDK
+    implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21' // 弹幕SDK
 }

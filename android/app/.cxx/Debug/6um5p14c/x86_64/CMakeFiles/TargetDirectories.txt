@@ -1,0 +1,6 @@
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/CMakeFiles/native-lib.dir
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/CMakeFiles/edit_cache.dir
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/CMakeFiles/rebuild_cache.dir
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/FaceAlignment/CMakeFiles/seeta_fa_lib.dir
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/FaceAlignment/CMakeFiles/edit_cache.dir
+D:/Code/graduationdesign/android/app/.cxx/Debug/6um5p14c/x86_64/FaceAlignment/CMakeFiles/rebuild_cache.dir

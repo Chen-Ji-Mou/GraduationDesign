@@ -1,0 +1,7 @@
+# ninja log v5
+12	352	701889122	FaceAlignment/CMakeFiles/seeta_fa_lib.dir/src/face_alignment.cpp.o	d8552f8ac4ae92d5
+17	449	701889122	FaceAlignment/CMakeFiles/seeta_fa_lib.dir/src/sift.cpp.o	9e61b9916bcd424b
+7	478	701889122	FaceAlignment/CMakeFiles/seeta_fa_lib.dir/src/cfan.cpp.o	2680bbbf6b466b6b
+478	549	701889122	FaceAlignment/libseeta_fa_lib.a	42ef59ccf8ebc6e9
+4	1510	701889123	CMakeFiles/native-lib.dir/native-lib.cpp.o	e97d312a8cc030bd
+0	1712	701889124	CMakeFiles/native-lib.dir/FaceTrack.cpp.o	6699546c0858ec9b

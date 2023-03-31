@@ -1,6 +1,11 @@
 package com.example.graduationdesign.graduationdesign
 
 import android.content.pm.PackageManager
+import android.os.Bundle
+import com.example.graduationdesign.graduationdesign.platform.InitialChannel
+import com.example.graduationdesign.graduationdesign.platform.PermissionChannel
+import com.example.graduationdesign.graduationdesign.platform.PullStreamPlatformFactory
+import com.example.graduationdesign.graduationdesign.platform.PushStreamPlatformFactory
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -19,6 +24,7 @@ class MainActivity : FlutterActivity() {
         PermissionChannel(messenger, this) {
             mRequestPermissionResult = it
         }
+        InitialChannel(messenger, this)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
@@ -29,7 +35,7 @@ class MainActivity : FlutterActivity() {
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         when (requestCode) {
-            PermissionChannel.REQUEST_PUSH_STREAM_PERMISSIONS -> {
+            PermissionChannel.REQUEST_PERMISSIONS -> {
                 if (grantResults.isNotEmpty() && !grantResults.contains(PackageManager.PERMISSION_DENIED)) {
                     mRequestPermissionResult?.success(true)
                 } else {
