@@ -4,18 +4,21 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.hardware.Camera
+import android.media.CamcorderProfile
 import android.media.MediaScannerConnection
-import android.os.Build
 import android.os.Environment
 import android.util.Log
+import android.util.Size
 import android.view.SurfaceHolder
 import android.widget.RelativeLayout
-import com.example.graduationdesign.graduationdesign.BigEyeFilterRender
 import com.example.graduationdesign.graduationdesign.Camera1ApiManagerProxy
 import com.example.graduationdesign.graduationdesign.Utils
+import com.example.graduationdesign.graduationdesign.filter.BigEyeFilterRender
+import com.example.graduationdesign.graduationdesign.filter.StickFilterRender
 import com.example.graduationdesign.graduationdesign.track.FaceTrack
 import com.pedro.encoder.input.gl.render.ManagerRender
 import com.pedro.encoder.input.gl.render.filters.*
+import com.pedro.encoder.input.video.CameraHelper
 import com.pedro.encoder.input.video.CameraOpenException
 import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.rtmp.RtmpCamera1
@@ -53,6 +56,17 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             return File(storageDir.absolutePath + "/LiveRecord")
         }
 
+    private val previewSize: Size
+        get() {
+            return if (CamcorderProfile.hasProfile(CamcorderProfile.QUALITY_1080P)) {
+                Size(1920, 1080)
+            } else if (CamcorderProfile.hasProfile(CamcorderProfile.QUALITY_720P)) {
+                Size(1280, 720)
+            } else {
+                Size(640, 480)
+            }
+        }
+
     private val mBarrageParser = object : BaseDanmakuParser() {
         override fun parse(): IDanmakus {
             return Danmakus()
@@ -73,7 +87,7 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
     private fun createSurfaceView() {
         mSurfaceView = OpenGlView(mContext)
         mSurfaceView?.isKeepAspectRatio = true
-        mSurfaceView?.setAspectRatioMode(AspectRatioMode.Adjust)
+        mSurfaceView?.setAspectRatioMode(AspectRatioMode.Fill)
         mSurfaceView?.enableAA(true)
         ManagerRender.numFilters = 1
         mSurfaceView?.holder?.addCallback(this)
@@ -180,14 +194,14 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
 
     @SuppressLint("SdCardPath")
     private fun start() {
-        mRtmpCamera1?.startPreview()
+        mRtmpCamera1?.startPreview(CameraHelper.Facing.FRONT, previewSize.width, previewSize.height)
         hookCameraPreviewListen()
         mFaceTrack = FaceTrack(
-            "/sdcard/Download/lbpcascade_frontalface.xml",
-            "/sdcard/Download/seeta_fa_v1.1.bin",
+            "/sdcard/Android/data/${mContext.packageName}/cache/lbpcascade_frontalface.xml",
+            "/sdcard/Android/data/${mContext.packageName}/cache/seeta_fa_v1.1.bin",
             mRtmpCamera1?.cameraFacing,
-            width,
-            height
+            previewSize.width,
+            previewSize.height
         )
         mFaceTrack?.startTrack()
     }
@@ -389,6 +403,10 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
 
     fun addBigEyeFilter() {
         mRtmpCamera1?.glInterface?.setFilter(BigEyeFilterRender(mFaceTrack))
+    }
+
+    fun addStickFilter() {
+        mRtmpCamera1?.glInterface?.setFilter(StickFilterRender(mContext, mFaceTrack))
     }
 
     private fun updateGallery(path: String) = MediaScannerConnection.scanFile(

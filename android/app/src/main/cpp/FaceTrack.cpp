@@ -1,8 +1,10 @@
 #include "FaceTrack.h"
 
 FaceTrack::FaceTrack(const char *model, const char *seeta) {
-    Ptr<CascadeDetectorAdapter> mainDetector = makePtr<CascadeDetectorAdapter>(makePtr<CascadeClassifier>(model)); // OpenCV主探测器
-    Ptr<CascadeDetectorAdapter> trackingDetector = makePtr<CascadeDetectorAdapter>(makePtr<CascadeClassifier>(model)); // OpenCV跟踪探测器
+    Ptr<CascadeDetectorAdapter> mainDetector = makePtr<CascadeDetectorAdapter>(
+            makePtr<CascadeClassifier>(model)); // OpenCV主探测器
+    Ptr<CascadeDetectorAdapter> trackingDetector = makePtr<CascadeDetectorAdapter>(
+            makePtr<CascadeClassifier>(model)); // OpenCV跟踪探测器
     DetectionBasedTracker::Parameters detectorParams;
     // OpenCV创建追踪器，为了下面的（开始跟踪，停止跟踪）
     tracker = makePtr<DetectionBasedTracker>(mainDetector, trackingDetector, detectorParams);
@@ -13,10 +15,12 @@ FaceTrack::FaceTrack(const char *model, const char *seeta) {
 }
 
 void FaceTrack::startTracking() { // OpenCV开启追踪器
+    __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "startTrack");
     tracker->run();
 }
 
 void FaceTrack::stopTracking() { // OpenCV关闭追踪器
+    __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "stopTrack");
     tracker->stop();
 }
 
@@ -25,15 +29,20 @@ void FaceTrack::stopTracking() { // OpenCV关闭追踪器
  * @param src   待检测的图像数据
  * @param rects 检测成果的成果 保存Java需要的人脸坐标信息
  */
-void FaceTrack::detector(Mat src, vector<Rect2f> &rects) {
+void FaceTrack::detector(const Mat &src, vector<Rect2f> &rects) {
     vector<Rect> faces;
     // src :灰度图（去除 不需要的色彩信息）
     tracker->process(src); // 处理灰度图(OpenCV的东西，灰度，色彩 影响我们人脸追踪)
     tracker->getObjects(faces); // 得到人脸框框的Rect - OpenCV的东西
-    if (faces.size()) { // 判断true，说明非零，有人脸
+//    __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.size %lu", faces.size());
+    if (!faces.empty()) { // 判断true，说明非零，有人脸
         Rect face = faces[0]; // 有人脸就去第一个人脸，我没有去管，多个人脸了哦
+//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.x %d", face.x);
+//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.y %d", face.y);
+//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.width %d", face.width);
+//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.height %d", face.height);
         // 然后把跟踪出来的这个人脸，保存到rects里面去
-        rects.push_back(Rect2f(face.x, face.y, face.width, face.height));
+        rects.emplace_back(face.x, face.y, face.width, face.height);
 
         // TODO 根据前面的OpenCV人脸最终成果， 做 人脸关键点定位
         seeta::ImageData image_data(src.cols, src.rows); // image_data就是图像数据
@@ -54,8 +63,8 @@ void FaceTrack::detector(Mat src, vector<Rect2f> &rects) {
         faceAlignment->PointDetectLandmarks(image_data, face_info, points);
 
         // 把五个点 转换 ，因为第二个参数需要 Rect2f
-        for (int i = 0; i < 5; ++i) { // 为何不需要宽和高，只需要保存点就够了
-            rects.push_back(Rect2f(points[i].x, points[i].y, 0, 0));
+        for (auto &point: points) { // 为何不需要宽和高，只需要保存点就够了
+            rects.emplace_back(point.x, point.y, 0, 0);
         }
     }
 }

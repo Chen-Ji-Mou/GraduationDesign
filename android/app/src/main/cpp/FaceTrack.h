@@ -5,6 +5,7 @@
 #include <opencv2/objdetect.hpp>  // OpenCV人脸框框检测用的
 #include "FaceAlignment/include/face_alignment.h" // 人脸5关键点定位用的
 #include <vector> // 把最终成果 人脸关键点各个信息保存的容器
+#include <android/log.h>
 
 using namespace std; // C++标准STD的命名空间
 using namespace cv; // OpenCV提供的命名空间
@@ -44,7 +45,7 @@ public:
      * @param src   待检测的图像
      * @param rects 输出检测后的成果，人脸的框框
      */
-    void detector(Mat src, vector<Rect2f> &rects);
+    void detector(const Mat& src, vector<Rect2f> &rects);
 
     void startTracking(); // 开始跟踪 OpenCV
 

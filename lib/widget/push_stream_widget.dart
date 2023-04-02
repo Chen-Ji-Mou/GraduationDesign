@@ -14,7 +14,8 @@ enum Filter {
   lamoish,
   money,
   waterRipple,
-  bigEye
+  bigEye,
+  stick
 }
 
 class PushStreamWidget extends StatefulWidget {
@@ -162,6 +163,10 @@ class _PushStreamState extends State<PushStreamWidget> with LifecycleObserver {
                 value: Filter.bigEye,
                 child: Text('大眼滤镜'),
               ),
+              PopupMenuItem<Filter>(
+                value: Filter.stick,
+                child: Text('贴纸滤镜'),
+              ),
             ],
           ),
         ),
@@ -206,6 +211,9 @@ class _PushStreamState extends State<PushStreamWidget> with LifecycleObserver {
         break;
       case Filter.bigEye:
         channel.invokeMethod('addBigEyeFilter');
+        break;
+      case Filter.stick:
+        channel.invokeMethod('addStickFilter');
         break;
     }
   }

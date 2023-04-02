@@ -15,6 +15,7 @@ import com.pedro.encoder.input.video.CameraHelper.Facing
 class FaceTrack(model: String, seeta: String, cameraFacing: Facing?, width: Int, height: Int) {
 
     companion object {
+        private const val MSG_DETECTOR = 11
         init {
             System.loadLibrary("native-lib")
         }
@@ -23,6 +24,7 @@ class FaceTrack(model: String, seeta: String, cameraFacing: Facing?, width: Int,
     private val mHandler: Handler // 此Handler方便开启一个线程
     private val mHandlerThread: HandlerThread // 此HandlerThread方便开启一个线程
     private var self: Long // FaceTrack.cpp对象的地址指向long值
+    @Volatile
     private var faceData: FaceData? = null // 最终人脸跟踪的结果
 
     init {
@@ -43,7 +45,7 @@ class FaceTrack(model: String, seeta: String, cameraFacing: Facing?, width: Int,
                     // 定位 线程中检测
                     faceData = native_detector(self, msg.obj as ByteArray, cameraId, width, height)
                     if (faceData != null) {
-                        Log.e("拍摄了人脸mFace.toString:", faceData.toString()) // 看看打印效果
+                        Log.d("FaceTrack", "[handleMessage] 拍摄到人脸 $faceData")
                         // Face{landmarks=[10.0, 251.0], width=356, height=356, imgWidth=480, imgHeight=800}
                         // Face{landmarks=[24.0, 234.0], width=350, height=350, imgWidth=480, imgHeight=800}
                         // Face{landmarks=[35.0, 221.0], width=354, height=354, imgWidth=480, imgHeight=800}
@@ -66,7 +68,9 @@ class FaceTrack(model: String, seeta: String, cameraFacing: Facing?, width: Int,
     }
 
     fun startTrack() { // 启动跟踪器 OpenCV
-        native_start(self)
+        synchronized(this) {
+            native_start(self)
+        }
     }
 
     fun stopTrack() { // 停止跟踪器 OpenCV
@@ -79,11 +83,11 @@ class FaceTrack(model: String, seeta: String, cameraFacing: Facing?, width: Int,
     }
 
     // byte[] data == NV21 Camera的数据 byte[]
-    fun detector(data: ByteArray?) { // 要把相机的数据，给C++层做人脸追踪
+    fun detector(data: ByteArray) { // 要把相机的数据，给C++层做人脸追踪
         // 把积压的 11号任务移除掉
-        mHandler.removeMessages(11)
+        mHandler.removeMessages(MSG_DETECTOR)
         // 加入新的11号任务
-        val message = mHandler.obtainMessage(11)
+        val message = mHandler.obtainMessage(MSG_DETECTOR)
         message.obj = data
         mHandler.sendMessage(message)
     }

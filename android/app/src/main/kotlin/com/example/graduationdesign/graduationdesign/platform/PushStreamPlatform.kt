@@ -1,6 +1,7 @@
 package com.example.graduationdesign.graduationdesign.platform
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import com.example.graduationdesign.graduationdesign.view.PushStreamView
 import io.flutter.plugin.common.BinaryMessenger
@@ -50,6 +51,7 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
             "addMoneyFilter" -> addMoneyFilter(result)
             "addWaterRippleFilter" -> addWaterRippleFilter(result)
             "addBigEyeFilter" -> addBigEyeFilter(result)
+            "addStickFilter" -> addStickFilter(result)
             else -> result.notImplemented()
         }
     }
@@ -163,6 +165,11 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
 
     private fun addBigEyeFilter(result: MethodChannel.Result) {
         view?.addBigEyeFilter()
+        result.success(true)
+    }
+
+    private fun addStickFilter(result: MethodChannel.Result) {
+        view?.addStickFilter()
         result.success(true)
     }
 }

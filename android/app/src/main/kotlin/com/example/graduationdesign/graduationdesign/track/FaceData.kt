@@ -27,21 +27,15 @@ class FaceData(
      * 6下标（保存：鼻尖x）
      * 7下标（保存：鼻尖y）
      *
-     * 7下标（保存：左边嘴角x）
-     * 8下标（保存：左边嘴角y）
+     * 8下标（保存：左边嘴角x）
+     * 9下标（保存：左边嘴角y）
      *
-     * 9下标（保存：右边嘴角x）
-     * 10下标（保存：右边嘴角y）
+     * 10下标（保存：右边嘴角x）
+     * 11下标（保存：右边嘴角y）
      */
     var landMarks: FloatArray
 ) {
     override fun toString(): String {
-        return "Face{" +
-                "landmarks=" + landMarks.contentToString() +
-                ", width=" + faceWidth +
-                ", height=" + faceHeight +
-                ", imgWidth=" + screenWidth +
-                ", imgHeight=" + screenHeight +
-                '}'
+        return "FaceData(faceWidth=$faceWidth, faceHeight=$faceHeight, screenWidth=$screenWidth, screenHeight=$screenHeight, landMarks=${landMarks.contentToString()})"
     }
 }
