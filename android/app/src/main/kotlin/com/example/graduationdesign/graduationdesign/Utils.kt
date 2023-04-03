@@ -2,7 +2,6 @@ package com.example.graduationdesign.graduationdesign
 
 import android.content.Context
 import android.opengl.GLES20
-import android.os.Environment
 import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
@@ -14,11 +13,6 @@ import java.util.concurrent.Executors
 object Utils {
     private const val TAG = "Utils"
     private val threadPool = Executors.newSingleThreadExecutor()
-
-    fun sp2px(context: Context, spValue: Int): Float {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return spValue * fontScale + 0.5f
-    }
 
     fun copyAssetsToSdcard(context: Context, fileName: String) {
         threadPool.execute {
@@ -89,15 +83,11 @@ object Utils {
             //int param     参数值
             //GL_TEXTURE_MAG_FILTER 放大过滤
             GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_LINEAR
+                GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR
             )
             //GL_TEXTURE_MIN_FILTER 缩小过滤
             GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_NEAREST
+                GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST
             )
 
             //2.2 设置纹理环绕方向，纹理坐标0-1，如果超出范围的坐标，告诉opengl根据配置的参数进行处理
@@ -105,14 +95,10 @@ object Utils {
             //GL_REPEAT 重复拉伸（平铺）
             //GL_CLAMP_TO_EDGE 截取拉伸（边缘拉伸）
             GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_S,
-                GLES20.GL_CLAMP_TO_EDGE
+                GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE
             )
             GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_T,
-                GLES20.GL_CLAMP_TO_EDGE
+                GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE
             )
 
             //3，解绑纹理（传0 表示与当前纹理解绑）

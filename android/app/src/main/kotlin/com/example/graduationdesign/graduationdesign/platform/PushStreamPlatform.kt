@@ -1,7 +1,6 @@
 package com.example.graduationdesign.graduationdesign.platform
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import com.example.graduationdesign.graduationdesign.view.PushStreamView
 import io.flutter.plugin.common.BinaryMessenger
@@ -36,9 +35,6 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
             "switchCamera" -> switchCamera(result)
             "startRecord" -> startRecord(result)
             "stopRecord" -> stopRecord(result)
-            "addBarrage" -> addBarrage(call, result)
-            "showBarrage" -> showBarrage(result)
-            "hideBarrage" -> hideBarrage(result)
             "cancelFilter" -> cancelFilter(result)
             "addVintageTVFilter" -> addVintageTVFilter(result)
             "addWaveFilter" -> addWaveFilter(result)
@@ -88,23 +84,6 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
 
     private fun stopRecord(result: MethodChannel.Result) {
         view?.stopRecord()
-        result.success(true)
-    }
-
-    private fun addBarrage(call: MethodCall, result: MethodChannel.Result) {
-        val content = call.argument<String>("content")
-        val withBorder = call.argument<Boolean>("withBorder")
-        view?.addBarrage(content ?: "", withBorder ?: false)
-        result.success(true)
-    }
-
-    private fun showBarrage(result: MethodChannel.Result) {
-        view?.showBarrage()
-        result.success(true)
-    }
-
-    private fun hideBarrage(result: MethodChannel.Result) {
-        view?.hideBarrage()
         result.success(true)
     }
 

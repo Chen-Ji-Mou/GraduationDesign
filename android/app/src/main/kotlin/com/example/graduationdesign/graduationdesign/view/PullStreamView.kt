@@ -1,24 +1,12 @@
 package com.example.graduationdesign.graduationdesign.view
 
 import android.content.Context
-import android.graphics.Color
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.RelativeLayout
-import com.example.graduationdesign.graduationdesign.Utils
-import master.flame.danmaku.controller.DrawHandler
-import master.flame.danmaku.danmaku.model.BaseDanmaku
-import master.flame.danmaku.danmaku.model.DanmakuTimer
-import master.flame.danmaku.danmaku.model.IDanmakus
-import master.flame.danmaku.danmaku.model.android.DanmakuContext
-import master.flame.danmaku.danmaku.model.android.Danmakus
-import master.flame.danmaku.danmaku.parser.BaseDanmakuParser
-import master.flame.danmaku.ui.widget.DanmakuView
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
-import java.util.*
 
-class PullStreamView(context: Context) : RelativeLayout(context, null, 0), DrawHandler.Callback,
-    SurfaceHolder.Callback {
+class PullStreamView(context: Context) : RelativeLayout(context, null, 0), SurfaceHolder.Callback {
     private var specHeightSize: Int = 0
     private var specWidthSize: Int = 0
 
@@ -27,23 +15,13 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), DrawH
     private var mPlayer: IjkMediaPlayer? = null
 
     // 视频文件地址
-    private var rtmpUrl: String = ""
+    private var rtmpUrl: String? = null
     private var mSurfaceView: SurfaceView? = null
     private val mContext: Context
-    private var mBarrageView: DanmakuView? = null
-    private var mBarrageContext: DanmakuContext? = null
-    private var barrageOpen: Boolean = false
-
-    private val mBarrageParser = object : BaseDanmakuParser() {
-        override fun parse(): IDanmakus {
-            return Danmakus()
-        }
-    }
 
     init {
         mContext = context
         createSurfaceView()
-        createBarrageView()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -56,9 +34,9 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), DrawH
         this.fillXY = fillXY
     }
 
-    fun setRtmpUrl(path: String) {
-        rtmpUrl = path
-        if (rtmpUrl.isNotEmpty()) {
+    fun setRtmpUrl(url: String) {
+        rtmpUrl = url
+        if (rtmpUrl?.isNotEmpty() == true) {
             load()
         }
     }
@@ -83,33 +61,6 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), DrawH
     }
 
     override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {}
-
-    /**
-     * 新建弹幕视图
-     */
-    private fun createBarrageView() {
-        mBarrageView = DanmakuView(mContext)
-        mBarrageView?.enableDanmakuDrawingCache(true)
-        mBarrageView?.setCallback(this)
-        mBarrageContext = DanmakuContext.create()
-        mBarrageView?.prepare(mBarrageParser, mBarrageContext)
-
-        val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        mBarrageView?.layoutParams = layoutParams
-        addView(mBarrageView)
-    }
-
-    override fun prepared() {
-        barrageOpen = true
-        mBarrageView?.start()
-        generateSomeBarrage()
-    }
-
-    override fun updateTimer(timer: DanmakuTimer?) {}
-
-    override fun danmakuShown(danmaku: BaseDanmaku?) {}
-
-    override fun drawingFinished() {}
 
     /**
      * 加载视频
@@ -165,80 +116,19 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), DrawH
         }
     }
 
-    /**
-     * 向弹幕View中添加一条弹幕
-     * @param content
-     * 弹幕的具体内容
-     */
-    fun addBarrage(content: String, withBorder: Boolean) {
-        val barrage = mBarrageContext?.mDanmakuFactory?.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL)
-        barrage?.text = content
-        barrage?.padding = 5
-        barrage?.textSize = Utils.sp2px(mContext, 20)
-        barrage?.textColor = Color.WHITE
-        barrage?.time = mBarrageView?.currentTime ?: Calendar.getInstance().timeInMillis
-        if (withBorder) {
-            barrage?.borderColor = Color.GREEN
-        }
-        mBarrageView?.addDanmaku(barrage)
-    }
-
-    /**
-     * 随机生成一些弹幕内容以供测试
-     */
-    private fun generateSomeBarrage() {
-        Thread {
-            while (barrageOpen) {
-                val time: Int = Random().nextInt(300)
-                val content = "" + time + time
-                addBarrage(content, false)
-                try {
-                    Thread.sleep(time.toLong())
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-            }
-        }.start()
-    }
-
-    fun showBarrage() {
-        barrageOpen = true
-        mBarrageView?.show()
-    }
-
-    fun hideBarrage() {
-        barrageOpen = false
-        mBarrageView?.hide()
-    }
-
     fun resume() {
         mPlayer?.start()
-        if (mBarrageView?.isPrepared == true && mBarrageView?.isPaused == true) {
-            mBarrageView?.resume()
-        }
     }
 
     fun pause() {
         mPlayer?.stop()
-        if (mBarrageView?.isPrepared == true && mBarrageView?.isPaused == false) {
-            mBarrageView?.pause()
-        }
     }
 
     fun release() {
         mPlayer?.stop()
         mPlayer?.reset()
         mPlayer?.release()
-        mPlayer = null
-
         mSurfaceView?.holder?.removeCallback(this)
-        mSurfaceView = null
-
-        mBarrageView?.release()
-        mBarrageView?.setCallback(null)
-        barrageOpen = false
-        mBarrageContext = null
-        mBarrageView = null
     }
 
     val duration: Long get() = mPlayer?.duration ?: -1

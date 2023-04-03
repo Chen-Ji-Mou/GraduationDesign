@@ -33,9 +33,6 @@ class PullStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
             "resume" -> resume(result)
             "pause" -> pause(result)
             "release" -> release(result)
-            "addBarrage" -> addBarrage(call, result)
-            "showBarrage" -> showBarrage(result)
-            "hideBarrage" -> hideBarrage(result)
             else -> result.notImplemented()
         }
     }
@@ -62,23 +59,6 @@ class PullStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
 
     private fun release(result: MethodChannel.Result) {
         view?.release()
-        result.success(true)
-    }
-
-    private fun addBarrage(call: MethodCall, result: MethodChannel.Result) {
-        val content = call.argument<String>("content")
-        val withBorder = call.argument<Boolean>("withBorder")
-        view?.addBarrage(content ?: "", withBorder ?: false)
-        result.success(true)
-    }
-
-    private fun showBarrage(result: MethodChannel.Result) {
-        view?.showBarrage()
-        result.success(true)
-    }
-
-    private fun hideBarrage(result: MethodChannel.Result) {
-        view?.hideBarrage()
         result.success(true)
     }
 }

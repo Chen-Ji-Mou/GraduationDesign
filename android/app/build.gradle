@@ -89,6 +89,4 @@ dependencies {
     implementation files('/src/main/libs/ijkplayer.aar') // 拉流SDK
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.2' // 推流SDK
-    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25' // 弹幕SDK
-    implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21' // 弹幕SDK
 }

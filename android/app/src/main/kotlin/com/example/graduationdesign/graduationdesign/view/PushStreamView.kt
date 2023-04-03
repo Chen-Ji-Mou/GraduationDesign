@@ -2,7 +2,6 @@ package com.example.graduationdesign.graduationdesign.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaScannerConnection
@@ -12,7 +11,6 @@ import android.util.Size
 import android.view.SurfaceHolder
 import android.widget.RelativeLayout
 import com.example.graduationdesign.graduationdesign.Camera1ApiManagerProxy
-import com.example.graduationdesign.graduationdesign.Utils
 import com.example.graduationdesign.graduationdesign.filter.BigEyeFilterRender
 import com.example.graduationdesign.graduationdesign.filter.StickFilterRender
 import com.example.graduationdesign.graduationdesign.track.FaceTrack
@@ -24,30 +22,20 @@ import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.rtmp.RtmpCamera1
 import com.pedro.rtplibrary.view.AspectRatioMode
 import com.pedro.rtplibrary.view.OpenGlView
-import master.flame.danmaku.controller.DrawHandler
-import master.flame.danmaku.danmaku.model.BaseDanmaku
-import master.flame.danmaku.danmaku.model.DanmakuTimer
-import master.flame.danmaku.danmaku.model.IDanmakus
-import master.flame.danmaku.danmaku.model.android.DanmakuContext
-import master.flame.danmaku.danmaku.model.android.Danmakus
-import master.flame.danmaku.danmaku.parser.BaseDanmakuParser
-import master.flame.danmaku.ui.widget.DanmakuView
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
 class PushStreamView(context: Context) : RelativeLayout(context, null, 0), ConnectCheckerRtmp,
-    SurfaceHolder.Callback, DrawHandler.Callback, Camera1ApiManagerProxy.PreviewCallback {
+    SurfaceHolder.Callback, Camera1ApiManagerProxy.PreviewCallback {
     private val mContext: Context
     private var rtmpUrl: String? = null
     private var mSurfaceView: OpenGlView? = null
     private var mRtmpCamera1: RtmpCamera1? = null
     private var currentDateAndTime: String = ""
-    private var mBarrageView: DanmakuView? = null
-    private var mBarrageContext: DanmakuContext? = null
-    private var barrageOpen: Boolean = false
     private var mFaceTrack: FaceTrack? = null
+    private var yuvBuffer: ByteArray? = null
 
     private val mRecordFolder: File
         get() {
@@ -67,17 +55,10 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             }
         }
 
-    private val mBarrageParser = object : BaseDanmakuParser() {
-        override fun parse(): IDanmakus {
-            return Danmakus()
-        }
-    }
-
     init {
         mContext = context
         createSurfaceView()
         initRtmpCamera1()
-        createBarrageView()
     }
 
     fun setRtmpUrl(url: String) {
@@ -108,7 +89,6 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
 
     private fun initRtmpCamera1() {
         mRtmpCamera1 = RtmpCamera1(mSurfaceView, this)
-        mRtmpCamera1?.setReTries(3)
         hookCameraManager()
     }
 
@@ -123,6 +103,8 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
     }
 
     private fun hookCameraPreviewListen() {
+        yuvBuffer = ByteArray(previewSize.width * previewSize.height * 3 / 2)
+
         val proxyField = RtmpCamera1::class.java.superclass.getDeclaredField("cameraManager")
         proxyField.isAccessible = true
         val proxyObj = proxyField.get(mRtmpCamera1) as Camera1ApiManagerProxy
@@ -131,11 +113,13 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         cameraField.isAccessible = true
         val cameraObj = cameraField.get(proxyObj) as Camera
 
-        cameraObj.setPreviewCallback(proxyObj)
+        cameraObj.addCallbackBuffer(yuvBuffer)
+        cameraObj.setPreviewCallbackWithBuffer(proxyObj)
     }
 
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         mFaceTrack?.detector(data)
+        camera.addCallbackBuffer(yuvBuffer)
     }
 
     override fun onAuthErrorRtmp() {
@@ -148,12 +132,8 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
     }
 
     override fun onConnectionFailedRtmp(reason: String) {
-        if (mRtmpCamera1?.reTry(5000, reason, null) == true) {
-            Log.d(TAG, "[onConnectionFailedRtmp] Retrying...")
-        } else {
-            Log.e(TAG, "[onConnectionFailedRtmp] Connection failed. Reason: $reason")
-            mRtmpCamera1?.stopStream()
-        }
+        Log.e(TAG, "[onConnectionFailedRtmp] Connection failed. Reason: $reason")
+        mRtmpCamera1?.stopStream()
     }
 
     override fun onConnectionStartedRtmp(rtmpUrl: String) {}
@@ -167,30 +147,6 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
     }
 
     override fun onNewBitrateRtmp(bitrate: Long) {}
-
-    private fun createBarrageView() {
-        mBarrageView = DanmakuView(mContext)
-        mBarrageView?.enableDanmakuDrawingCache(true)
-        mBarrageView?.setCallback(this)
-        mBarrageContext = DanmakuContext.create()
-        mBarrageView?.prepare(mBarrageParser, mBarrageContext)
-
-        val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        mBarrageView?.layoutParams = layoutParams
-        addView(mBarrageView)
-    }
-
-    override fun prepared() {
-        barrageOpen = true
-        mBarrageView?.start()
-        generateSomeBarrage()
-    }
-
-    override fun updateTimer(timer: DanmakuTimer?) {}
-
-    override fun danmakuShown(danmaku: BaseDanmaku?) {}
-
-    override fun drawingFinished() {}
 
     @SuppressLint("SdCardPath")
     private fun start() {
@@ -215,9 +171,6 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         } else {
             Log.w(TAG, "[resume] Error preparing stream, This device cant do it")
         }
-        if (mBarrageView?.isPrepared == true && mBarrageView?.isPaused == true) {
-            mBarrageView?.resume()
-        }
     }
 
     fun pause() {
@@ -225,9 +178,6 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             return
         }
         mRtmpCamera1?.stopStream()
-        if (mBarrageView?.isPrepared == true && mBarrageView?.isPaused == false) {
-            mBarrageView?.pause()
-        }
     }
 
     fun release() {
@@ -243,17 +193,8 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             mRtmpCamera1?.stopStream()
         }
         mRtmpCamera1?.stopPreview()
-        mSurfaceView = null
-        mRtmpCamera1 = null
-
-        mBarrageView?.release()
-        mBarrageView?.setCallback(null)
-        barrageOpen = false
-        mBarrageContext = null
-        mBarrageView = null
-
+        mSurfaceView?.holder?.removeCallback(this)
         mFaceTrack?.stopTrack()
-        mFaceTrack = null
     }
 
     fun switchCamera() {
@@ -309,52 +250,6 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         Log.d(
             TAG, "[stopRecord] file $currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
         )
-    }
-
-    /**
-     * 向弹幕View中添加一条弹幕
-     * @param content
-     * 弹幕的具体内容
-     */
-    fun addBarrage(content: String, withBorder: Boolean) {
-        val barrage = mBarrageContext?.mDanmakuFactory?.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL)
-        barrage?.text = content
-        barrage?.padding = 5
-        barrage?.textSize = Utils.sp2px(mContext, 20)
-        barrage?.textColor = Color.WHITE
-        barrage?.time = mBarrageView?.currentTime ?: Calendar.getInstance().timeInMillis
-        if (withBorder) {
-            barrage?.borderColor = Color.GREEN
-        }
-        mBarrageView?.addDanmaku(barrage)
-    }
-
-    /**
-     * 随机生成一些弹幕内容以供测试
-     */
-    private fun generateSomeBarrage() {
-        Thread {
-            while (barrageOpen) {
-                val time: Int = Random().nextInt(300)
-                val content = "" + time + time
-                addBarrage(content, false)
-                try {
-                    Thread.sleep(time.toLong())
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-            }
-        }.start()
-    }
-
-    fun showBarrage() {
-        barrageOpen = true
-        mBarrageView?.show()
-    }
-
-    fun hideBarrage() {
-        barrageOpen = false
-        mBarrageView?.hide()
     }
 
     fun cancelFilter() {
