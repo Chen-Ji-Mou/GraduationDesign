@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
+import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
-import 'package:graduationdesign/widget/barrage_widget.dart';
+import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/push_stream_widget.dart';
 import 'package:graduationdesign/utils.dart';
 
@@ -13,66 +15,47 @@ class PushStreamScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _PushStreamState();
 }
 
-class _PushStreamState extends State<PushStreamScreen> with LifecycleObserver {
+class _PushStreamState extends State<PushStreamScreen> {
   late Size screenSize;
   late double buttonWidth;
-  late double barrageWidth;
-  late double barrageHeight;
 
   final PushStreamController controller = PushStreamController();
   final Completer<void> initialCompleter = Completer<void>();
-  bool pushStreaming = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    initSize();
-  }
-
-  void initSize() {
     screenSize = MediaQuery.of(context).size;
     buttonWidth = (screenSize.width - 24) / 2;
-    barrageWidth = screenSize.width * 3 / 5;
-    barrageHeight = screenSize.height * 1 / 3;
-  }
-
-  @override
-  void onResume() {
-    controller.resume();
-  }
-
-  @override
-  void onPause() {
-    controller.pause();
-  }
-
-  @override
-  void dispose() {
-    controller.release();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(color: Colors.black),
-        child: FutureBuilder<bool?>(
-          future: PermissionPlatform.requestPermission(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.data == true) {
-                return buildContent();
+      appBar: AppBar(
+          toolbarHeight: 1,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          brightness: Brightness.dark),
+      body: SafeArea(
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
+          child: FutureBuilder<bool?>(
+            future: PermissionPlatform.requestPermission(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.data == true) {
+                  return buildContent();
+                } else {
+                  Fluttertoast.showToast(msg: '请打开摄像头、录音和存储权限')
+                      .then((_) => Navigator.pop(context));
+                  return const BlankPlaceholder();
+                }
               } else {
-                Fluttertoast.showToast(msg: '请打开摄像头、录音和存储权限')
-                    .then((_) => Navigator.pop(context));
                 return const BlankPlaceholder();
               }
-            } else {
-              return const BlankPlaceholder();
-            }
-          },
+            },
+          ),
         ),
       ),
     );
@@ -84,8 +67,8 @@ class _PushStreamState extends State<PushStreamScreen> with LifecycleObserver {
       children: [
         PushStreamWidget(
           controller: controller,
-          initialComplete: () {
-            controller.setRtmpUrl('rtmp://81.71.161.128:1935/live/1');
+          initialComplete: () async {
+            await controller.setRtmpUrl('rtmp://81.71.161.128:1935/live/1');
             initialCompleter.complete();
           },
         ),
@@ -108,20 +91,31 @@ class _PushStreamState extends State<PushStreamScreen> with LifecycleObserver {
       fit: StackFit.expand,
       children: [
         Positioned(
-          left: 8,
-          top: 8,
+          left: 16,
+          top: 12,
           child: GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.arrow_back, size: 28, color: Colors.white),
+            child: Container(
+              width: 42,
+              height: 42,
+              alignment: Alignment.center,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: ColorName.ff6fa2.withOpacity(0.35),
+                borderRadius: BorderRadius.circular(21),
+              ),
+              child: Assets.images.arrowLeft.image(
+                width: 24,
+                height: 24,
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
           ),
         ),
         Positioned(
           left: 8,
           bottom: 58,
-          child: BarrageWidget(
-            width: barrageWidth,
-            height: barrageHeight,
-          ),
+          child: ScrollBarrageWidget(screenSize: screenSize),
         ),
         Positioned(
           width: buttonWidth,
@@ -143,7 +137,8 @@ class _PushStreamState extends State<PushStreamScreen> with LifecycleObserver {
           right: 8,
           child: PopupMenuButton<Filter>(
             onSelected: (filter) => controller.selectFilter(filter),
-            icon: const Icon(Icons.more_vert, size: 28, color: Colors.white),
+            icon: Icon(Icons.more_vert,
+                size: 24, color: Colors.white.withOpacity(0.8)),
             itemBuilder: (BuildContext context) => const [
               PopupMenuItem<Filter>(
                 value: Filter.cancel,

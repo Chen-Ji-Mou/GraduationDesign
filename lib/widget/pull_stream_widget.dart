@@ -2,76 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduationdesign/utils.dart';
 
+class PullStreamController {
+  static const MethodChannel _channel = MethodChannel('pullStreamChannel');
+  bool _initialized = false;
+
+  Future<void> setRtmpUrl(String url) async {
+    if (_initialized) {
+      await _channel.invokeMethod('setRtmpUrl', url);
+    }
+  }
+
+  Future<void> setFillXY(bool fillXY) async {
+    if (_initialized) {
+      await _channel.invokeMethod('setFillXY', fillXY);
+    }
+  }
+
+  Future<void> resume() async {
+    if (_initialized) {
+      await _channel.invokeMethod('resume');
+    }
+  }
+
+  Future<void> pause() async {
+    if (_initialized) {
+      await _channel.invokeMethod('pause');
+    }
+  }
+
+  Future<void> release() async {
+    if (_initialized) {
+      await _channel.invokeMethod('release');
+    }
+  }
+}
+
 class PullStreamWidget extends StatefulWidget {
-  const PullStreamWidget({Key? key}) : super(key: key);
+  const PullStreamWidget(
+      {Key? key, required this.controller, this.initialComplete})
+      : super(key: key);
+
+  final PullStreamController controller;
+  final VoidCallback? initialComplete;
 
   @override
   State<StatefulWidget> createState() => _PullStreamState();
 }
 
 class _PullStreamState extends State<PullStreamWidget> with LifecycleObserver {
-  static const MethodChannel channel = MethodChannel('pullStreamChannel');
+  PullStreamController get controller => widget.controller;
 
-  bool initialized = false;
-  bool pullStreaming = false;
-
-  void init() {
-    Future.wait([
-      channel.invokeMethod('setRtmpUrl', 'rtmp://81.71.161.128:1935/live/1'),
-      channel
-          .invokeMethod('resume')
-          .then((_) => setState(() => pullStreaming = true))
-    ]).then((_) => initialized = true);
-  }
+  VoidCallback? get initialComplete => widget.initialComplete;
 
   @override
   void onResume() {
-    if (initialized) {
-      channel
-          .invokeMethod('resume')
-          .then((_) => setState(() => pullStreaming = true));
-    }
+    controller.resume();
   }
 
   @override
   void onPause() {
-    if (initialized) {
-      channel
-          .invokeMethod('pause')
-          .then((_) => setState(() => pullStreaming = false));
-    }
+    controller.pause();
   }
 
   @override
   void dispose() {
-    if (initialized) {
-      channel.invokeMethod('release');
-    }
+    controller.release();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        AndroidView(
-          viewType: 'pullStream',
-          onPlatformViewCreated: (_) => init(),
-          creationParamsCodec: const StandardMessageCodec(),
-        ),
-        Positioned(
-          left: 8,
-          right: 8,
-          bottom: 8,
-          child: ElevatedButton(
-            onPressed: () => channel
-                .invokeMethod(pullStreaming ? 'pause' : 'resume')
-                .then((_) => setState(() => pullStreaming = !pullStreaming)),
-            child: Text(pullStreaming ? '停止拉流' : '开始拉流'),
-          ),
-        ),
-      ],
+    return AndroidView(
+      viewType: 'pullStream',
+      onPlatformViewCreated: (_) {
+        controller._initialized = true;
+        initialComplete?.call();
+      },
+      creationParamsCodec: const StandardMessageCodec(),
     );
   }
 }

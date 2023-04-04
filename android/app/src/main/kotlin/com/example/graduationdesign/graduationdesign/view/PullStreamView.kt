@@ -49,6 +49,7 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), Surfa
         mSurfaceView?.holder?.addCallback(this)
 
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        layoutParams.addRule(CENTER_IN_PARENT)
         mSurfaceView?.layoutParams = layoutParams
         addView(mSurfaceView)
     }
@@ -58,9 +59,12 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), Surfa
     override fun surfaceChanged(
         surfaceHolder: SurfaceHolder, format: Int, width: Int, height: Int
     ) {
+        if (rtmpUrl?.isNotEmpty() == true) {
+            load()
+        }
     }
 
-    override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {}
+    override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) = release()
 
     /**
      * 加载视频
@@ -95,10 +99,10 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), Surfa
         mPlayer?.setOnVideoSizeChangedListener { _, width, height, _, _ ->
             if (width != 0 && height != 0) {
                 if (mSurfaceView != null) {
-                    val lp = mSurfaceView?.layoutParams as LayoutParams
+                    val layoutParams = mSurfaceView?.layoutParams as LayoutParams
                     if (fillXY) {
-                        lp.width = -1
-                        lp.height = -1
+                        layoutParams.width = -1
+                        layoutParams.height = -1
                     } else {
                         val scanXY: Float = if (specHeightSize / specWidthSize > height / width) {
                             // 高剩余，以宽填满
@@ -106,10 +110,10 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), Surfa
                         } else {
                             specHeightSize / height.toFloat()
                         }
-                        lp.width = (width * scanXY).toInt()
-                        lp.height = (height * scanXY).toInt()
+                        layoutParams.width = (width * scanXY).toInt()
+                        layoutParams.height = (height * scanXY).toInt()
                     }
-                    mSurfaceView?.layoutParams = lp
+                    mSurfaceView?.layoutParams = layoutParams
                 }
                 requestLayout()
             }

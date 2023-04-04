@@ -1,66 +1,60 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class BarrageWidget extends StatefulWidget {
-  const BarrageWidget({Key? key, required this.width, required this.height})
+class ScrollBarrageWidget extends StatefulWidget {
+  const ScrollBarrageWidget({Key? key, required this.screenSize})
       : super(key: key);
 
-  final double width;
-  final double height;
+  final Size screenSize;
 
   @override
-  State<StatefulWidget> createState() => _BarrageState();
+  State<StatefulWidget> createState() => _ScrollBarrageState();
 }
 
-class _BarrageState extends State<BarrageWidget> {
-  double get width => widget.width;
+class _ScrollBarrageState extends State<ScrollBarrageWidget> {
+  Size get screenSize => widget.screenSize;
 
-  double get height => widget.height;
+  final double itemMaxHeight = 26;
 
   late Timer timer;
   late ItemScrollController scrollController;
-  late ItemPositionsListener positionsListener;
+  late double barrageWidth;
+  late double barrageHeight;
   int curIndex = 0;
-  int curVisibleLastIndex = 0;
   List<String> barrages = [];
 
   @override
   void initState() {
     super.initState();
     scrollController = ItemScrollController();
-    positionsListener = ItemPositionsListener.create();
     timer = Timer.periodic(
         const Duration(milliseconds: 600), (_) => scrollScheduleTask());
-    positionsListener.itemPositions.addListener(itemPositionNotify);
+    barrageWidth = screenSize.width * 2 / 3;
+    barrageHeight = itemMaxHeight * 8; // 最多同时展示8条弹幕
     generateSomeBarrageForTest();
   }
 
   @override
   void dispose() {
     timer.cancel();
-    positionsListener.itemPositions.removeListener(itemPositionNotify);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
+      width: barrageWidth,
+      height: barrageHeight,
       alignment: Alignment.center,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
       child: ScrollablePositionedList.builder(
         itemScrollController: scrollController,
-        itemPositionsListener: positionsListener,
         itemCount: barrages.length,
         itemBuilder: (context, index) => item(index),
-        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
       ),
     );
   }
@@ -68,22 +62,17 @@ class _BarrageState extends State<BarrageWidget> {
   Widget item(int index) {
     return GestureDetector(
       child: Container(
+        constraints: BoxConstraints(maxHeight: itemMaxHeight),
         alignment: Alignment.topLeft,
-        margin: EdgeInsets.only(
-            left: 4, right: 4, bottom: index == barrages.length - 1 ? 0 : 4),
-        padding: const EdgeInsets.all(8),
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(4),
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         child: Text(
           barrages[index != -1 ? index : 0],
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.white
-                .withOpacity(index == curVisibleLastIndex ? 0.8 : 0.3),
+          style: GoogleFonts.roboto(
+            color: ColorName.ffb52d.withOpacity(0.8),
+            fontWeight: FontWeight.w400,
+            height: 16 / 14,
             fontSize: 14,
           ),
         ),
@@ -98,7 +87,7 @@ class _BarrageState extends State<BarrageWidget> {
       stringBuffer.clear();
       int random = Random().nextInt(300);
       int times = Random().nextInt(30);
-      for (int j = 0; j < times; j++) {
+      for (int j = 1; j <= times; j++) {
         stringBuffer.write(random);
       }
       barrages.add(stringBuffer.toString());
@@ -114,14 +103,6 @@ class _BarrageState extends State<BarrageWidget> {
           duration: const Duration(milliseconds: 400),
         );
       });
-    }
-  }
-
-  void itemPositionNotify() {
-    List<ItemPosition> itemPositions =
-        positionsListener.itemPositions.value.toList();
-    if (mounted) {
-      setState(() => curVisibleLastIndex = itemPositions.last.index);
     }
   }
 }
