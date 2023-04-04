@@ -49,10 +49,10 @@ class _PushStreamState extends State<PushStreamScreen> {
                 } else {
                   Fluttertoast.showToast(msg: '请打开摄像头、录音和存储权限')
                       .then((_) => Navigator.pop(context));
-                  return const BlankPlaceholder();
+                  return const C(0);
                 }
               } else {
-                return const BlankPlaceholder();
+                return const C(0);
               }
             },
           ),
@@ -78,7 +78,7 @@ class _PushStreamState extends State<PushStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return const BlankPlaceholder();
+              return const C(0);
             }
           },
         ),

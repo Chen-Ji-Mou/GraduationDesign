@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:graduationdesign/platform/initial_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
@@ -37,7 +36,7 @@ class MyApp extends StatelessWidget {
             navigatorObservers: [routeObserver],
           );
         } else {
-          return const BlankPlaceholder();
+          return const C(0);
         }
       },
     );

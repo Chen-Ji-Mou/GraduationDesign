@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 void afterRender(VoidCallback callback) {
   WidgetsBinding.instance.addPostFrameCallback((_) => callback);
@@ -12,12 +11,14 @@ Future<void> waitRender() {
   return completer.future;
 }
 
-class BlankPlaceholder extends StatelessWidget {
-  const BlankPlaceholder({Key? key}) : super(key: key);
+class C extends StatelessWidget {
+  const C(this.size, {Key? key}) : super(key: key);
+
+  final double? size;
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return SizedBox(width: size, height: size);
   }
 }
 

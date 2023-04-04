@@ -29,6 +29,7 @@ class _PullStreamState extends State<PullStreamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
           toolbarHeight: 1,
           backgroundColor: Colors.black.withOpacity(0.8),
@@ -61,7 +62,7 @@ class _PullStreamState extends State<PullStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return const BlankPlaceholder();
+              return const C(0);
             }
           },
         ),
