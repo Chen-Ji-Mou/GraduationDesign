@@ -1,4 +1,4 @@
-package com.graduationdesign.entity;
+package com.graduationdesign.backend.entity;
 
 import lombok.Data;
 
