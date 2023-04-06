@@ -8,5 +8,5 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
     @Select("SELECT * FROM user")
-    public List<User> getAllUsers();
+    List<User> getAllUsers();
 }

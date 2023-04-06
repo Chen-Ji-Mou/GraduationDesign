@@ -1,23 +1,33 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/push_stream_widget.dart';
-import 'package:graduationdesign/utils.dart';
+import 'package:graduationdesign/common.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PushStreamScreen extends StatefulWidget {
-  const PushStreamScreen({Key? key}) : super(key: key);
+  const PushStreamScreen({
+    Key? key,
+    required this.liveId,
+  }) : super(key: key);
+
+  final int liveId;
 
   @override
   State<StatefulWidget> createState() => _PushStreamState();
 }
 
 class _PushStreamState extends State<PushStreamScreen> {
+  int get liveId => widget.liveId;
+
   late Size screenSize;
   late double buttonWidth;
+  late WebSocketChannel wsChannel;
 
   final PushStreamController controller = PushStreamController();
   final Completer<void> initialCompleter = Completer<void>();
@@ -30,12 +40,27 @@ class _PushStreamState extends State<PushStreamScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    wsChannel = WebSocketChannel.connect(
+        Uri.parse('ws://127.0.0.1:8080/websocket?lid=$liveId'));
+  }
+
+  @override
+  void dispose() {
+    wsChannel.sink.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          toolbarHeight: 1,
-          backgroundColor: Colors.black.withOpacity(0.8),
-          brightness: Brightness.dark),
+        toolbarHeight: 1,
+        backgroundColor: Colors.black.withOpacity(0.8),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
       body: SafeArea(
         child: Container(
           alignment: Alignment.center,
@@ -68,7 +93,8 @@ class _PushStreamState extends State<PushStreamScreen> {
         PushStreamWidget(
           controller: controller,
           initialComplete: () async {
-            await controller.setRtmpUrl('rtmp://81.71.161.128:1935/live/1');
+            await controller
+                .setRtmpUrl('rtmp://81.71.161.128:1935/live/$liveId');
             initialCompleter.complete();
           },
         ),
@@ -78,7 +104,7 @@ class _PushStreamState extends State<PushStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return const C(0);
+              return const Center(child: CircularProgressIndicator());
             }
           },
         ),
@@ -115,7 +141,8 @@ class _PushStreamState extends State<PushStreamScreen> {
         Positioned(
           left: 8,
           bottom: 58,
-          child: ScrollBarrageWidget(screenSize: screenSize),
+          child:
+              ScrollBarrageWidget(screenSize: screenSize, wsChannel: wsChannel),
         ),
         Positioned(
           width: buttonWidth,

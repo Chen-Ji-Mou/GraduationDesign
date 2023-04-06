@@ -1,31 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-
-void afterRender(VoidCallback callback) {
-  WidgetsBinding.instance.addPostFrameCallback((_) => callback);
-}
-
-Future<void> waitRender() {
-  final Completer<void> completer = Completer<void>();
-  afterRender(() => completer.complete());
-  return completer.future;
-}
-
-class C extends StatelessWidget {
-  const C(this.size, {Key? key}) : super(key: key);
-
-  final double? size;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(width: size, height: size);
-  }
-}
-
-RouteObserver<Route<void>> routeObserver = RouteObserver<Route<void>>();
+import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/route.dart';
 
 mixin LifecycleObserver<T extends StatefulWidget> on State<T>
-    implements WidgetsBindingObserver, RouteAware {
+implements WidgetsBindingObserver, RouteAware {
   bool isResume = false;
 
   bool get isCurrentPage => true == ModalRoute.of(context)?.isCurrent;
@@ -140,16 +118,5 @@ mixin LifecycleObserver<T extends StatefulWidget> on State<T>
   @override
   Future<bool> didPushRouteInformation(RouteInformation routeInformation) {
     return didPushRoute(routeInformation.location);
-  }
-}
-
-extension StandardExt<T> on T {
-  R let<R>(R Function(T) block) {
-    return block(this);
-  }
-
-  T also<R>(Function(T) block) {
-    block(this);
-    return this;
   }
 }

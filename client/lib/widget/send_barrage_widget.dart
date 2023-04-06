@@ -1,16 +1,21 @@
-import 'dart:async';
+import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
-import 'package:graduationdesign/utils.dart';
+import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/models.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SendBarrageWidget extends StatefulWidget {
-  const SendBarrageWidget({Key? key, required this.screenSize})
-      : super(key: key);
+  const SendBarrageWidget({
+    Key? key,
+    required this.screenSize,
+    required this.wsChannel,
+  }) : super(key: key);
 
   final Size screenSize;
+  final WebSocketChannel wsChannel;
 
   @override
   State<StatefulWidget> createState() => _SendBarrageState();
@@ -19,13 +24,19 @@ class SendBarrageWidget extends StatefulWidget {
 class _SendBarrageState extends State<SendBarrageWidget> {
   Size get screenSize => widget.screenSize;
 
+  WebSocketChannel get wsChannel => widget.wsChannel;
+
   late double width;
   final double height = 50;
+
+  late String userName;
 
   @override
   void initState() {
     super.initState();
     width = screenSize.width * 197 / 375;
+    // TODO 获取当前登录的用户名
+    userName = 'root';
   }
 
   @override
@@ -34,9 +45,9 @@ class _SendBarrageState extends State<SendBarrageWidget> {
       onTap: () => _InputBottomSheet.show(
         context,
         screenSize,
-        onInputComplete: (barrage) {
-          Fluttertoast.showToast(msg: '输入的评论: $barrage');
-        },
+        onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
+          Barrage(userName, content).toJsonMap(),
+        )),
       ),
       child: Container(
         width: width,

@@ -1,22 +1,32 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/mixin/lifecycle_observer.dart';
+import 'package:graduationdesign/models.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ScrollBarrageWidget extends StatefulWidget {
-  const ScrollBarrageWidget({Key? key, required this.screenSize})
-      : super(key: key);
+  const ScrollBarrageWidget({
+    Key? key,
+    required this.screenSize,
+    required this.wsChannel,
+  }) : super(key: key);
 
   final Size screenSize;
+  final WebSocketChannel wsChannel;
 
   @override
   State<StatefulWidget> createState() => _ScrollBarrageState();
 }
 
-class _ScrollBarrageState extends State<ScrollBarrageWidget> {
+class _ScrollBarrageState extends State<ScrollBarrageWidget>
+    with LifecycleObserver {
   Size get screenSize => widget.screenSize;
+
+  WebSocketChannel get wsChannel => widget.wsChannel;
 
   final double itemMaxHeight = 26;
 
@@ -24,8 +34,9 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget> {
   late ItemScrollController scrollController;
   late double barrageWidth;
   late double barrageHeight;
+  late StreamSubscription wsSubscription;
   int curIndex = 0;
-  List<String> barrages = [];
+  List<Barrage> barrages = [];
 
   @override
   void initState() {
@@ -33,14 +44,28 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget> {
     scrollController = ItemScrollController();
     timer = Timer.periodic(
         const Duration(milliseconds: 600), (_) => scrollScheduleTask());
+
     barrageWidth = screenSize.width * 2 / 3;
     barrageHeight = itemMaxHeight * 8; // 最多同时展示8条弹幕
-    generateSomeBarrageForTest();
+
+    wsSubscription =
+        wsChannel.stream.listen((jsonStr) => receiveBarrage(jsonStr));
+  }
+
+  @override
+  void onResume() {
+    wsSubscription.resume();
+  }
+
+  @override
+  void onPause() {
+    wsSubscription.pause();
   }
 
   @override
   void dispose() {
     timer.cancel();
+    wsSubscription.cancel();
     super.dispose();
   }
 
@@ -60,48 +85,53 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget> {
   }
 
   Widget item(int index) {
+    Barrage barrage = barrages[index != -1 ? index : 0];
     return GestureDetector(
       child: Container(
         constraints: BoxConstraints(maxHeight: itemMaxHeight),
         alignment: Alignment.topLeft,
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Text(
-          barrages[index != -1 ? index : 0],
+        child: Text.rich(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.roboto(
-            color: ColorName.ffb52d.withOpacity(0.8),
-            fontWeight: FontWeight.w400,
-            height: 16 / 14,
-            fontSize: 14,
-          ),
+          TextSpan(children: [
+            TextSpan(
+              text: '${barrage.userName} : ',
+              style: GoogleFonts.roboto(
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w400,
+                height: 16 / 14,
+                fontSize: 14,
+              ),
+            ),
+            TextSpan(
+              text: barrage.content,
+              style: GoogleFonts.roboto(
+                color: ColorName.ffb52d.withOpacity(0.8),
+                fontWeight: FontWeight.w400,
+                height: 16 / 14,
+                fontSize: 14,
+              ),
+            ),
+          ]),
         ),
       ),
     );
   }
 
-  /// 添加弹幕用于测试
-  void generateSomeBarrageForTest() {
-    StringBuffer stringBuffer = StringBuffer();
-    for (int i = 0; i < 100; i++) {
-      stringBuffer.clear();
-      int random = Random().nextInt(300);
-      int times = Random().nextInt(30);
-      for (int j = 1; j <= times; j++) {
-        stringBuffer.write(random);
-      }
-      barrages.add(stringBuffer.toString());
+  void scrollScheduleTask() {
+    if (curIndex < barrages.length - 1) {
+      scrollController.scrollTo(
+        index: ++curIndex,
+        duration: const Duration(milliseconds: 400),
+      );
     }
-    if (mounted) setState(() {});
   }
 
-  void scrollScheduleTask() {
-    if (curIndex < barrages.length - 1 && mounted) {
+  void receiveBarrage(String jsonStr) {
+    if (mounted) {
       setState(() {
-        scrollController.scrollTo(
-          index: ++curIndex,
-          duration: const Duration(milliseconds: 400),
-        );
+        barrages.add(Barrage.fromJsonMap(jsonDecode(jsonStr)));
       });
     }
   }

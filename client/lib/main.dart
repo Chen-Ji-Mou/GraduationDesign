@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/platform/initial_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
+import 'package:graduationdesign/route.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/pull_stream_screen.dart';
 import 'package:graduationdesign/screen/push_stream_screen.dart';
-import 'package:graduationdesign/utils.dart';
+import 'package:graduationdesign/common.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,17 +24,9 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return MaterialApp(
-            title: 'Demo',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            routes: {
-              '/home': (BuildContext context) => const HomeScreen(),
-              '/pushStream': (BuildContext context) => const PushStreamScreen(),
-              '/pullStream': (BuildContext context) => const PullStreamScreen(),
-            },
-            initialRoute: '/home',
+            initialRoute: 'home',
             navigatorObservers: [routeObserver],
+            onGenerateRoute: onGenerateRoute,
           );
         } else {
           return const C(0);
