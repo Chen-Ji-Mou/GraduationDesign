@@ -14,8 +14,7 @@ public class AuthenticationConfiguration implements WebMvcConfigurer {
                 // 拦截所有路径
                 .addPathPatterns("/**")
                 // 取消特定路径的拦截
-                .excludePathPatterns("/user/login")
-                .excludePathPatterns("/user/register");
+                .excludePathPatterns("/user/**");
     }
 
     @Bean

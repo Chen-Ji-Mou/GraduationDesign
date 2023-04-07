@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Slf4j
 public class Utils {
-    public static int generateRandomID(int length) {
+    public static Integer generateRandomId(int length) {
         return (int) ((Math.random() * 9 + 1) * Math.pow(10, length - 1));
     }
 

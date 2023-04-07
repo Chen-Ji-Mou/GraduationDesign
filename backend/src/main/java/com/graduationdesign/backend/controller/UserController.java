@@ -1,26 +1,39 @@
 package com.graduationdesign.backend.controller;
 
+import com.graduationdesign.backend.RedisUtil;
 import com.graduationdesign.backend.Result;
 import com.graduationdesign.backend.Utils;
 import com.graduationdesign.backend.entity.User;
 import com.graduationdesign.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
+
+import javax.mail.internet.MimeMessage;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
     @Autowired
-    private IUserService service;
+    private IUserService userService;
+
+    @Autowired
+    private JavaMailSender emailSender;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    @Value("${spring.mail.username}")
+    private String from;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    @ResponseBody
     private Result login(@RequestParam(name = "email") String email,
                          @RequestParam(name = "pwd") String pwd) {
-        User user = service.findUserByEmail(email);
+        User user = userService.findUserByEmail(email);
         if (user == null) {
             return Result.failed(500, "该用户不存在");
         }
@@ -32,22 +45,79 @@ public class UserController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    @ResponseBody
     private Result register(@RequestParam(value = "name") String name,
                             @RequestParam(value = "email") String email,
                             @RequestParam(value = "pwd") String pwd) {
-        if (service.findUserByName(name) != null) {
+        if (userService.findUserByName(name) != null) {
             return Result.failed(500, "该用户名已被使用");
         }
-        if (service.findUserByEmail(email) != null) {
+        if (userService.findUserByEmail(email) != null) {
             return Result.failed(500, "该邮箱已被注册");
         }
         User user = new User();
-        user.setId(Utils.generateRandomID(11));
+        user.setId(Utils.generateRandomId(11));
         user.setName(name);
         user.setEmail(email);
         user.setPwd(pwd);
-        service.addUser(user);
+        userService.addUser(user);
+        return Result.success();
+    }
+
+    @RequestMapping(value = "/sendEmailVerificationCode", method = RequestMethod.GET)
+    private Result sendEmailVerificationCode(@RequestParam(value = "email") String email) {
+        try {
+            //创建一个MINE消息
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper mineHelper = new MimeMessageHelper(message, true);
+            // 谁发的
+            mineHelper.setFrom(from);
+            // 谁要接收
+            mineHelper.setTo(email);
+            // 邮件标题
+            mineHelper.setSubject("直播定制APP");
+            // 生成验证码
+            Integer verificationCode = Utils.generateRandomId(4);
+            // 邮件内容
+            String html = "<div class=\"main\" style=\"padding: 0 24px\">\n" +
+                    "        <div>\n" +
+                    "            <div class=\"p1\" style=\"font-size: 18px;font-weight: 500;color: #222222;line-height: 25px;padding-bottom: 16px;\">Hi，亲爱的用户</div>\n" +
+                    "            <div class=\"p2\" style=\"font-size: 14px;font-weight: 400;color: #666666;line-height: 20px;padding-bottom: 28px;\">您正在进行邮箱验证操作，验证码为：</div>\n" +
+                    "            <div class=\"p3\" style=\"font-size: 20px;font-weight: 500;color: #ff6000;line-height: 28px;padding-bottom: 28px;\">" + verificationCode + "</div>\n" +
+                    "            <div class=\"p4\" style=\"font-size: 14px;font-weight: 400;color: #666666;line-height: 20px;padding-bottom: 52px;border-bottom: 1px solid #ffe2cd;\">请在30分钟内完成验证</div>\n" +
+                    "        </div>\n" +
+                    "        <div style=\"display: flex;flex-wrap: wrap;justify-content: center;align-items: center;\">\n" +
+                    "            <div class=\"main3\" style=\"flex: 1;min-width: 300px;padding-top: 20px;font-size: 12px;font-weight: 400;color: #999999;line-height: 24px;\">\n" +
+                    "                <p style=\"padding: 0;margin: 0;box-sizing: border-box;\">如非本人操作，请忽略该邮件</p>\n" +
+                    "                <p style=\"padding: 0;margin: 0;box-sizing: border-box;\">(这是一封通过自动发送的邮件，请不要直接回复)</p>\n" +
+                    "            </div>\n" +
+                    "        </div>" +
+                    "     </div>";
+            mineHelper.setText(html, true);
+            // 发送邮件
+            emailSender.send(message);
+            log.info("[UserController] getEmailVerificationCode 验证码邮件发送成功 " + email);
+            // redis缓存验证码
+            redisUtil.set(email, verificationCode.toString(), 30 * 60);
+            return Result.success();
+        } catch (Exception e) {
+            log.error("[UserController] getEmailVerificationCode 验证码邮件发送失败 " + email);
+            return Result.failed(500, "验证码邮件发送失败");
+        }
+    }
+
+    @RequestMapping(value = "/verifyEmailVerificationCode", method = RequestMethod.POST)
+    private Result verifyEmailVerificationCode(@RequestParam(value = "email") String email,
+                                               @RequestParam(value = "code") Integer code) {
+        if (!redisUtil.hasKey(email)) {
+            return Result.failed(500, "验证码邮件发送失败");
+        }
+        if (redisUtil.isExpire(email)) {
+            return Result.failed(500, "验证码已过期，请重新获取");
+        }
+        Integer verificationCode = (Integer) redisUtil.get(email);
+        if (!code.equals(verificationCode)) {
+            return Result.failed(500, "验证码输入错误，请重新输入");
+        }
         return Result.success();
     }
 }

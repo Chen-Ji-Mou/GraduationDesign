@@ -1,11 +1,15 @@
 package com.graduationdesign.backend;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 统一返回对象
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Result<T> {
     // 自定义状态码
     private Integer code;
@@ -13,12 +17,6 @@ public class Result<T> {
     private String msg;
     // 返回数据体
     private T data;
-
-    public Result(Integer code, String msg, T data) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-    }
 
     /**
      * 请求成功返回
