@@ -127,7 +127,7 @@ class _PushStreamState extends State<PushStreamScreen> {
               alignment: Alignment.center,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: ColorName.ff6fa2.withOpacity(0.35),
+                color: ColorName.redFF6FA2.withOpacity(0.35),
                 borderRadius: BorderRadius.circular(21),
               ),
               child: Assets.images.arrowLeft.image(

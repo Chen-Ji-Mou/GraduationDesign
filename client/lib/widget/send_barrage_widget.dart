@@ -58,14 +58,14 @@ class _SendBarrageState extends State<SendBarrageWidget> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(27.5),
           border: Border.all(
-            color: ColorName.f958a3.withOpacity(0.8),
+            color: ColorName.redF958A3.withOpacity(0.8),
             width: 3,
           ),
         ),
         child: Text(
           '发送弹幕',
           style: GoogleFonts.roboto(
-            color: ColorName.ff6fa2.withOpacity(0.8),
+            color: ColorName.redFF6FA2.withOpacity(0.8),
             fontWeight: FontWeight.w400,
             height: 16 / 14,
             fontSize: 14,
@@ -154,7 +154,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                     color: Colors.black.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(height / 2),
                     border: Border.all(
-                      color: ColorName.f958a3.withOpacity(0.8),
+                      color: ColorName.redF958A3.withOpacity(0.8),
                       width: 1,
                     ),
                   ),
@@ -163,7 +163,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                     autofocus: true,
                     maxLines: 1,
                     style: GoogleFonts.roboto(
-                      color: ColorName.ff6fa2.withOpacity(0.8),
+                      color: ColorName.redFF6FA2.withOpacity(0.8),
                       fontWeight: FontWeight.w400,
                       height: 16 / 14,
                       fontSize: 14,
@@ -174,7 +174,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                       border: InputBorder.none,
                       hintText: '请输入弹幕内容',
                       hintStyle: GoogleFonts.roboto(
-                        color: ColorName.ff6fa2.withOpacity(0.8),
+                        color: ColorName.redFF6FA2.withOpacity(0.8),
                         fontWeight: FontWeight.w400,
                         height: 16 / 14,
                         fontSize: 14,
@@ -188,7 +188,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                   child: Assets.images.send.image(
                     width: 24,
                     height: 24,
-                    color: ColorName.ffb52d.withOpacity(0.8),
+                    color: ColorName.yellowFFB52D.withOpacity(0.8),
                   ),
                 ),
               ],

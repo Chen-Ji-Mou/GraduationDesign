@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="F958A3">#F958A3</color>
-    <color name="FF6FA2">#FF6FA2</color>
-    <color name="FFB52D">#FFB52D</color>
-    <color name="F4F4F4">#F4F4F4</color>
-    <color name="EC008E">#EC008E</color>
-    <color name="FC6767">#FC6767</color>
+    <color name="redF958A3">#F958A3</color>
+    <color name="redFF6FA2">#FF6FA2</color>
+    <color name="yellowFFB52D">#FFB52D</color>
+    <color name="whiteF4F4F4">#F4F4F4</color>
+    <color name="redEC008E">#EC008E</color>
+    <color name="redFC6767">#FC6767</color>
+    <color name="redF14336">#F14336</color>
+    <color name="gray6A707C">#6A707C</color>
+    <color name="black1E232C">#1E232C</color>
+    <color name="green35C2C1">#35C2C1</color>
 </resources>

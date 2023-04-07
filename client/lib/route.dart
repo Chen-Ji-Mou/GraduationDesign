@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/initiate_live_screen.dart';
+import 'package:graduationdesign/screen/login_screen.dart';
+import 'package:graduationdesign/screen/register_screen.dart';
 import 'package:graduationdesign/screen/watch_live_screen.dart';
 
 RouteObserver<Route<void>> routeObserver = RouteObserver<Route<void>>();
@@ -14,6 +16,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (routeName) {
       case 'home':
         return const HomeScreen();
+      case 'login':
+        return const LoginScreen();
+      case 'register':
+        return const RegisterScreen();
       case 'initiateLive':
         return const InitiateLiveScreen();
       case 'watchLive':
@@ -32,7 +38,7 @@ String? routeBefore(RouteSettings settings) {
   String? routeName = settings.name;
   if (needCheckRoutes.contains(routeName)) {
     // TODO 检验用户是否登录进行拦截
-    return null;
+    return 'login';
   }
   return routeName;
 }

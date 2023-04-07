@@ -108,7 +108,7 @@ class _PullStreamState extends State<PullStreamScreen> {
               alignment: Alignment.center,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: ColorName.ff6fa2.withOpacity(0.35),
+                color: ColorName.redFF6FA2.withOpacity(0.35),
                 borderRadius: BorderRadius.circular(21),
               ),
               child: Assets.images.arrowLeft.image(width: 24, height: 24),
@@ -131,7 +131,7 @@ class _PullStreamState extends State<PullStreamScreen> {
               alignment: Alignment.center,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: ColorName.f958a3,
+                color: ColorName.redF958A3,
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Assets.images.giftBox.image(width: 44, height: 44),

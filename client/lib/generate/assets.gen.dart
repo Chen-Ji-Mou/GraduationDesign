@@ -16,6 +16,9 @@ class $AssetsImagesGen {
   AssetGenImage get arrowLeft =>
       const AssetGenImage('assets/images/arrow-left.png');
 
+  /// File path: assets/images/back.png
+  AssetGenImage get back => const AssetGenImage('assets/images/back.png');
+
   /// File path: assets/images/gift-box.png
   AssetGenImage get giftBox =>
       const AssetGenImage('assets/images/gift-box.png');
@@ -27,7 +30,7 @@ class $AssetsImagesGen {
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [arrowLeft, giftBox, heart, send];
+  List<AssetGenImage> get values => [arrowLeft, back, giftBox, heart, send];
 }
 
 class Assets {

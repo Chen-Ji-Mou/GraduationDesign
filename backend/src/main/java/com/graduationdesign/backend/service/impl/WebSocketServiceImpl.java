@@ -1,6 +1,6 @@
 package com.graduationdesign.backend.service.impl;
 
-import com.graduationdesign.backend.service.WebSocketService;
+import com.graduationdesign.backend.service.IWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class WebSocketServiceImpl implements WebSocketService {
+public class WebSocketServiceImpl implements IWebSocketService {
     /**
      * 在线连接数（线程安全）
      */
@@ -36,13 +36,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws IOException {
         log.info("received a message：{}", message.getPayload());
-        try {
-            this.broadCast(session, message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.broadCast(session, message);
     }
 
     @Override

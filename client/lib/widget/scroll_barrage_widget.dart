@@ -107,7 +107,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
             TextSpan(
               text: barrage.content,
               style: GoogleFonts.roboto(
-                color: ColorName.ffb52d.withOpacity(0.8),
+                color: ColorName.yellowFFB52D.withOpacity(0.8),
                 fontWeight: FontWeight.w400,
                 height: 16 / 14,
                 fontSize: 14,

@@ -1,14 +1,16 @@
 package com.graduationdesign.backend.handler;
 
-import com.graduationdesign.backend.service.WebSocketService;
+import com.graduationdesign.backend.service.IWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.web.socket.*;
 
+import java.io.IOException;
+
 public class DefaultWebSocketHandler implements WebSocketHandler {
 
     @Autowired
-    private WebSocketService service;
+    private IWebSocketService service;
 
     /**
      * 建立连接
@@ -27,7 +29,7 @@ public class DefaultWebSocketHandler implements WebSocketHandler {
      * @param message 消息
      */
     @Override
-    public void handleMessage(@NonNull WebSocketSession session, @NonNull WebSocketMessage<?> message) {
+    public void handleMessage(@NonNull WebSocketSession session, @NonNull WebSocketMessage<?> message) throws IOException {
         service.handleMessage(session, message);
     }
 

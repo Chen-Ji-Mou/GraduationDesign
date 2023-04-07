@@ -1,12 +1,11 @@
 package com.graduationdesign.backend.service;
 
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.Set;
 
-public interface WebSocketService {
+public interface IWebSocketService {
     /**
      * 会话开始回调
      *
@@ -27,7 +26,7 @@ public interface WebSocketService {
      * @param session 会话
      * @param message 接收的消息
      */
-    void handleMessage(WebSocketSession session, WebSocketMessage<?> message);
+    void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws IOException;
 
     /**
      * 广播
