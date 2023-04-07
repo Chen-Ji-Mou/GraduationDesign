@@ -74,7 +74,18 @@ class _LoginState extends State<LoginScreen> {
                 TextFormFieldWidget(
                   hintText: '输入你的邮箱地址',
                   controller: emailEditController,
-                  validator: (input) => null,
+                  validator: (input) {
+                    if (input is String && input.isNotEmpty) {
+                      if (!verifyEmail(input)) {
+                        if (!input.contains('qq')) {
+                          return '请输入qq邮箱地址';
+                        }
+                        return '请输入正确的邮箱地址';
+                      }
+                      return null;
+                    }
+                    return null;
+                  },
                 ),
                 const C(15),
                 TextFormFieldWidget(

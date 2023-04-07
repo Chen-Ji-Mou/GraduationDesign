@@ -109,3 +109,9 @@ bool verifyCardId(String cardId) {
   }
   return pass;
 }
+
+bool verifyEmail(String email) {
+  String rule =
+      '^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}\$';
+  return RegExp(rule).hasMatch(email);
+}
