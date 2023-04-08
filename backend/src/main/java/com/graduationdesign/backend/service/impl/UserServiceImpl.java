@@ -34,4 +34,9 @@ public class UserServiceImpl implements IUserService {
     public User findUserByName(String name) {
         return mapper.findUserByName(name);
     }
+
+    @Override
+    public void updatePwdByEmail(String email, String pwd) {
+        mapper.updatePwdByEmail(email, pwd);
+    }
 }

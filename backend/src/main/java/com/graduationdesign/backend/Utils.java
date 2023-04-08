@@ -10,13 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 public class Utils {
-    public static Integer generateRandomId(int length) {
-        return (int) ((Math.random() * 9 + 1) * Math.pow(10, length - 1));
-    }
-
     private static final String TOKEN_SECRET = "081310";
 
     /**

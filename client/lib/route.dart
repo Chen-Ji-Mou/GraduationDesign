@@ -3,6 +3,7 @@ import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/initiate_live_screen.dart';
 import 'package:graduationdesign/screen/login_screen.dart';
 import 'package:graduationdesign/screen/register_screen.dart';
+import 'package:graduationdesign/screen/retrieve_pwd_screen.dart';
 import 'package:graduationdesign/screen/watch_live_screen.dart';
 
 RouteObserver<Route<void>> routeObserver = RouteObserver<Route<void>>();
@@ -18,6 +19,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         return const HomeScreen();
       case 'login':
         return const LoginScreen();
+      case 'retrievePwd':
+        return const RetrievePwdScreen();
       case 'register':
         return const RegisterScreen();
       case 'initiateLive':

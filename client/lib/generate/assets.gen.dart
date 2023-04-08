@@ -29,8 +29,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/send.png
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
 
+  /// File path: assets/images/success-mark.png
+  AssetGenImage get successMark =>
+      const AssetGenImage('assets/images/success-mark.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [arrowLeft, back, giftBox, heart, send];
+  List<AssetGenImage> get values =>
+      [arrowLeft, back, giftBox, heart, send, successMark];
 }
 
 class Assets {

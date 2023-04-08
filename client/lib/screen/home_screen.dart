@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduationdesign/platform/initial_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
+import 'package:graduationdesign/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,6 +19,7 @@ class _HomeState extends State<HomeScreen> {
       future: Future.wait([
         PermissionPlatform.requestPermission(),
         InitialPlatform.initial(),
+        SpUtil.init(),
       ]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {

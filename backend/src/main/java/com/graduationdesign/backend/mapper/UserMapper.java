@@ -1,9 +1,7 @@
 package com.graduationdesign.backend.mapper;
 
 import com.graduationdesign.backend.entity.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -20,4 +18,7 @@ public interface UserMapper {
 
     @Select("SELECT * FROM user WHERE name=#{name}")
     User findUserByName(String name);
+
+    @Update("UPDATE user SET pwd=#{pwd} WHERE email=#{email}")
+    void updatePwdByEmail(@Param("email") String email, @Param("pwd") String pwd);
 }

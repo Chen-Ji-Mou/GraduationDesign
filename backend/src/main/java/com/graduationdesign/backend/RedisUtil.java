@@ -69,6 +69,13 @@ public class RedisUtil {
     }
 
     /**
+     * 根据key删除键值对
+     */
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
+
+    /**
      * 将值放入缓存并设置时间
      */
     public void set(String key, String value, long time) {
@@ -232,8 +239,8 @@ public class RedisUtil {
     /**
      * 弹出元素并删除
      */
-    public String popValue(String key) {
-        return redisTemplate.opsForSet().pop(key).toString();
+    public Object popValue(String key) {
+        return redisTemplate.opsForSet().pop(key);
     }
 
     /**

@@ -19,6 +19,9 @@ class ColorName {
   /// Color: #6A707C
   static const Color gray6A707C = Color(0xFF6A707C);
 
+  /// Color: #8391A1
+  static const Color gray8391A1 = Color(0xFF8391A1);
+
   /// Color: #35C2C1
   static const Color green35C2C1 = Color(0xFF35C2C1);
 

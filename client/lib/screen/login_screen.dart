@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -5,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/api.dart';
+import 'package:graduationdesign/shared_preferences.dart';
 import 'package:graduationdesign/widget/text_form_field_widget.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -64,7 +67,7 @@ class _LoginState extends State<LoginScreen> {
                 Text(
                   '欢迎回来！很高兴再次见到你！',
                   style: GoogleFonts.roboto(
-                    color: ColorName.redF14336,
+                    color: ColorName.black1E232C,
                     fontWeight: FontWeight.w700,
                     height: 39 / 18,
                     fontSize: 18,
@@ -99,9 +102,10 @@ class _LoginState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     InkWell(
+                      onTap: () => Navigator.pushNamed(context, 'retrievePwd'),
                       child: Text(
                         '忘记了密码？',
-                        style: GoogleFonts.urbanist(
+                        style: GoogleFonts.roboto(
                           color: ColorName.gray6A707C,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
@@ -130,7 +134,7 @@ class _LoginState extends State<LoginScreen> {
                     ),
                     child: Text(
                       '登录',
-                      style: GoogleFonts.urbanist(
+                      style: GoogleFonts.roboto(
                         color: Colors.white.withOpacity(buttonEnable ? 1 : 0.8),
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
@@ -147,7 +151,7 @@ class _LoginState extends State<LoginScreen> {
                       children: [
                         Text(
                           '没有帐户？',
-                          style: GoogleFonts.urbanist(
+                          style: GoogleFonts.roboto(
                             color: ColorName.black1E232C,
                             fontWeight: FontWeight.w500,
                             height: 21 / 15,
@@ -158,7 +162,7 @@ class _LoginState extends State<LoginScreen> {
                           onTap: () => Navigator.pushNamed(context, 'register'),
                           child: Text(
                             '立即注册',
-                            style: GoogleFonts.urbanist(
+                            style: GoogleFonts.roboto(
                               color: ColorName.green35C2C1,
                               fontWeight: FontWeight.w500,
                               height: 21 / 15,
@@ -188,11 +192,20 @@ class _LoginState extends State<LoginScreen> {
   }
 
   Future<void> submit() async {
-    if (formKey.currentState?.validate() ?? false) {
-      // TODO 提交登录信息到后端
-      await Future.delayed(const Duration(milliseconds: 500));
-      Fluttertoast.showToast(msg: '登录成功');
-      exit(true);
+    if (formKey.currentState?.validate() ?? true) {
+      Response response = await DioClient.post(Api.login, {
+        'email': emailEditController.text,
+        'pwd': pwdEditController.text,
+      });
+      if (response.statusCode == 200) {
+        if (response.data['code'] == 200) {
+          SpUtil.setString('token', response.data['data']);
+          Fluttertoast.showToast(msg: '登录成功');
+          exit(true);
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+        }
+      }
     }
   }
 

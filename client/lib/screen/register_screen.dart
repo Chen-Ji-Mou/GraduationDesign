@@ -1,10 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/shared_preferences.dart';
 import 'package:graduationdesign/widget/text_form_field_widget.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -68,7 +71,7 @@ class _RegisterState extends State<RegisterScreen> {
                 Text(
                   '你好！注册开始',
                   style: GoogleFonts.roboto(
-                    color: ColorName.redF14336,
+                    color: ColorName.black1E232C,
                     fontWeight: FontWeight.w700,
                     height: 39 / 18,
                     fontSize: 18,
@@ -181,11 +184,20 @@ class _RegisterState extends State<RegisterScreen> {
   }
 
   Future<void> submit() async {
-    if (formKey.currentState?.validate() ?? false) {
-      // TODO 提交注册信息到后端
-      await Future.delayed(const Duration(milliseconds: 500));
-      Fluttertoast.showToast(msg: '注册成功');
-      exit();
+    if (formKey.currentState?.validate() ?? true) {
+      Response response = await DioClient.post(Api.register, {
+        'name': nameEditController.text,
+        'email': emailEditController.text,
+        'pwd': pwdEditController.text,
+      });
+      if (response.statusCode == 200) {
+        if (response.data['code'] == 200) {
+          Fluttertoast.showToast(msg: '注册成功');
+          exit();
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+        }
+      }
     }
   }
 

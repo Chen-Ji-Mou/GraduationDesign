@@ -10,4 +10,5 @@ public interface IUserService {
     void addUser(User user);
     boolean verifyUserById(Integer id);
     User findUserByName(String name);
+    void updatePwdByEmail(String email, String pwd);
 }
