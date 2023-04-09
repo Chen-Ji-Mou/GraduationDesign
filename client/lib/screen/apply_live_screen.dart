@@ -58,81 +58,78 @@ class _ApplyLiveState extends State<ApplyLiveScreen> {
   }
 
   Widget buildContent() {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          backgroundColor: Colors.white.withOpacity(0.8),
-          centerTitle: true,
-          elevation: 1,
-          iconTheme: IconThemeData(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white.withOpacity(0.8),
+        centerTitle: true,
+        elevation: 1,
+        iconTheme: IconThemeData(
+          color: Colors.black.withOpacity(0.8),
+        ),
+        title: Text(
+          '实名认证',
+          style: GoogleFonts.roboto(
             color: Colors.black.withOpacity(0.8),
-          ),
-          title: Text(
-            '实名认证',
-            style: GoogleFonts.roboto(
-              color: Colors.black.withOpacity(0.8),
-              fontWeight: FontWeight.w400,
-              fontSize: 16,
-            ),
+            fontWeight: FontWeight.w400,
+            fontSize: 16,
           ),
         ),
-        body: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const C(20),
-                Text(
-                  '根据法律法规要求，开播前请先完成身份认证：',
-                  style: GoogleFonts.roboto(
-                    color: Colors.black.withOpacity(0.8),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                  ),
+      ),
+      body: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(left: 20, top: toolbarHeight, right: 20),
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const C(20),
+              Text(
+                '根据法律法规要求，开播前请先完成身份认证：',
+                style: GoogleFonts.roboto(
+                  color: Colors.black.withOpacity(0.8),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
                 ),
-                const C(12),
-                Text(
-                  '认证信息将用于开直播，与账号唯一绑定，我们会对信息进行严格保密',
-                  style: GoogleFonts.roboto(
-                    color: Colors.black.withOpacity(0.4),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12,
-                  ),
+              ),
+              const C(12),
+              Text(
+                '认证信息将用于开直播，与账号唯一绑定，我们会对信息进行严格保密',
+                style: GoogleFonts.roboto(
+                  color: Colors.black.withOpacity(0.4),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 12,
                 ),
-                const C(40),
-                buildTextField(
-                  nameEditNode,
-                  nameEditController,
-                  '真实姓名',
-                  '输入您的真实姓名',
-                  validator: (input) {
-                    if (input is String && input.isNotEmpty) {
-                      if (input.length < 2 || input.length > 11) {
-                        return '请输入正确的姓名';
-                      }
-                      return null;
-                    }
-                    return null;
-                  },
-                ),
-                buildTextField(idEditNode, idEditController, '身份证号', '请输入身份证号',
-                    validator: (input) {
+              ),
+              const C(40),
+              buildTextField(
+                nameEditNode,
+                nameEditController,
+                '真实姓名',
+                '输入您的真实姓名',
+                validator: (input) {
                   if (input is String && input.isNotEmpty) {
-                    if (!verifyCardId(input)) {
-                      return '请输入正确的身份证号';
+                    if (input.length < 2 || input.length > 11) {
+                      return '请输入正确的姓名';
                     }
                     return null;
                   }
                   return null;
-                }),
-                const C(16),
-                buildButton(),
-              ],
-            ),
+                },
+              ),
+              buildTextField(idEditNode, idEditController, '身份证号', '请输入身份证号',
+                  validator: (input) {
+                if (input is String && input.isNotEmpty) {
+                  if (!verifyCardId(input)) {
+                    return '请输入正确的身份证号';
+                  }
+                  return null;
+                }
+                return null;
+              }),
+              const C(16),
+              buildButton(),
+            ],
           ),
         ),
       ),

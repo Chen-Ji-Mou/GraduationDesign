@@ -43,196 +43,185 @@ class _RetrievePwdState extends State<RetrievePwdScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          toolbarHeight: 1,
-          backgroundColor: Colors.black.withOpacity(0.8),
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-        ),
-        body: buildContent(),
-      ),
-    );
-  }
-
-  Widget buildContent() {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 22),
-      child: Form(
-        key: formKey,
-        child: curState == _CurrentState.backLogin
-            ? Column(
-                children: [
-                  const C(204),
-                  Assets.images.successMark.image(width: 100, height: 100),
-                  const C(35),
-                  Text(
-                    getTitle(),
-                    style: GoogleFonts.roboto(
-                      color: ColorName.black1E232C,
-                      fontWeight: FontWeight.w700,
-                      height: 39 / 18,
-                      fontSize: 18,
-                    ),
-                  ),
-                  Text(
-                    getSubtitle(),
-                    style: GoogleFonts.roboto(
-                      color: ColorName.gray8391A1,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const C(40),
-                  InkWell(
-                    onTap: submit,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        gradient: const LinearGradient(
-                          colors: [
-                            ColorName.redEC008E,
-                            ColorName.redFC6767,
-                          ],
-                        ),
-                      ),
-                      child: Text(
-                        getButtonText(),
-                        style: GoogleFonts.urbanist(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(left: 22, top: toolbarHeight, right: 22),
+        child: Form(
+          key: formKey,
+          child: curState == _CurrentState.backLogin
+              ? Column(
+                  children: [
+                    const C(204),
+                    Assets.images.successMark.image(width: 100, height: 100),
+                    const C(35),
+                    Text(
+                      getTitle(),
+                      style: GoogleFonts.roboto(
+                        color: ColorName.black1E232C,
+                        fontWeight: FontWeight.w700,
+                        height: 39 / 18,
+                        fontSize: 18,
                       ),
                     ),
-                  ),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const C(12),
-                  InkWell(
-                    onTap: () => exit(),
-                    child: Assets.images.back.image(width: 41, height: 41),
-                  ),
-                  const C(28),
-                  Text(
-                    getTitle(),
-                    style: GoogleFonts.roboto(
-                      color: ColorName.black1E232C,
-                      fontWeight: FontWeight.w700,
-                      height: 39 / 18,
-                      fontSize: 18,
+                    Text(
+                      getSubtitle(),
+                      style: GoogleFonts.roboto(
+                        color: ColorName.gray8391A1,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  Text(
-                    getSubtitle(),
-                    style: GoogleFonts.roboto(
-                      color: ColorName.gray8391A1,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const C(32),
-                  if (curState == _CurrentState.verifyCode)
-                    SizedBox(
-                      height: 60,
-                      child: PinCodeTextField(
-                        appContext: context,
-                        length: 4,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp('[0-9]')),
-                        ],
-                        onChanged: (value) =>
-                            setState(() => buttonEnable = value.isNotEmpty),
-                        onCompleted: (value) => verificationCode = value,
-                        cursorColor: Colors.blueAccent,
-                        pinTheme: PinTheme(
-                          shape: PinCodeFieldShape.box,
-                          fieldWidth: 66,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(8),
+                    const C(40),
+                    InkWell(
+                      onTap: submit,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          gradient: const LinearGradient(
+                            colors: [
+                              ColorName.redEC008E,
+                              ColorName.redFC6767,
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          getButtonText(),
+                          style: GoogleFonts.urbanist(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                    )
-                  else
-                    TextFormFieldWidget(
-                      hintText: getHintText(),
-                      controller: editController,
-                      validator: (input) => getValidator(input),
                     ),
-                  const C(30),
-                  InkWell(
-                    onTap: buttonEnable ? submit : null,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        gradient: LinearGradient(
-                          colors: [
-                            ColorName.redEC008E
-                                .withOpacity(buttonEnable ? 1 : 0.4),
-                            ColorName.redFC6767
-                                .withOpacity(buttonEnable ? 1 : 0.4),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const C(12),
+                    InkWell(
+                      onTap: () => exit(),
+                      child: Assets.images.back.image(width: 41, height: 41),
+                    ),
+                    const C(28),
+                    Text(
+                      getTitle(),
+                      style: GoogleFonts.roboto(
+                        color: ColorName.black1E232C,
+                        fontWeight: FontWeight.w700,
+                        height: 39 / 18,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      getSubtitle(),
+                      style: GoogleFonts.roboto(
+                        color: ColorName.gray8391A1,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const C(32),
+                    if (curState == _CurrentState.verifyCode)
+                      SizedBox(
+                        height: 60,
+                        child: PinCodeTextField(
+                          appContext: context,
+                          length: 4,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp('[0-9]')),
                           ],
+                          onChanged: (value) =>
+                              setState(() => buttonEnable = value.isNotEmpty),
+                          onCompleted: (value) => verificationCode = value,
+                          cursorColor: Colors.blueAccent,
+                          pinTheme: PinTheme(
+                            shape: PinCodeFieldShape.box,
+                            fieldWidth: 66,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(8),
+                            ),
+                          ),
                         ),
+                      )
+                    else
+                      TextFormFieldWidget(
+                        hintText: getHintText(),
+                        controller: editController,
+                        validator: (input) => getValidator(input),
                       ),
-                      child: Text(
-                        getButtonText(),
-                        style: GoogleFonts.urbanist(
-                          color:
-                              Colors.white.withOpacity(buttonEnable ? 1 : 0.8),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                    const C(30),
+                    InkWell(
+                      onTap: buttonEnable ? submit : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          gradient: LinearGradient(
+                            colors: [
+                              ColorName.redEC008E
+                                  .withOpacity(buttonEnable ? 1 : 0.4),
+                              ColorName.redFC6767
+                                  .withOpacity(buttonEnable ? 1 : 0.4),
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          getButtonText(),
+                          style: GoogleFonts.urbanist(
+                            color: Colors.white
+                                .withOpacity(buttonEnable ? 1 : 0.8),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if ([
-                    _CurrentState.getCode,
-                    _CurrentState.verifyCode,
-                  ].contains(curState))
-                    Expanded(
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        padding: const EdgeInsets.only(bottom: 30),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              getBottomText(),
-                              style: GoogleFonts.urbanist(
-                                color: ColorName.black1E232C,
-                                fontWeight: FontWeight.w500,
-                                height: 21 / 15,
-                                fontSize: 15,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: bottomClick,
-                              child: Text(
-                                getBottomClickText(),
+                    if ([
+                      _CurrentState.getCode,
+                      _CurrentState.verifyCode,
+                    ].contains(curState))
+                      Expanded(
+                        child: Container(
+                          alignment: Alignment.bottomCenter,
+                          padding: const EdgeInsets.only(bottom: 30),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                getBottomText(),
                                 style: GoogleFonts.urbanist(
-                                  color: ColorName.green35C2C1,
+                                  color: ColorName.black1E232C,
                                   fontWeight: FontWeight.w500,
                                   height: 21 / 15,
                                   fontSize: 15,
                                 ),
                               ),
-                            ),
-                          ],
+                              InkWell(
+                                onTap: bottomClick,
+                                child: Text(
+                                  getBottomClickText(),
+                                  style: GoogleFonts.urbanist(
+                                    color: ColorName.green35C2C1,
+                                    fontWeight: FontWeight.w500,
+                                    height: 21 / 15,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }

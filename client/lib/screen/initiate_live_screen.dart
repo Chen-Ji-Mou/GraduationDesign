@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/screen/apply_live_screen.dart';
 import 'package:graduationdesign/screen/push_stream_screen.dart';
 
@@ -29,7 +30,7 @@ class _InitiateLiveState extends State<InitiateLiveScreen> {
           // return const PushStreamScreen(liveId: 1234567);
           return const ApplyLiveScreen();
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return const C(0);
         }
       },
     );

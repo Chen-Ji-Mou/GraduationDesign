@@ -19,17 +19,19 @@ class PermissionChannel(
     private var mActivity: Activity
     private var mPendingPermissionResponse: (MethodChannel.Result) -> Unit
 
-    private val mPushStreamPermissions = arrayOf(
+    private val permissions = arrayOf(
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.CAMERA,
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.READ_EXTERNAL_STORAGE
     )
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    private val mPushStreamPermissions13 = arrayOf(
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private val permissions30 = arrayOf(
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.MANAGE_EXTERNAL_STORAGE
     )
 
@@ -56,10 +58,10 @@ class PermissionChannel(
 
 
     private fun requestPermission(result: MethodChannel.Result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!hasPermission(mActivity)) {
                 ActivityCompat.requestPermissions(
-                    mActivity, mPushStreamPermissions13, REQUEST_PERMISSIONS
+                    mActivity, permissions30, REQUEST_PERMISSIONS
                 )
             } else {
                 result.success(true)
@@ -67,7 +69,7 @@ class PermissionChannel(
         } else {
             if (!hasPermission(mActivity)) {
                 ActivityCompat.requestPermissions(
-                    mActivity, mPushStreamPermissions, REQUEST_PERMISSIONS
+                    mActivity, permissions, REQUEST_PERMISSIONS
                 )
             } else {
                 result.success(true)
@@ -76,10 +78,10 @@ class PermissionChannel(
     }
 
     private fun hasPermission(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            hasPermission(context, mPushStreamPermissions13)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            hasPermission(context, permissions30)
         } else {
-            hasPermission(context, mPushStreamPermissions)
+            hasPermission(context, permissions)
         }
     }
 

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+double toolbarHeight = 0;
+
 void afterRender(VoidCallback callback) {
   WidgetsBinding.instance.addPostFrameCallback((_) => callback);
 }

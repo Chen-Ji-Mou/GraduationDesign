@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graduationdesign/root_node.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/initiate_live_screen.dart';
 import 'package:graduationdesign/screen/login_screen.dart';
@@ -15,8 +16,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     /// 那么系统将依次检索 '/' -> '/a' -> '/a/b' -> '/a/b/c'
     /// 为了避免这种检索方式，所以路由使用 'xxx' 形式
     switch (routeName) {
-      case 'home':
-        return const HomeScreen();
+      case 'root':
+        return const RootNode();
       case 'login':
         return const LoginScreen();
       case 'retrievePwd':

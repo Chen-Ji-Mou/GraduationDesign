@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/platform/file_load_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/push_stream_widget.dart';
@@ -52,35 +54,32 @@ class _PushStreamState extends State<PushStreamScreen> {
     super.dispose();
   }
 
+  Future<bool> checkInit() async {
+    if (requestPermissionSuccess && loadFileSuccess) {
+      return true;
+    }
+    requestPermissionSuccess = await PermissionPlatform.requestPermission();
+    loadFileSuccess = await FileLoadPlatform.loadFile();
+    return requestPermissionSuccess && loadFileSuccess;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        toolbarHeight: 1,
-        backgroundColor: Colors.black.withOpacity(0.8),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      body: SafeArea(
-        child: Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
-          child: FutureBuilder<bool?>(
-            future: PermissionPlatform.requestPermission(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.data == true) {
-                  return buildContent();
-                } else {
-                  Fluttertoast.showToast(msg: '请打开摄像头、录音和存储权限')
-                      .then((_) => Navigator.pop(context));
-                  return const C(0);
-                }
-              } else {
-                return const C(0);
-              }
-            },
-          ),
+      body: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: toolbarHeight),
+        decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
+        child: FutureBuilder<bool>(
+          future: checkInit(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return buildContent();
+            } else {
+              return const C(0);
+            }
+          },
         ),
       ),
     );
@@ -104,7 +103,23 @@ class _PushStreamState extends State<PushStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const C(8),
+                    Text(
+                      '加载中请稍后...',
+                      style: GoogleFonts.roboto(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
           },
         ),

@@ -19,6 +19,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/back.png
   AssetGenImage get back => const AssetGenImage('assets/images/back.png');
 
+  /// File path: assets/images/cover-text.png
+  AssetGenImage get coverText =>
+      const AssetGenImage('assets/images/cover-text.png');
+
+  /// File path: assets/images/cover.png
+  AssetGenImage get cover => const AssetGenImage('assets/images/cover.png');
+
   /// File path: assets/images/gift-box.png
   AssetGenImage get giftBox =>
       const AssetGenImage('assets/images/gift-box.png');
@@ -26,16 +33,44 @@ class $AssetsImagesGen {
   /// File path: assets/images/heart.png
   AssetGenImage get heart => const AssetGenImage('assets/images/heart.png');
 
+  /// File path: assets/images/home.png
+  AssetGenImage get home => const AssetGenImage('assets/images/home.png');
+
+  /// File path: assets/images/like.png
+  AssetGenImage get like => const AssetGenImage('assets/images/like.png');
+
+  /// File path: assets/images/love.png
+  AssetGenImage get love => const AssetGenImage('assets/images/love.png');
+
   /// File path: assets/images/send.png
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
+
+  /// File path: assets/images/star.png
+  AssetGenImage get star => const AssetGenImage('assets/images/star.png');
 
   /// File path: assets/images/success-mark.png
   AssetGenImage get successMark =>
       const AssetGenImage('assets/images/success-mark.png');
 
+  /// File path: assets/images/user.png
+  AssetGenImage get user => const AssetGenImage('assets/images/user.png');
+
   /// List of all assets
-  List<AssetGenImage> get values =>
-      [arrowLeft, back, giftBox, heart, send, successMark];
+  List<AssetGenImage> get values => [
+        arrowLeft,
+        back,
+        coverText,
+        cover,
+        giftBox,
+        heart,
+        home,
+        like,
+        love,
+        send,
+        star,
+        successMark,
+        user
+      ];
 }
 
 class Assets {

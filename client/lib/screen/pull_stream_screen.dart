@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
 import 'package:graduationdesign/widget/send_barrage_widget.dart';
+import 'package:like_button/like_button.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PullStreamScreen extends StatefulWidget {
@@ -51,17 +53,11 @@ class _PullStreamState extends State<PullStreamScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        toolbarHeight: 1,
-        backgroundColor: Colors.black.withOpacity(0.8),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      body: SafeArea(
-        child: Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
-          child: buildContent(),
-        ),
+      body: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: toolbarHeight),
+        decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
+        child: buildContent(),
       ),
     );
   }
@@ -147,8 +143,21 @@ class _PullStreamState extends State<PullStreamScreen> {
         Positioned(
           right: 21,
           bottom: 27,
-          child: GestureDetector(
-            child: Assets.images.heart.image(width: 37, height: 37),
+          child: LikeButton(
+            size: 37,
+            circleColor: const CircleColor(
+                start: ColorName.redEC008E, end: ColorName.redFC6767),
+            bubblesColor: const BubblesColor(
+              dotPrimaryColor: ColorName.redF958A3,
+              dotSecondaryColor: ColorName.redFF6FA2,
+            ),
+            likeBuilder: (bool isLiked) {
+              return Assets.images.heart.image(
+                width: 37,
+                height: 37,
+                color: isLiked ? ColorName.redF14336 : Colors.white,
+              );
+            },
           ),
         ),
       ],

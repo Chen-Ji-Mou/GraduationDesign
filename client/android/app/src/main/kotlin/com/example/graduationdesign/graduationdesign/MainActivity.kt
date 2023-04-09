@@ -1,8 +1,7 @@
 package com.example.graduationdesign.graduationdesign
 
 import android.content.pm.PackageManager
-import android.os.Bundle
-import com.example.graduationdesign.graduationdesign.platform.InitialChannel
+import com.example.graduationdesign.graduationdesign.platform.FileLoadChannel
 import com.example.graduationdesign.graduationdesign.platform.PermissionChannel
 import com.example.graduationdesign.graduationdesign.platform.PullStreamPlatformFactory
 import com.example.graduationdesign.graduationdesign.platform.PushStreamPlatformFactory
@@ -24,7 +23,7 @@ class MainActivity : FlutterActivity() {
         PermissionChannel(messenger, this) {
             mRequestPermissionResult = it
         }
-        InitialChannel(messenger, this)
+        FileLoadChannel(messenger, this)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

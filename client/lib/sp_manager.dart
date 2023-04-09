@@ -1,12 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SpUtil {
-  SpUtil._internal();
+bool spInitSuccess = false;
+
+class SpManager {
+  SpManager._internal();
 
   static SharedPreferences? prefs;
 
-  static Future<void> init() async {
+  static Future<bool> init() async {
     prefs = await SharedPreferences.getInstance();
+    return prefs != null;
   }
 
   static Future<bool> setInt(String key, int value) async {

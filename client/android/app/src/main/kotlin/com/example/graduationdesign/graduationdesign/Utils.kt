@@ -8,19 +8,26 @@ import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 object Utils {
     private const val TAG = "Utils"
     private val threadPool = Executors.newSingleThreadExecutor()
 
-    fun copyAssetsToSdcard(context: Context, fileName: String) {
-        threadPool.execute {
+    /**
+     * 拷贝Assets文件放入Sdcard
+     * @param context
+     * @param fileName
+     */
+    fun copyAssetsToSdcard(context: Context, fileName: String) : Future<Boolean> {
+        return threadPool.submit(Callable {
             try {
                 val dir = context.externalCacheDir
                 val file = File("${dir?.absolutePath}/$fileName")
                 if (file.exists()) {
-                    return@execute
+                    return@Callable false
                 }
                 val inputStream = context.assets.open(fileName)
                 val outputStream = FileOutputStream(file)
@@ -35,10 +42,12 @@ object Utils {
                 outputStream.flush()
                 inputStream.close()
                 outputStream.close()
+                return@Callable true
             } catch (e: Exception) {
-                Log.e(TAG, "[copyAssetsToDst] ${e.message}")
+                Log.e(TAG, "[copyAssetsToSdcard] $e")
+                return@Callable false
             }
-        }
+        })
     }
 
     /**
