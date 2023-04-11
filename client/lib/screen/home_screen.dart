@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/screen/live_hall_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -8,14 +12,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
-  final List<String> tabs = ['tab1', 'tab2'];
+  final List<String> tabTitles = ['直播', '视频'];
 
   late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: tabs.length, vsync: this);
+    tabController = TabController(length: tabTitles.length, vsync: this);
   }
 
   @override
@@ -23,16 +27,36 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
     return Center(
       child: Column(
         children: [
-          TabBar(
-            controller: tabController,
-            tabs: tabs.map((value) => Tab(height: 44, text: value)).toList(),
-            indicator: CustomTabIndicator(tabController: tabController),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: TabBar(
+              controller: tabController,
+              labelColor: ColorName.redF63C77,
+              labelStyle: GoogleFonts.roboto(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+              unselectedLabelColor: ColorName.black686868,
+              unselectedLabelStyle: GoogleFonts.roboto(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+              ),
+              tabs: tabTitles
+                  .map((value) => Tab(height: 34, text: value))
+                  .toList(),
+              indicator: CustomTabIndicator(
+                tabController: tabController,
+                borderSide:
+                    const BorderSide(width: 2, color: ColorName.redF63C77),
+              ),
+            ),
           ),
+          const C(4),
           Expanded(
             child: TabBarView(
               controller: tabController,
-              children:
-                  tabs.map((value) => Center(child: Text(value))).toList(),
+              physics: const NeverScrollableScrollPhysics(),
+              children: const [LiveHallScreen(), LiveHallScreen()],
             ),
           ),
         ],

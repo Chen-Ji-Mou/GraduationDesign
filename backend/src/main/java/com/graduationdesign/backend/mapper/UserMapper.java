@@ -13,10 +13,10 @@ public interface UserMapper {
     @Insert("INSERT INTO user(id, name, pwd, email) VALUES(#{id}, #{name}, #{pwd}, #{email})")
     void addUser(User user);
 
-    @Select("SELECT * FROM user WHERE id=#{id}")
-    User findUserById(Integer id);
+    @Select("SELECT name,email FROM user WHERE id=#{id}")
+    User findUserById(String id);
 
-    @Select("SELECT * FROM user WHERE name=#{name}")
+    @Select("SELECT name,email FROM user WHERE name=#{name}")
     User findUserByName(String name);
 
     @Update("UPDATE user SET pwd=#{pwd} WHERE email=#{email}")

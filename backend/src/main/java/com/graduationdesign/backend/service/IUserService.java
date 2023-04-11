@@ -8,7 +8,8 @@ import java.util.List;
 public interface IUserService {
     User findUserByEmail(String email);
     void addUser(User user);
-    boolean verifyUserById(Integer id);
+    boolean verifyUserById(String id);
     User findUserByName(String name);
     void updatePwdByEmail(String email, String pwd);
+    User findUserById(String id);
 }

@@ -45,15 +45,14 @@ public class Utils {
      * 获取token中的用户id，验证token是否有效
      * @return 如果token有效返回读取到的用户id，否则返回-1
      */
-    public static Integer getUserIdFromToken(String token) {
+    public static String getUserIdFromToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT jwt = verifier.verify(token);
-            return jwt.getClaim("id").asInt();
+            return jwt.getClaim("id").asString();
         } catch (Exception e) {
-            log.error("[getUserIdFromToken] token 失效");
-            return -1;
+            return null;
         }
     }
 }

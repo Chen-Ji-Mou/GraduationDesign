@@ -25,7 +25,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public boolean verifyUserById(Integer id) {
+    public boolean verifyUserById(String id) {
         User user = mapper.findUserById(id);
         return user != null;
     }
@@ -38,5 +38,10 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void updatePwdByEmail(String email, String pwd) {
         mapper.updatePwdByEmail(email, pwd);
+    }
+
+    @Override
+    public User findUserById(String id) {
+        return mapper.findUserById(id);
     }
 }

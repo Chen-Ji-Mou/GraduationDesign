@@ -42,6 +42,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/love.png
   AssetGenImage get love => const AssetGenImage('assets/images/love.png');
 
+  /// File path: assets/images/search.png
+  AssetGenImage get search => const AssetGenImage('assets/images/search.png');
+
   /// File path: assets/images/send.png
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
 
@@ -66,6 +69,7 @@ class $AssetsImagesGen {
         home,
         like,
         love,
+        search,
         send,
         star,
         successMark,

@@ -19,7 +19,7 @@ class _RootNodeState extends State<RootNode> {
   final List<_BottomTab> tabs = [
     _BottomTab(
       type: _TabType.home,
-      data: const TabItem(icon: Icons.home, title: '主页'),
+      data: const TabItem(icon: Icons.home),
     ),
     _BottomTab(
       type: _TabType.publish,
@@ -38,7 +38,7 @@ class _RootNodeState extends State<RootNode> {
     ),
     _BottomTab(
       type: _TabType.person,
-      data: const TabItem(icon: Icons.person, title: '个人'),
+      data: const TabItem(icon: Icons.person),
     ),
   ];
 
@@ -58,7 +58,6 @@ class _RootNodeState extends State<RootNode> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Container(
-          color: ColorName.greenDFFAF4,
           padding: EdgeInsets.only(top: toolbarHeight),
           child: TabBarView(
             physics: const NeverScrollableScrollPhysics(),
