@@ -18,4 +18,10 @@ public interface LiveMapper {
 
     @Select("SELECT * FROM live limit #{pageNum},#{pageSize}")
     List<Live> getLives(@Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
+
+    @Select("SELECT * FROM live WHERE id=#{id}")
+    Live findLiveById(String id);
+
+    @Update("UPDATE live SET number=#{number} WHERE id=#{id}")
+    void updateLiveNumberById(@Param("id") String id, @Param("number") Integer number);
 }

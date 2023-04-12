@@ -32,4 +32,22 @@ public class LiveServiceImpl implements ILiveService {
     public List<Live> getLives(Integer pageNum, Integer pageSize) {
         return mapper.getLives(pageNum, pageSize);
     }
+
+    @Override
+    public Integer updateLiveNumberById(String id, Boolean increase) {
+        Live live = mapper.findLiveById(id);
+        Integer curNumber = live.getNumber();
+        if (increase) {
+            curNumber++;
+        } else {
+            curNumber--;
+        }
+        mapper.updateLiveNumberById(id, curNumber);
+        return curNumber;
+    }
+
+    @Override
+    public Live findLiveById(String id) {
+        return mapper.findLiveById(id);
+    }
 }

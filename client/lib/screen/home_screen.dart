@@ -56,7 +56,7 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
             child: TabBarView(
               controller: tabController,
               physics: const NeverScrollableScrollPhysics(),
-              children: const [LiveHallScreen(), LiveHallScreen()],
+              children: [const LiveHallScreen(), Container()],
             ),
           ),
         ],

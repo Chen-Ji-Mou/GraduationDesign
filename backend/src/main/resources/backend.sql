@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 08/04/2023 22:38:14
+ Date: 12/04/2023 19:25:29
 */
 
 SET NAMES utf8mb4;
@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS `live`;
 CREATE TABLE `live`  (
   `id` varchar(7) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `ing` tinyint(1) UNSIGNED ZEROFILL NOT NULL,
-  `number` int(11) UNSIGNED ZEROFILL NOT NULL,
+  `ing` tinyint(1) UNSIGNED NOT NULL,
+  `number` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 

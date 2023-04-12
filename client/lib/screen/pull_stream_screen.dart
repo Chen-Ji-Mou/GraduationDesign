@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
@@ -15,6 +14,7 @@ class PullStreamScreen extends StatefulWidget {
     Key? key,
     required this.liveId,
   }) : super(key: key);
+
   final int liveId;
 
   @override
@@ -40,7 +40,7 @@ class _PullStreamState extends State<PullStreamScreen> {
   void initState() {
     super.initState();
     wsChannel = WebSocketChannel.connect(
-        Uri.parse('ws://127.0.0.1:8080/websocket?lid=$liveId'));
+        Uri.parse('ws://81.71.161.128:8088/websocket?lid=$liveId'));
   }
 
   @override
@@ -81,7 +81,7 @@ class _PullStreamState extends State<PullStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return const LoadingWidget();
             }
           },
         ),

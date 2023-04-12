@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
 import 'package:graduationdesign/route.dart';
 import 'package:graduationdesign/screen/splash_screen.dart';
 import 'package:graduationdesign/sp_manager.dart';
+import 'package:graduationdesign/user_context.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +26,8 @@ class MyApp extends StatelessWidget {
     requestPermissionSuccess = await PermissionPlatform.requestPermission();
     loadFileSuccess = await FileLoadPlatform.loadFile();
     spInitSuccess = await SpManager.init();
+    await DioClient.init();
+    await UserContext.getUserInfo();
   }
 
   @override
@@ -40,10 +45,20 @@ class MyApp extends StatelessWidget {
   }
 
   Widget buildRoute() {
-    return MaterialApp(
-      initialRoute: 'root',
-      navigatorObservers: [routeObserver],
-      onGenerateRoute: onGenerateRoute,
+    return RefreshConfiguration(
+      // 配置默认头部指示器
+      headerBuilder: () => const WaterDropHeader(),
+      // 配置默认底部指示器
+      footerBuilder: () => const ClassicFooter(),
+      // Viewport不满一屏时,禁用上拉加载更多功能
+      hideFooterWhenNotFull: true,
+      // 可以通过惯性滑动触发加载更多
+      enableBallisticLoad: true,
+      child: MaterialApp(
+        initialRoute: 'root',
+        navigatorObservers: [routeObserver],
+        onGenerateRoute: onGenerateRoute,
+      ),
     );
   }
 }

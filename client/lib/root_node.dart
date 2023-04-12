@@ -1,7 +1,8 @@
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/person_screen.dart';
@@ -74,7 +75,7 @@ class _RootNodeState extends State<RootNode> {
           onTabNotify: (index) {
             var intercept = index == 1;
             if (intercept) {
-              // TODO 弹出 BottomSheet 让用户选择是上传短视频还是开启直播
+              showBottomSheet();
             }
             return !intercept;
           },
@@ -92,6 +93,107 @@ class _RootNodeState extends State<RootNode> {
       case _TabType.person:
         return const PersonScreen();
     }
+  }
+
+  Future<void> showBottomSheet() async {
+    await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            InkWell(
+              onTap: () => Navigator.pop(context),
+              child: Icon(
+                Icons.cancel,
+                size: 28,
+                color: Colors.black.withOpacity(0.7),
+              ),
+            ),
+            const C(20),
+            Row(
+              children: [
+                Container(
+                  width: (screenSize.width - 32) / 4,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorName.redEC008E,
+                        ),
+                        child: Assets.images.live.image(
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
+                      const C(12),
+                      Text(
+                        '直播',
+                        style: GoogleFonts.roboto(
+                          height: 1,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: (screenSize.width - 32) / 4,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorName.redF14336,
+                        ),
+                        child: Assets.images.shortVideo.image(
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
+                      const C(12),
+                      Text(
+                        '短视频',
+                        style: GoogleFonts.roboto(
+                          height: 1,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -26,6 +26,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/cover.png
   AssetGenImage get cover => const AssetGenImage('assets/images/cover.png');
 
+  /// File path: assets/images/error.png
+  AssetGenImage get error => const AssetGenImage('assets/images/error.png');
+
   /// File path: assets/images/gift-box.png
   AssetGenImage get giftBox =>
       const AssetGenImage('assets/images/gift-box.png');
@@ -39,6 +42,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/like.png
   AssetGenImage get like => const AssetGenImage('assets/images/like.png');
 
+  /// File path: assets/images/live.png
+  AssetGenImage get live => const AssetGenImage('assets/images/live.png');
+
   /// File path: assets/images/love.png
   AssetGenImage get love => const AssetGenImage('assets/images/love.png');
 
@@ -47,6 +53,10 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/send.png
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
+
+  /// File path: assets/images/short-video.png
+  AssetGenImage get shortVideo =>
+      const AssetGenImage('assets/images/short-video.png');
 
   /// File path: assets/images/star.png
   AssetGenImage get star => const AssetGenImage('assets/images/star.png');
@@ -64,13 +74,16 @@ class $AssetsImagesGen {
         back,
         coverText,
         cover,
+        error,
         giftBox,
         heart,
         home,
         like,
+        live,
         love,
         search,
         send,
+        shortVideo,
         star,
         successMark,
         user

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
+import 'package:graduationdesign/generate/colors.gen.dart';
 
 double toolbarHeight = 0;
 
@@ -116,4 +118,54 @@ bool verifyEmail(String email) {
   String rule =
       '^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}\$';
   return RegExp(rule).hasMatch(email);
+}
+
+class NoBoundaryRippleBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return GlowingOverscrollIndicator(
+      axisDirection: details.direction,
+      color: Theme.of(context).colorScheme.secondary,
+      showTrailing: false,
+      showLeading: false,
+      child: child,
+    );
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: ColorName.redF63C77,
+      ),
+    );
+  }
+}
+
+class ErrorWidget extends StatelessWidget {
+  const ErrorWidget({Key? key, this.onRetry}) : super(key: key);
+
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.error.image(fit: BoxFit.cover),
+          const C(8),
+          ElevatedButton(
+            onPressed: () => onRetry?.call(),
+            child: const Text('重试'),
+          ),
+        ],
+      ),
+    );
+  }
 }

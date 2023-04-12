@@ -5,6 +5,7 @@ import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/models.dart';
+import 'package:graduationdesign/user_context.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SendBarrageWidget extends StatefulWidget {
@@ -29,14 +30,10 @@ class _SendBarrageState extends State<SendBarrageWidget> {
   late double width;
   final double height = 50;
 
-  late String userName;
-
   @override
   void initState() {
     super.initState();
     width = screenSize.width * 197 / 375;
-    // TODO 获取当前登录的用户名
-    userName = 'root';
   }
 
   @override
@@ -46,7 +43,7 @@ class _SendBarrageState extends State<SendBarrageWidget> {
         context,
         screenSize,
         onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
-          Barrage(userName, content).toJsonMap(),
+          Barrage(UserContext.name, content).toJsonMap(),
         )),
       ),
       child: Container(

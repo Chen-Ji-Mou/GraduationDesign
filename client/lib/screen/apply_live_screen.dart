@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/push_stream_screen.dart';
@@ -23,7 +25,7 @@ class _ApplyLiveState extends State<ApplyLiveScreen> {
 
   bool buttonEnable = false;
   bool applySuccess = false;
-  int liveId = -1;
+  late String liveId;
 
   @override
   void initState() {
@@ -215,12 +217,23 @@ class _ApplyLiveState extends State<ApplyLiveScreen> {
   }
 
   Future<void> submit() async {
-    if (formKey.currentState?.validate() ?? false) {
-      // TODO 提交认证信息到后端记录，后端生成直播间号返回
-      await Future.delayed(const Duration(milliseconds: 500));
+    if (formKey.currentState?.validate() ?? true) {
+      Response response = await DioClient.post(Api.applyLive);
+      if (response.statusCode == 200) {
+        if (response.data['code'] == 200) {
+          enterPushStreamScreen(response.data['data']);
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+        }
+      }
+    }
+  }
+
+  void enterPushStreamScreen(String liveId) {
+    if (mounted) {
       setState(() {
         applySuccess = true;
-        liveId = 1234567;
+        this.liveId = liveId;
         if (nameEditNode.hasFocus) {
           nameEditNode.unfocus();
         }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/root_node.dart';
-import 'package:graduationdesign/screen/home_screen.dart';
-import 'package:graduationdesign/screen/initiate_live_screen.dart';
+import 'package:graduationdesign/screen/start_live_screen.dart';
 import 'package:graduationdesign/screen/login_screen.dart';
 import 'package:graduationdesign/screen/register_screen.dart';
 import 'package:graduationdesign/screen/retrieve_pwd_screen.dart';
-import 'package:graduationdesign/screen/watch_live_screen.dart';
+import 'package:graduationdesign/screen/enter_live_screen.dart';
 
 RouteObserver<Route<void>> routeObserver = RouteObserver<Route<void>>();
 
@@ -24,10 +23,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         return const RetrievePwdScreen();
       case 'register':
         return const RegisterScreen();
-      case 'initiateLive':
-        return const InitiateLiveScreen();
-      case 'watchLive':
-        return WatchLiveScreen(liveId: settings.arguments as int);
+      case 'startLive':
+        return const StartLiveScreen();
+      case 'enterLive':
+        return EnterLiveScreen(liveId: settings.arguments as int);
       default:
         return const Scaffold(
           body: Center(
@@ -40,11 +39,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
 
 String? routeBefore(RouteSettings settings) {
   String? routeName = settings.name;
-  if (needCheckRoutes.contains(routeName)) {
-    // TODO 检验用户是否登录进行拦截
+  if (needCheckLoginRoutes.contains(routeName)) {
     return 'login';
   }
   return routeName;
 }
 
-List<String> needCheckRoutes = [];
+List<String> needCheckLoginRoutes = [];

@@ -380,7 +380,7 @@ class _RetrievePwdState extends State<RetrievePwdScreen> {
         exit();
         break;
       case _CurrentState.verifyCode:
-        // TODO 请求后端重新发送邮箱验证码
+        sendEmailVerificationCode();
         break;
       case _CurrentState.newPwd:
       case _CurrentState.backLogin:
@@ -396,64 +396,86 @@ class _RetrievePwdState extends State<RetrievePwdScreen> {
     }
   }
 
-  Future<void> submit() async {
+  void submit() {
     if (formKey.currentState?.validate() ?? true) {
       switch (curState) {
         case _CurrentState.getCode:
           email = editController.text;
-          Response response =
-              await DioClient.get(Api.sendEmailVerificationCode, {
-            'email': email,
+          sendEmailVerificationCode(successCall: () {
+            setState(() {
+              curState = _CurrentState.verifyCode;
+              reset();
+            });
           });
-          if (response.statusCode == 200) {
-            if (response.data['code'] == 200) {
-              setState(() {
-                Fluttertoast.showToast(msg: '验证码已发送至对应邮箱，请查收');
-                curState = _CurrentState.verifyCode;
-                reset();
-              });
-            } else {
-              Fluttertoast.showToast(msg: response.data['msg']);
-            }
-          }
           break;
         case _CurrentState.verifyCode:
-          Response response =
-              await DioClient.post(Api.verifyEmailVerificationCode, {
-            'email': email,
-            'code': verificationCode,
+          verifyEmailVerificationCode(successCall: () {
+            setState(() {
+              curState = _CurrentState.newPwd;
+              reset();
+            });
           });
-          if (response.statusCode == 200) {
-            if (response.data['code'] == 200) {
-              setState(() {
-                Fluttertoast.showToast(msg: '验证成功');
-                curState = _CurrentState.newPwd;
-                reset();
-              });
-            } else {
-              Fluttertoast.showToast(msg: response.data['msg']);
-            }
-          }
           break;
         case _CurrentState.newPwd:
-          Response response = await DioClient.post(Api.changePwd, {
-            'email': email,
-            'pwd': editController.text,
+          changePwd(successCall: () {
+            setState(() {
+              curState = _CurrentState.backLogin;
+              reset();
+            });
           });
-          if (response.statusCode == 200) {
-            if (response.data['code'] == 200) {
-              setState(() {
-                curState = _CurrentState.backLogin;
-                reset();
-              });
-            } else {
-              Fluttertoast.showToast(msg: response.data['msg']);
-            }
-          }
           break;
         case _CurrentState.backLogin:
           exit();
           break;
+      }
+    }
+  }
+
+  Future<void> sendEmailVerificationCode(
+      {VoidCallback? successCall, VoidCallback? errorCall}) async {
+    Response response = await DioClient.get(Api.sendEmailVerificationCode, {
+      'email': email,
+    });
+    if (response.statusCode == 200) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '验证码已发送至对应邮箱，请查收');
+        successCall?.call();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        errorCall?.call();
+      }
+    }
+  }
+
+  Future<void> verifyEmailVerificationCode(
+      {VoidCallback? successCall, VoidCallback? errorCall}) async {
+    Response response = await DioClient.post(Api.verifyEmailVerificationCode, {
+      'email': email,
+      'code': verificationCode,
+    });
+    if (response.statusCode == 200) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '验证成功');
+        successCall?.call();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        errorCall?.call();
+      }
+    }
+  }
+
+  Future<void> changePwd(
+      {VoidCallback? successCall, VoidCallback? errorCall}) async {
+    Response response = await DioClient.post(Api.changePwd, {
+      'email': email,
+      'pwd': editController.text,
+    });
+    if (response.statusCode == 200) {
+      if (response.data['code'] == 200) {
+        successCall?.call();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        errorCall?.call();
       }
     }
   }

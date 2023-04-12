@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -38,6 +37,11 @@ public class LiveController {
 
     @RequestMapping(value = "/start", method = RequestMethod.POST)
     private Result start(@RequestParam(name = "liveId") String liveId) {
+        Live live = liveService.findLiveById(liveId);
+        if (live == null) {
+            log.info("[LiveController] start 直播间不存在 " + liveId);
+            return Result.failed(500, "直播间不存在");
+        }
         liveService.updateLiveStatusById(liveId, true);
         log.info("[LiveController] start 直播间状态改变成功 active");
         return Result.success();
@@ -45,6 +49,11 @@ public class LiveController {
 
     @RequestMapping(value = "/stop", method = RequestMethod.POST)
     private Result stop(@RequestParam(name = "liveId") String liveId) {
+        Live live = liveService.findLiveById(liveId);
+        if (live == null) {
+            log.info("[LiveController] stop 直播间不存在 " + liveId);
+            return Result.failed(500, "直播间不存在");
+        }
         liveService.updateLiveStatusById(liveId, false);
         log.info("[LiveController] stop 直播间状态改变成功 interdict");
         return Result.success();
@@ -57,10 +66,9 @@ public class LiveController {
         if (live == null) {
             log.info("[LiveController] verifyUserHasLive 当前用户未拥有直播间");
             return Result.failed(500, "当前用户未拥有直播间");
-        } else {
-            log.info("[LiveController] verifyUserHasLive 当前用户已拥有直播间 " + live.getId());
-            return Result.success(live.getId());
         }
+        log.info("[LiveController] verifyUserHasLive 当前用户已拥有直播间 " + live.getId());
+        return Result.success(live.getId());
     }
 
     @RequestMapping(value = "/getLives", method = RequestMethod.GET)
@@ -70,5 +78,29 @@ public class LiveController {
         List<Live> lives = liveService.getLives(pageNum, pageSize);
         log.info("[LiveController] getLives 获取直播间列表成功 pageNum " + pageNum + " pageSize " + pageSize);
         return Result.success(lives);
+    }
+
+    @RequestMapping(value = "/enterLive", method = RequestMethod.POST)
+    private Result enterLive(@RequestParam(name = "liveId") String liveId) {
+        Live live = liveService.findLiveById(liveId);
+        if (live == null) {
+            log.info("[LiveController] enterLive 直播间不存在 " + liveId);
+            return Result.failed(500, "直播间不存在");
+        }
+        Integer curNumber = liveService.updateLiveNumberById(liveId, true);
+        log.info("[LiveController] enterLive 更新直播间人数成功 当前人数 " + curNumber);
+        return Result.success();
+    }
+
+    @RequestMapping(value = "/exitLive", method = RequestMethod.POST)
+    private Result exitLive(@RequestParam(name = "liveId") String liveId) {
+        Live live = liveService.findLiveById(liveId);
+        if (live == null) {
+            log.info("[LiveController] exitLive 直播间不存在 " + liveId);
+            return Result.failed(500, "直播间不存在");
+        }
+        Integer curNumber = liveService.updateLiveNumberById(liveId, false);
+        log.info("[LiveController] exitLive 更新直播间人数成功 当前人数 " + curNumber);
+        return Result.success();
     }
 }

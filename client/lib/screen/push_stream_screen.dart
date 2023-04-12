@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
@@ -18,14 +16,14 @@ class PushStreamScreen extends StatefulWidget {
     required this.liveId,
   }) : super(key: key);
 
-  final int liveId;
+  final String liveId;
 
   @override
   State<StatefulWidget> createState() => _PushStreamState();
 }
 
 class _PushStreamState extends State<PushStreamScreen> {
-  int get liveId => widget.liveId;
+  String get liveId => widget.liveId;
 
   late Size screenSize;
   late double buttonWidth;
@@ -45,7 +43,7 @@ class _PushStreamState extends State<PushStreamScreen> {
   void initState() {
     super.initState();
     wsChannel = WebSocketChannel.connect(
-        Uri.parse('ws://127.0.0.1:8080/websocket?lid=$liveId'));
+        Uri.parse('ws://81.71.161.128:8088/websocket?lid=$liveId'));
   }
 
   @override
