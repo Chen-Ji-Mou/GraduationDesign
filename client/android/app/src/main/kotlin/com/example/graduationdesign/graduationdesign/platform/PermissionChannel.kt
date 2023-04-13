@@ -22,17 +22,14 @@ class PermissionChannel(
     private val permissions = arrayOf(
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.CAMERA,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
-    private val permissions30 = arrayOf(
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private val permissions33 = arrayOf(
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.CAMERA,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.MANAGE_EXTERNAL_STORAGE
+        Manifest.permission.POST_NOTIFICATIONS,
     )
 
     companion object {
@@ -58,10 +55,10 @@ class PermissionChannel(
 
 
     private fun requestPermission(result: MethodChannel.Result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (!hasPermission(mActivity)) {
                 ActivityCompat.requestPermissions(
-                    mActivity, permissions30, REQUEST_PERMISSIONS
+                    mActivity, permissions33, REQUEST_PERMISSIONS
                 )
             } else {
                 result.success(true)
@@ -78,8 +75,8 @@ class PermissionChannel(
     }
 
     private fun hasPermission(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            hasPermission(context, permissions30)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            hasPermission(context, permissions33)
         } else {
             hasPermission(context, permissions)
         }

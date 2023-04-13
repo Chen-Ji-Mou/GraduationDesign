@@ -20,7 +20,7 @@ class _RootNodeState extends State<RootNode> {
   final List<_BottomTab> tabs = [
     _BottomTab(
       type: _TabType.home,
-      data: const TabItem(icon: Icons.home),
+      data: const TabItem(icon: Icons.home, title: '首页'),
     ),
     _BottomTab(
       type: _TabType.publish,
@@ -39,7 +39,7 @@ class _RootNodeState extends State<RootNode> {
     ),
     _BottomTab(
       type: _TabType.person,
-      data: const TabItem(icon: Icons.person),
+      data: const TabItem(icon: Icons.person, title: '我的'),
     ),
   ];
 

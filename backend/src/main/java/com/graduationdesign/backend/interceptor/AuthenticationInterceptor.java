@@ -1,16 +1,13 @@
 package com.graduationdesign.backend.interceptor;
 
 import com.graduationdesign.backend.Utils;
-import com.graduationdesign.backend.entity.User;
 import com.graduationdesign.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 @Slf4j
 public class AuthenticationInterceptor implements HandlerInterceptor {
@@ -26,19 +23,19 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         if (token == null) {
             // 如果返回false，被请求时，拦截器将会拦截请求不再执行进入Controller
-            log.info("[AuthenticationInterceptor] token不存在");
+            log.info("[AuthenticationInterceptor] token不存在 " + request.getServletPath());
             return false;
         }
         String userId = Utils.getUserIdFromToken(token);
         if (userId == null) {
-            log.info("[AuthenticationInterceptor] token验证失败 (token已过期)");
+            log.info("[AuthenticationInterceptor] token验证失败 (token已过期) " + request.getServletPath());
             return false;
         }
         boolean result = service.verifyUserById(userId);
         if (result) {
-            log.info("[AuthenticationInterceptor] token验证成功 "+userId);
+            log.info("[AuthenticationInterceptor] token验证成功 " + userId + " path " + request.getServletPath());
         } else {
-            log.info("[AuthenticationInterceptor] token验证失败 userId不存在 "+userId);
+            log.info("[AuthenticationInterceptor] token验证失败 userId不存在 " + userId + " path " + request.getServletPath());
         }
         return result;
     }

@@ -19,7 +19,7 @@ class LiveHallScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _LiveHallState();
 }
 
-class _LiveHallState extends State<LiveHallScreen> {
+class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClientMixin {
   final RefreshController controller = RefreshController();
   final double aspectRatio = 168 / 216;
   final int pageSize = 6;
@@ -106,6 +106,7 @@ class _LiveHallState extends State<LiveHallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -244,6 +245,9 @@ class _LiveHallState extends State<LiveHallScreen> {
       () => Navigator.pushNamed(context, 'enterLive', arguments: live.id),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _Live {

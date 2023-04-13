@@ -27,7 +27,7 @@ object Utils {
                 val dir = context.externalCacheDir
                 val file = File("${dir?.absolutePath}/$fileName")
                 if (file.exists()) {
-                    return@Callable false
+                    return@Callable true
                 }
                 val inputStream = context.assets.open(fileName)
                 val outputStream = FileOutputStream(file)

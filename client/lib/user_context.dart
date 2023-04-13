@@ -31,7 +31,10 @@ class UserContext {
 
   static Future<bool> onUserLogin(String token) async {
     bool result1 = await SpManager.setString('token', token);
-    bool result2 = await getUserInfo();
+    bool result2 = false;
+    if (result1 == true) {
+      result2 = await getUserInfo();
+    }
     return result1 && result2;
   }
 

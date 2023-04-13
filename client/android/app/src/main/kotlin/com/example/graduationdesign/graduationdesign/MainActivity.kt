@@ -8,11 +8,13 @@ import com.example.graduationdesign.graduationdesign.platform.PushStreamPlatform
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
     private var mRequestPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        GeneratedPluginRegistrant.registerWith(flutterEngine)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         flutterEngine.platformViewsController.registry.registerViewFactory(
             "pullStream", PullStreamPlatformFactory(messenger)

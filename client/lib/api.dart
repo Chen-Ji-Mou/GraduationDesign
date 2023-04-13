@@ -34,13 +34,13 @@ class DioClient {
 
 class _ApiInterceptor extends Interceptor {
   @override
-  FutureOr<dynamic> onRequest(
+  Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     if (!_ignoreAuthPaths.contains(options.path)) {
       String? token = SpManager.getString('token');
       options.headers['token'] = token;
     }
-    return options;
+    handler.next(options);
   }
 }
 
