@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
@@ -68,16 +71,47 @@ class _PushStreamState extends State<PushStreamScreen> {
       body: Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: toolbarHeight),
-        decoration: BoxDecoration(color: Colors.black.withOpacity(0.8)),
-        child: FutureBuilder<bool>(
-          future: checkInit(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return buildContent();
-            } else {
-              return const C(0);
-            }
-          },
+        decoration: BoxDecoration(color: Colors.black.withOpacity(0.9)),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            FutureBuilder<bool>(
+              future: checkInit(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.data == true) {
+                    return buildContent();
+                  } else {
+                    return const _ErrorWidget();
+                  }
+                } else {
+                  return const LoadingWidget();
+                }
+              },
+            ),
+            Positioned(
+              left: 16,
+              top: 12,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: ColorName.redFF6FA2.withOpacity(0.35),
+                    borderRadius: BorderRadius.circular(21),
+                  ),
+                  child: Assets.images.arrowLeft.image(
+                    width: 24,
+                    height: 24,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -101,23 +135,7 @@ class _PushStreamState extends State<PushStreamScreen> {
             if (snapshot.connectionState == ConnectionState.done) {
               return buildControlView();
             } else {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const C(8),
-                    Text(
-                      '加载中请稍后...',
-                      style: GoogleFonts.roboto(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return const LoadingWidget();
             }
           },
         ),
@@ -129,28 +147,6 @@ class _PushStreamState extends State<PushStreamScreen> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Positioned(
-          left: 16,
-          top: 12,
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              width: 42,
-              height: 42,
-              alignment: Alignment.center,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: ColorName.redFF6FA2.withOpacity(0.35),
-                borderRadius: BorderRadius.circular(21),
-              ),
-              child: Assets.images.arrowLeft.image(
-                width: 24,
-                height: 24,
-                color: Colors.white.withOpacity(0.8),
-              ),
-            ),
-          ),
-        ),
         Positioned(
           left: 8,
           bottom: 58,
@@ -170,7 +166,7 @@ class _PushStreamState extends State<PushStreamScreen> {
           width: buttonWidth,
           right: 8,
           bottom: 8,
-          child: _PushStreamButton(controller: controller),
+          child: _PushStreamButton(controller: controller, liveId: liveId),
         ),
         Positioned(
           top: 8,
@@ -241,10 +237,14 @@ class _PushStreamState extends State<PushStreamScreen> {
 }
 
 class _PushStreamButton extends StatefulWidget {
-  const _PushStreamButton({Key? key, required this.controller})
-      : super(key: key);
+  const _PushStreamButton({
+    Key? key,
+    required this.controller,
+    required this.liveId,
+  }) : super(key: key);
 
   final PushStreamController controller;
+  final String liveId;
 
   @override
   State<StatefulWidget> createState() => _PushStreamButtonState();
@@ -253,6 +253,8 @@ class _PushStreamButton extends StatefulWidget {
 class _PushStreamButtonState extends State<_PushStreamButton> {
   PushStreamController get controller => widget.controller;
 
+  String get liveId => widget.liveId;
+
   bool pushStreaming = false;
 
   @override
@@ -260,9 +262,45 @@ class _PushStreamButtonState extends State<_PushStreamButton> {
     return ElevatedButton(
       onPressed: () async {
         pushStreaming ? await controller.pause() : await controller.resume();
+        reportServer(
+          pushStreaming ? Api.stopLive : Api.startLive,
+          successCall: () {
+            Fluttertoast.showToast(msg: pushStreaming ? '直播开始' : '直播结束');
+          },
+        );
         setState(() => pushStreaming = !pushStreaming);
       },
       child: Text(pushStreaming ? '停止推流' : '开始推流'),
+    );
+  }
+
+  Future<void> reportServer(String url, {VoidCallback? successCall}) async {
+    Response response = await DioClient.post(url, {'liveId': liveId});
+    if (response.statusCode == 200) {
+      if (response.data['code'] == 200) {
+        successCall?.call();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+      }
+    }
+  }
+}
+
+class _ErrorWidget extends StatelessWidget {
+  const _ErrorWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        '初始化失败，请退出重试',
+        style: GoogleFonts.roboto(
+          color: Colors.white.withOpacity(0.9),
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+          height: 1,
+        ),
+      ),
     );
   }
 }

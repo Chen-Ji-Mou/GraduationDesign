@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/sp_manager.dart';
 
+bool getUserInfoSuccess = false;
+
 class UserContext {
   UserContext._internal();
 
@@ -10,7 +12,9 @@ class UserContext {
   static String? _email;
 
   static String get name => _name ?? '';
+
   static String get email => _email ?? '';
+
   static bool get isLogin => SpManager.getString('token') != null;
 
   static Future<bool> getUserInfo() async {
@@ -30,12 +34,11 @@ class UserContext {
   }
 
   static Future<bool> onUserLogin(String token) async {
-    bool result1 = await SpManager.setString('token', token);
-    bool result2 = false;
-    if (result1 == true) {
-      result2 = await getUserInfo();
+    bool tokenSaveSuccess = await SpManager.setString('token', token);
+    if (tokenSaveSuccess == true) {
+      getUserInfoSuccess = await getUserInfo();
     }
-    return result1 && result2;
+    return tokenSaveSuccess && getUserInfoSuccess;
   }
 
   static Future<bool> onUserLogout() async {
@@ -46,7 +49,7 @@ class UserContext {
   }
 
   static Future<bool> awaitLogin(BuildContext context) async {
-    if (isLogin) {
+    if (!isLogin) {
       bool? isLogin = await _toLoginScreen(context);
       return true == isLogin;
     } else {
@@ -56,7 +59,7 @@ class UserContext {
 
   static Future<void> checkLoginCallback(
       BuildContext context, VoidCallback callback) async {
-    if (isLogin) {
+    if (!isLogin) {
       bool? isLogin = await _toLoginScreen(context);
       if (true == isLogin) {
         callback.call();
@@ -67,6 +70,6 @@ class UserContext {
   }
 
   static Future<bool?> _toLoginScreen(BuildContext context) async {
-    return await Navigator.pushNamed(context, 'login');
+    return await Navigator.pushNamed<bool?>(context, 'login');
   }
 }

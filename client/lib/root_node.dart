@@ -1,11 +1,12 @@
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
-import 'package:graduationdesign/screen/person_screen.dart';
+import 'package:graduationdesign/user_context.dart';
 
 enum _TabType { home, publish, person }
 
@@ -44,6 +45,7 @@ class _RootNodeState extends State<RootNode> {
   ];
 
   late Size screenSize;
+  DateTime? lastPressedTime;
 
   @override
   void didChangeDependencies() {
@@ -54,7 +56,7 @@ class _RootNodeState extends State<RootNode> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    Widget child = DefaultTabController(
       length: tabs.length,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -82,6 +84,19 @@ class _RootNodeState extends State<RootNode> {
         ),
       ),
     );
+    return WillPopScope(
+      onWillPop: () async {
+        if (lastPressedTime == null ||
+            DateTime.now().difference(lastPressedTime!) >
+                const Duration(milliseconds: 1000)) {
+          Fluttertoast.showToast(msg: '再次返回将会退出应用');
+          lastPressedTime = DateTime.now();
+          return false;
+        }
+        return true;
+      },
+      child: child,
+    );
   }
 
   Widget buildBody(_TabType type) {
@@ -91,108 +106,15 @@ class _RootNodeState extends State<RootNode> {
       case _TabType.publish:
         return const C(0);
       case _TabType.person:
-        return const PersonScreen();
+        return const LoadingWidget();
     }
   }
 
-  Future<void> showBottomSheet() async {
-    await showModalBottomSheet<bool>(
+  Future<bool?> showBottomSheet() async {
+    return await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        clipBehavior: Clip.antiAlias,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            InkWell(
-              onTap: () => Navigator.pop(context),
-              child: Icon(
-                Icons.cancel,
-                size: 28,
-                color: Colors.black.withOpacity(0.7),
-              ),
-            ),
-            const C(20),
-            Row(
-              children: [
-                Container(
-                  width: (screenSize.width - 32) / 4,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: ColorName.redEC008E,
-                        ),
-                        child: Assets.images.live.image(
-                          width: 30,
-                          height: 30,
-                        ),
-                      ),
-                      const C(12),
-                      Text(
-                        '直播',
-                        style: GoogleFonts.roboto(
-                          height: 1,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: (screenSize.width - 32) / 4,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: ColorName.redF14336,
-                        ),
-                        child: Assets.images.shortVideo.image(
-                          width: 30,
-                          height: 30,
-                        ),
-                      ),
-                      const C(12),
-                      Text(
-                        '短视频',
-                        style: GoogleFonts.roboto(
-                          height: 1,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
+      builder: (context) => _BottomSheet(screenSize: screenSize),
     );
   }
 }
@@ -202,4 +124,138 @@ class _BottomTab {
   final TabItem data;
 
   _BottomTab({required this.type, required this.data});
+}
+
+enum _BottomSheetType { live, shortVideo }
+
+extension _BottomSheetExt on _BottomSheetType {
+  String get name {
+    switch (this) {
+      case _BottomSheetType.live:
+        return '发起直播';
+      case _BottomSheetType.shortVideo:
+        return '录制短视频';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case _BottomSheetType.live:
+        return ColorName.redEC008E;
+      case _BottomSheetType.shortVideo:
+        return ColorName.redF14336;
+    }
+  }
+
+  ImageProvider get icon {
+    switch (this) {
+      case _BottomSheetType.live:
+        return Assets.images.live.provider();
+      case _BottomSheetType.shortVideo:
+        return Assets.images.shortVideo.provider();
+    }
+  }
+}
+
+typedef _BottomSheetItemSelect = void Function(_BottomSheetType type);
+
+class _BottomSheet extends StatelessWidget {
+  const _BottomSheet({
+    Key? key,
+    required this.screenSize,
+  }) : super(key: key);
+
+  final Size screenSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          InkWell(
+            onTap: () => Navigator.pop(context),
+            child: Icon(
+              Icons.cancel,
+              size: 28,
+              color: Colors.black.withOpacity(0.7),
+            ),
+          ),
+          const C(20),
+          Row(
+            children: [
+              buildItem(
+                context,
+                _BottomSheetType.live,
+                onTap: (type) {
+                  UserContext.checkLoginCallback(
+                    context,
+                    () => Navigator.pushNamed(context, 'startLive'),
+                  );
+                },
+              ),
+              buildItem(
+                context,
+                _BottomSheetType.shortVideo,
+                onTap: (type) {},
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildItem(
+    BuildContext context,
+    _BottomSheetType type, {
+    _BottomSheetItemSelect? onTap,
+  }) {
+    return InkWell(
+      onTap: () => onTap?.call(type),
+      child: Container(
+        width: (screenSize.width - 32) / 4,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: type.color,
+              ),
+              child: Image(
+                image: type.icon,
+                width: 30,
+                height: 30,
+              ),
+            ),
+            const C(12),
+            Text(
+              type.name,
+              style: GoogleFonts.roboto(
+                height: 1,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -11,11 +11,36 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 12/04/2023 19:25:29
+ Date: 14/04/2023 12:39:46
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for bag
+-- ----------------------------
+DROP TABLE IF EXISTS `bag`;
+CREATE TABLE `bag`  (
+  `id` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `giftId` varchar(3) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `number` int(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for gift
+-- ----------------------------
+DROP TABLE IF EXISTS `gift`;
+CREATE TABLE `gift`  (
+  `id` varchar(3) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `backgroundColor` int(11) UNSIGNED NOT NULL,
+  `titleColor` int(11) UNSIGNED NOT NULL,
+  `price` int(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for live

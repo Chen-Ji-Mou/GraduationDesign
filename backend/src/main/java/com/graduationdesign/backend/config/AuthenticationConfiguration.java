@@ -16,7 +16,11 @@ public class AuthenticationConfiguration implements WebMvcConfigurer {
                 // 取消特定路径的拦截
                 .excludePathPatterns("/user/**")
                 .excludePathPatterns("/live/getLives")
-                .excludePathPatterns("/person/getLiveBloggerInfo");
+                .excludePathPatterns("/live/enterLive")
+                .excludePathPatterns("/live/exitLive")
+                .excludePathPatterns("/person/getLiveBloggerInfo")
+                .excludePathPatterns("/gift/mock")
+                .excludePathPatterns("/gift/getGifts");
     }
 
     @Bean

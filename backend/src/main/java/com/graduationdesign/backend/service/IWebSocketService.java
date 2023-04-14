@@ -45,16 +45,9 @@ public interface IWebSocketService {
     void handleError(WebSocketSession session, Throwable error);
 
     /**
-     * 获得所有的 websocket 会话
+     * 获取会话
      *
-     * @return 所有 websocket 会话
+     * @param liveId 直播间id
      */
-    Set<WebSocketSession> getSessions();
-
-    /**
-     * 得到当前连接数
-     *
-     * @return 连接数
-     */
-    int getConnectionCount();
+    WebSocketSession getSession(String liveId);
 }

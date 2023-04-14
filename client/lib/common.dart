@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:lottie/lottie.dart';
 
 double toolbarHeight = 0;
 
@@ -139,9 +140,12 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: ColorName.redF63C77,
+    return Center(
+      child: Lottie.asset(
+        'assets/anim/loading.json',
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
       ),
     );
   }
@@ -159,7 +163,7 @@ class ErrorWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Assets.images.error.image(fit: BoxFit.cover),
-          const C(8),
+          const C(24),
           ElevatedButton(
             onPressed: () => onRetry?.call(),
             child: const Text('重试'),

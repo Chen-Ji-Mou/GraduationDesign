@@ -12,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
-  final List<String> tabTitles = ['直播', '视频'];
+  final List<String> tabTitles = ['直播', '短视频'];
 
   late TabController tabController;
 

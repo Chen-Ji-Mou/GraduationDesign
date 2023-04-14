@@ -33,19 +33,23 @@ class _SendBarrageState extends State<SendBarrageWidget> {
   @override
   void initState() {
     super.initState();
-    width = screenSize.width * 197 / 375;
+    width = screenSize.width * 170 / 375;
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _InputBottomSheet.show(
-        context,
-        screenSize,
-        onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
-          Barrage(UserContext.name, content).toJsonMap(),
-        )),
-      ),
+      onTap: () {
+        UserContext.checkLoginCallback(context, () {
+          _InputBottomSheet.show(
+            context,
+            screenSize,
+            onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
+              Barrage(UserContext.name, content, null).toJsonMap(),
+            )),
+          );
+        });
+      },
       child: Container(
         width: width,
         height: height,

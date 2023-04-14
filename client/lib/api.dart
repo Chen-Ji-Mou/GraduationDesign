@@ -11,11 +11,7 @@ class DioClient {
       receiveTimeout: const Duration(milliseconds: 6000),
       baseUrl: "http://${Api._host}:${Api._port}",
     ),
-  );
-
-  static Future<void> init() async {
-    _dio.interceptors.add(_ApiInterceptor());
-  }
+  )..interceptors.add(_ApiInterceptor());
 
   static Future<Response> get(String url,
       [Map<String, dynamic>? queryParameters]) async {
@@ -51,7 +47,11 @@ final List<String> _ignoreAuthPaths = [
   Api.verifyEmailVerificationCode,
   Api.changePwd,
   Api.getLives,
+  Api.enterLive,
+  Api.exitLive,
   Api.getLiveBloggerInfo,
+  Api.mockGift,
+  Api.getGifts,
 ];
 
 class Api {
@@ -89,4 +89,20 @@ class Api {
   static const String getLiveBloggerInfo = "/person/getLiveBloggerInfo";
 
   static const String getOwnInfo = "/person/getOwnInfo";
+
+  static const String mockGift = "/gift/mock";
+
+  static const String getGifts = "/gift/getGifts";
+
+  static const String sendGift = "/gift/sendGift";
+
+  static const String getGift = "/gift/getGift";
+
+  static const String getUserBag = "/bag/getUserBag";
+
+  static const String getGiftNumber = "/bag/getGiftNumber";
+
+  static const String addBag = "/bag/addBag";
+
+  static const String reduceBag = "/bag/reduceBag";
 }

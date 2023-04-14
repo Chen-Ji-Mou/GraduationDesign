@@ -26,8 +26,7 @@ class MyApp extends StatelessWidget {
     requestPermissionSuccess = await PermissionPlatform.requestPermission();
     loadFileSuccess = await FileLoadPlatform.loadFile();
     spInitSuccess = await SpManager.init();
-    await DioClient.init();
-    await UserContext.getUserInfo();
+    getUserInfoSuccess = await UserContext.getUserInfo();
   }
 
   @override

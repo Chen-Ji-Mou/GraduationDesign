@@ -133,6 +133,9 @@ class PullStreamView(context: Context) : RelativeLayout(context, null, 0), Surfa
         mPlayer?.reset()
         mPlayer?.release()
         mSurfaceView?.holder?.removeCallback(this)
+
+        mPlayer = null
+        mSurfaceView = null
     }
 
     val duration: Long get() = mPlayer?.duration ?: -1

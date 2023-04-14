@@ -9,6 +9,16 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsAnimGen {
+  const $AssetsAnimGen();
+
+  /// File path: assets/anim/loading.json
+  String get loading => 'assets/anim/loading.json';
+
+  /// List of all assets
+  List<String> get values => [loading];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -18,6 +28,13 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/back.png
   AssetGenImage get back => const AssetGenImage('assets/images/back.png');
+
+  /// File path: assets/images/bag-icon.png
+  AssetGenImage get bagIcon =>
+      const AssetGenImage('assets/images/bag-icon.png');
+
+  /// File path: assets/images/bag.png
+  AssetGenImage get bag => const AssetGenImage('assets/images/bag.png');
 
   /// File path: assets/images/cover-text.png
   AssetGenImage get coverText =>
@@ -33,11 +50,19 @@ class $AssetsImagesGen {
   AssetGenImage get giftBox =>
       const AssetGenImage('assets/images/gift-box.png');
 
+  /// File path: assets/images/gift-icon.png
+  AssetGenImage get giftIcon =>
+      const AssetGenImage('assets/images/gift-icon.png');
+
   /// File path: assets/images/heart.png
   AssetGenImage get heart => const AssetGenImage('assets/images/heart.png');
 
   /// File path: assets/images/home.png
   AssetGenImage get home => const AssetGenImage('assets/images/home.png');
+
+  /// File path: assets/images/light-stick.png
+  AssetGenImage get lightStick =>
+      const AssetGenImage('assets/images/light-stick.png');
 
   /// File path: assets/images/like.png
   AssetGenImage get like => const AssetGenImage('assets/images/like.png');
@@ -48,6 +73,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/love.png
   AssetGenImage get love => const AssetGenImage('assets/images/love.png');
 
+  /// File path: assets/images/not-found.png
+  AssetGenImage get notFound =>
+      const AssetGenImage('assets/images/not-found.png');
+
   /// File path: assets/images/search.png
   AssetGenImage get search => const AssetGenImage('assets/images/search.png');
 
@@ -57,6 +86,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/short-video.png
   AssetGenImage get shortVideo =>
       const AssetGenImage('assets/images/short-video.png');
+
+  /// File path: assets/images/species.png
+  AssetGenImage get species => const AssetGenImage('assets/images/species.png');
 
   /// File path: assets/images/star.png
   AssetGenImage get star => const AssetGenImage('assets/images/star.png');
@@ -72,18 +104,24 @@ class $AssetsImagesGen {
   List<AssetGenImage> get values => [
         arrowLeft,
         back,
+        bagIcon,
+        bag,
         coverText,
         cover,
         error,
         giftBox,
+        giftIcon,
         heart,
         home,
+        lightStick,
         like,
         live,
         love,
+        notFound,
         search,
         send,
         shortVideo,
+        species,
         star,
         successMark,
         user
@@ -93,6 +131,7 @@ class $AssetsImagesGen {
 class Assets {
   Assets._();
 
+  static const $AssetsAnimGen anim = $AssetsAnimGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 

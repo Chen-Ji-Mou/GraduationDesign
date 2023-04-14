@@ -10,14 +10,14 @@ class EnterLiveScreen extends StatefulWidget {
     required this.liveId,
   }) : super(key: key);
 
-  final int liveId;
+  final String liveId;
 
   @override
   State<StatefulWidget> createState() => _EnterLiveState();
 }
 
 class _EnterLiveState extends State<EnterLiveScreen> {
-  int get liveId => widget.liveId;
+  String get liveId => widget.liveId;
 
   @override
   void dispose() {

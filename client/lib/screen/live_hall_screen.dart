@@ -6,7 +6,6 @@ import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
-import 'package:graduationdesign/user_context.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 typedef _SuccessCallback = void Function(List<_Live> lives);
@@ -19,7 +18,8 @@ class LiveHallScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _LiveHallState();
 }
 
-class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClientMixin {
+class _LiveHallState extends State<LiveHallScreen>
+    with AutomaticKeepAliveClientMixin {
   final RefreshController controller = RefreshController();
   final double aspectRatio = 168 / 216;
   final int pageSize = 6;
@@ -49,8 +49,10 @@ class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClient
     itemHeight = itemWidth / aspectRatio;
   }
 
-  void requestLives(
-      {_SuccessCallback? successCall, _ErrorCallback? errorCall}) {
+  void requestLives({
+    _SuccessCallback? successCall,
+    _ErrorCallback? errorCall,
+  }) {
     DioClient.get(Api.getLives, {
       'pageNum': curPageNum,
       'pageSize': pageSize,
@@ -113,8 +115,6 @@ class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClient
       child: Column(
         children: [
           const C(6),
-          buildSearchBox(hint: '点击搜索直播间'),
-          const C(12),
           Expanded(
             child: ScrollConfiguration(
               behavior: NoBoundaryRippleBehavior(),
@@ -156,14 +156,14 @@ class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClient
           mainAxisSize: MainAxisSize.min,
           children: [
             Assets.images.search
-                .image(width: 16, height: 16, color: ColorName.greyB4B4B5),
+                .image(width: 16, height: 16, color: ColorName.grayB4B4B5),
             const C(8),
             Text(
               hint,
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: ColorName.greyB4B4B5,
+                color: ColorName.grayB4B4B5,
               ),
             ),
           ],
@@ -240,10 +240,7 @@ class _LiveHallState extends State<LiveHallScreen> with AutomaticKeepAliveClient
   }
 
   void itemClick(_Live live) {
-    UserContext.checkLoginCallback(
-      context,
-      () => Navigator.pushNamed(context, 'enterLive', arguments: live.id),
-    );
+    Navigator.pushNamed(context, 'enterLive', arguments: live.id);
   }
 
   @override

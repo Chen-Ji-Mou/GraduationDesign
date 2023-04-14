@@ -195,6 +195,11 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         mRtmpCamera1?.stopPreview()
         mSurfaceView?.holder?.removeCallback(this)
         mFaceTrack?.stopTrack()
+
+        mSurfaceView = null
+        mRtmpCamera1 = null
+        mFaceTrack = null
+        yuvBuffer = null
     }
 
     fun switchCamera() {
