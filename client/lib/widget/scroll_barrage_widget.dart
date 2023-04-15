@@ -96,9 +96,13 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
         constraints: BoxConstraints(maxHeight: itemMaxHeight),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(top: 5),
-        color: isGift
-            ? Color(barrage.gift?.backgroundColor ?? 0x000000).withOpacity(0.9)
-            : null,
+        decoration: BoxDecoration(
+          color: isGift
+              ? Color(barrage.gift?.backgroundColor ?? 0x000000)
+                  .withOpacity(0.9)
+              : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

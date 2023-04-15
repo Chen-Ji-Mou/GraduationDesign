@@ -5,4 +5,11 @@
     <string name="switchCamera">翻转摄像头</string>
     <string name="startRecord">开始录制</string>
     <string name="stopRecord">停止录制</string>
+
+    <!--  用于支付宝支付业务的入参 app_id  -->
+    <string name="APPID">2021000120610839</string>
+    <!--  用于支付宝账户登录授权业务的入参 pid  -->
+    <string name="PID">2088621959312266</string>
+    <!--  用于支付宝支付业务的应用私钥  -->
+    <string name="RSA2_PRIVATE">MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCZDLF5WLHShtDiFK/tHzS/iMd2QikuNTXnl+xDXDQJIhdaVJmc/Kv1e4jEzHAoTmFS0QlHzN8d3/1XfeLIF62Ja3G4ur8bCkLga0b1xULiik7QSG8RkwT8Fo5DG+OE0ezQQhGf2RvXc7g7ZHN8Hen+BUGU75txpMxfm9gpRouqkwZXJhw0EQw+KDMPg0PnAuxltumiOp6ZmXrGUGS90rrSELZJeHxKNY9GNd4Pn7xnc/UDllTZ9dT7VIKwCSDkqIxgtMCCikvx3yuPrckw3iWQCIubhTd2OnZwoRvJDex3GQtIdueC79ZAmhRFPJR7voKh+NXBEcY9QdsYHryVpAfDAgMBAAECggEARHZNHT7zrHzqC3e9ipCfA96netr1mNnslwB6i1c/X6aEU7/sRzEvqsvrzjy1HxKQrn8ba6bVV4POy8hgHamZ0xLg+AVxXyMj70eNonrvBG9h+gGszWu6mxlr4dEj4VIWYMJtJ9fygFofW1H/5tFqzlqDj5/vJNLXKR2JgE0yRMZ2uP0KuGSyE/4QACmQdvBeJQ+DRMqMDzawDfoyfivS4unFPpyTUFuzJBgGR8pnCSaWRyP0hb2xvk3ptv8dVjG/YZTgXzSNfVcP8Whh6FZzYTkaik0aoKH+IQ+BiGTBA1wK46fc7LR00PyPuIyG98lYuwApTqVT3EhGiSAmZaDXYQKBgQDKiFcyuycqNiLTAJdp2ekNA9ABoO58OAg+Z/Abh61Kl1xD7BDeS67nKNI+hfNTSDZTK5Ka4JuXA/Rt5zbFxu4vYU49ojyjZlF4AaTwJvSX0SPif+j+hjKLZ00qGfAuUbLKlLSTjnbb7cuRUMxnVWzGsYuiReRAJAmwOp9mDGWHRwKBgQDBdCrrYYQKizdBRAkm/zoIjVcQERrOXBgkDT/m6oDOKpi2DisRLzEVTpPXJcS7Yq0HMd6HfFrFP8mjf9ij7uUsYZ7e6lHy2+wJDwb3s2NkHL7DjgsL3PQxkV1sHRcGIqF5U28M5yb8Bb1a2Ib0a8qw99vbFZ01DCeNHD4g3lbxpQKBgAzeRMwQYBiqf+PwMa6kDc6p41l3JC/4T23HpNXa9QO8Qjx+j0PQgzhku5cFY8Ry3iDCr/nvM3OQ6MLi4fQHA7M294Wq/TdUlPCPCi/ICdpri2AkyGUDmcqJsblvFHec8UM115NYhezLWxfMjnAyWUr2lOymjC4XHBZ6Yw5U006ZAoGAffmc/VyqNIeFut2ILDnl263WtSK+VwVHvypVo5SvvhGlEmDVkMIvb1WVFnSE0RWn4ViLNaU4Ityv/OWC+PXXjPghEb57EPA/m4KKogDSR14kp4m3Dcmbxy+HK6Eh3h/tEOnRFhDspQ9DyIXaFA6hlm5BYECJ+AJrOwvaNWM0MPUCgYBJ9dPdib6sCCcVdYgS7E6YHlYI9ZsClMwViAZDdYemFV/OhjZoiajAMhmwJOwAn/v+A3DKVDTLLe8h3HuF46KdB8dduanTxstlkFwroVB41TWB0IpOmFyMwbceL7L/0CsRpi80za8JaW/n8YZG9sUwK1HlzBXJO75YzYMQ0lS8dg==</string>
 </resources>

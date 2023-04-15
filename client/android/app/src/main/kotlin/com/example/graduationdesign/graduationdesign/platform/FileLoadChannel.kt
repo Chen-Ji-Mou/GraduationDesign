@@ -34,7 +34,7 @@ class FileLoadChannel(binaryMessenger: BinaryMessenger, context: Context) :
                 Utils.copyAssetsToSdcard(mContext, "lbpcascade_frontalface.xml")
             val result2: Future<Boolean> = Utils.copyAssetsToSdcard(mContext, "seeta_fa_v1.1.bin")
             while (!(result1.isDone && result2.isDone)) {
-                Log.d("FileLoadChannel", "[loadFile] loading")
+                Log.d("FileLoadChannel", "[loadFile] 文件加载中")
                 Thread.sleep(200)
             }
             methodResult.success(result1.get() && result2.get())

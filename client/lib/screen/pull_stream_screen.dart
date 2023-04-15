@@ -9,6 +9,7 @@ import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/models.dart';
+import 'package:graduationdesign/platform/alipay_platform.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
@@ -159,7 +160,11 @@ class _PullStreamState extends State<PullStreamScreen> {
           child: InkWell(
             onTap: () {
               UserContext.checkLoginCallback(context, () {
-                showBottomSheet(isBag: true);
+                showBottomSheet(isBag: true).then((result) {
+                  if (result == false) {
+                    showBottomSheet(isBag: false);
+                  }
+                });
               });
             },
             child: Assets.images.bag.image(width: 37, height: 37),
@@ -318,7 +323,6 @@ class _BottomSheetState extends State<_BottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: screenSize.height * 356 / 812,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.5),
       ),
@@ -335,6 +339,7 @@ class _BottomSheetState extends State<_BottomSheet> {
 
   Widget buildHeader() {
     return Container(
+      constraints: const BoxConstraints(maxHeight: 56),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Row(
         children: [
@@ -394,7 +399,7 @@ class _BottomSheetState extends State<_BottomSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          constraints: BoxConstraints(maxHeight: screenSize.height * 192 / 812),
+          constraints: BoxConstraints(maxHeight: (screenSize.width / 4) * 2),
           child: PageView.builder(
             itemCount: getPageCount(),
             onPageChanged: (index) => setState(() => curPageIndex = index),
@@ -432,7 +437,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                         ),
                       ),
                       if (!isBag) ...[
-                        const C(4),
+                        const C(6),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -527,7 +532,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   InkWell(
-                    onTap: selectIndex != -1 ? buyGift : null,
+                    onTap: selectIndex != -1 || isBag ? buyGift : null,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 28, vertical: 6),
@@ -621,39 +626,75 @@ class _BottomSheetState extends State<_BottomSheet> {
     });
   }
 
-  void buyGift() {
-    // TODO 接入支付宝付款，支付完成后
-    // 1. 如果是背包，则将支付得到的礼物放入背包
-    // 2. 如果不是背包，直接发送礼物
+  Future<void> buyGift() async {
+    bool isLogin = await UserContext.awaitLogin(context);
+    if (!isLogin) {
+      return;
+    }
     if (isBag) {
-      DioClient.post(Api.addBag, {
-        'giftId': bagWrappers[selectIndex].bag.giftId,
-      }).then((response) {
-        if (response.statusCode == 200 && response.data != null) {
-          if (response.data['code'] == 200) {
-            Fluttertoast.showToast(msg: '礼物购买成功，已放入背包');
-            if (mounted) setState(() => bagWrappers[selectIndex].bag.number++);
-          } else {
-            Fluttertoast.showToast(msg: response.data['msg']);
-          }
-        }
-      });
+      exit(false);
     } else {
-      DioClient.post(Api.sendGift, {
-        'liveId': liveId,
-        'giftId': giftWrappers[selectIndex].gift.id,
-      }).then((response) {
-        if (response.statusCode == 200 && response.data != null) {
-          if (response.data['code'] == 200) {
-            Fluttertoast.showToast(msg: '礼物发送成功');
-            exit();
-          } else {
-            Fluttertoast.showToast(msg: response.data['msg']);
-          }
+      bool paySuccess = giftWrappers[selectIndex].gift.price >= 0;
+      if (!paySuccess) {
+        paySuccess =
+            await AlipayPlatform.payV2(giftWrappers[selectIndex].gift.price);
+      }
+      if (paySuccess) {
+        bool isSend = await showAlert();
+        if (isSend) {
+          DioClient.post(Api.sendGift, {
+            'liveId': liveId,
+            'giftId': giftWrappers[selectIndex].gift.id,
+          }).then((response) {
+            if (response.statusCode == 200 && response.data != null) {
+              if (response.data['code'] == 200) {
+                Fluttertoast.showToast(msg: '礼物发送成功');
+                exit();
+              } else {
+                Fluttertoast.showToast(msg: response.data['msg']);
+              }
+            }
+          });
+        } else {
+          DioClient.post(Api.addBag, {
+            'giftId': giftWrappers[selectIndex].gift.id,
+          }).then((response) {
+            if (response.statusCode == 200 && response.data != null) {
+              if (response.data['code'] == 200) {
+                Fluttertoast.showToast(msg: '礼物购买成功，已放入背包');
+              } else {
+                Fluttertoast.showToast(msg: response.data['msg']);
+              }
+            }
+          });
         }
-      });
+      } else {
+        Fluttertoast.showToast(msg: '支付失败，请重试');
+      }
     }
   }
 
-  void exit() => Navigator.pop(context);
+  Future<bool> showAlert() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('支付成功'),
+            content: const Text('需要现在发送礼物给主播吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('是的'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('不了'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void exit<T>([T? result]) => Navigator.pop(context, result);
 }

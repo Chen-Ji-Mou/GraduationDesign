@@ -11,11 +11,22 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 14/04/2023 12:39:46
+ Date: 15/04/2023 22:09:41
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for account
+-- ----------------------------
+DROP TABLE IF EXISTS `account`;
+CREATE TABLE `account`  (
+  `id` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `balance` int(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for bag
@@ -26,6 +37,18 @@ CREATE TABLE `bag`  (
   `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `giftId` varchar(3) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `number` int(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for detailed
+-- ----------------------------
+DROP TABLE IF EXISTS `detailed`;
+CREATE TABLE `detailed`  (
+  `id` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `income` int(11) UNSIGNED NOT NULL,
+  `expenditure` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 

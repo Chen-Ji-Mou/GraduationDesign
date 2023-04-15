@@ -1,6 +1,10 @@
 package com.example.graduationdesign.graduationdesign
 
 import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import com.alipay.sdk.app.EnvUtils
+import com.example.graduationdesign.graduationdesign.alipay.AlipayChannel
 import com.example.graduationdesign.graduationdesign.platform.FileLoadChannel
 import com.example.graduationdesign.graduationdesign.platform.PermissionChannel
 import com.example.graduationdesign.graduationdesign.platform.PullStreamPlatformFactory
@@ -14,6 +18,8 @@ class MainActivity : FlutterActivity() {
     private var mRequestPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        // 设置支付宝沙盒支付环境
+        EnvUtils.setEnv(EnvUtils.EnvEnum.SANDBOX)
         GeneratedPluginRegistrant.registerWith(flutterEngine)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         flutterEngine.platformViewsController.registry.registerViewFactory(
@@ -26,6 +32,7 @@ class MainActivity : FlutterActivity() {
             mRequestPermissionResult = it
         }
         FileLoadChannel(messenger, this)
+        AlipayChannel(messenger, this)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
@@ -38,8 +45,10 @@ class MainActivity : FlutterActivity() {
         when (requestCode) {
             PermissionChannel.REQUEST_PERMISSIONS -> {
                 if (grantResults.isNotEmpty() && !grantResults.contains(PackageManager.PERMISSION_DENIED)) {
+                    Log.d("PermissionChannel", "[requestPermission] 权限申请成功")
                     mRequestPermissionResult?.success(true)
                 } else {
+                    Log.d("PermissionChannel", "[requestPermission] 权限申请失败")
                     mRequestPermissionResult?.success(false)
                 }
                 mRequestPermissionResult = null

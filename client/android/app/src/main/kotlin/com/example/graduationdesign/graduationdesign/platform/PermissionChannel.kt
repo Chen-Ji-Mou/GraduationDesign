@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import io.flutter.plugin.common.BinaryMessenger
@@ -57,18 +58,22 @@ class PermissionChannel(
     private fun requestPermission(result: MethodChannel.Result) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (!hasPermission(mActivity)) {
+                Log.d("PermissionChannel", "[requestPermission] 没有权限，进行申请")
                 ActivityCompat.requestPermissions(
                     mActivity, permissions33, REQUEST_PERMISSIONS
                 )
             } else {
+                Log.d("PermissionChannel", "[requestPermission] 已有权限")
                 result.success(true)
             }
         } else {
             if (!hasPermission(mActivity)) {
+                Log.d("PermissionChannel", "[requestPermission] 没有权限，进行申请")
                 ActivityCompat.requestPermissions(
                     mActivity, permissions, REQUEST_PERMISSIONS
                 )
             } else {
+                Log.d("PermissionChannel", "[requestPermission] 已有权限")
                 result.success(true)
             }
         }

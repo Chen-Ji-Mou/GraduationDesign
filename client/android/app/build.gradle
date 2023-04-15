@@ -47,7 +47,7 @@ android {
         applicationId "com.example.graduationdesign.graduationdesign"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -96,4 +96,5 @@ dependencies {
     implementation files('/src/main/libs/ijkplayer.aar') // 拉流SDK
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.2' // 推流SDK
+    api 'com.alipay.sdk:alipaysdk-android:+@aar' // 支付宝SDK
 }
