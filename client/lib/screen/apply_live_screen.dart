@@ -79,7 +79,7 @@ class _ApplyLiveState extends State<ApplyLiveScreen> {
       ),
       body: Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.only(left: 20, top: toolbarHeight, right: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20),
         child: Form(
           key: formKey,
           child: Column(

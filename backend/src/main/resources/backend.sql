@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 15/04/2023 22:09:41
+ Date: 16/04/2023 17:47:25
 */
 
 SET NAMES utf8mb4;
@@ -26,7 +26,7 @@ CREATE TABLE `account`  (
   `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `balance` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for bag
@@ -49,8 +49,9 @@ CREATE TABLE `detailed`  (
   `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `income` int(11) UNSIGNED NOT NULL,
   `expenditure` int(11) UNSIGNED NOT NULL,
+  `timestamp` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for gift

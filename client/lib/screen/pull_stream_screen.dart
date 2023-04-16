@@ -9,7 +9,6 @@ import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/models.dart';
-import 'package:graduationdesign/platform/alipay_platform.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
@@ -276,6 +275,7 @@ class _BottomSheetState extends State<_BottomSheet> {
   List<_BagWrapper> bagWrappers = [];
   int curPageIndex = 0;
   int selectIndex = -1;
+  int balance = 0;
 
   @override
   void initState() {
@@ -300,6 +300,9 @@ class _BottomSheetState extends State<_BottomSheet> {
         if (mounted) setState(() => giftWrappers.addAll(result));
       }
     });
+    if (!isBag) {
+      refreshBalance();
+    }
   }
 
   void requestServer({
@@ -315,6 +318,21 @@ class _BottomSheetState extends State<_BottomSheet> {
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
           errorCall?.call();
+        }
+      }
+    });
+  }
+
+  void refreshBalance() {
+    DioClient.get(Api.getAccount).then((response) {
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          Map<String, dynamic> jsonMap = response.data['data'];
+          if (mounted) {
+            setState(() => balance = jsonMap['balance']);
+          }
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
         }
       }
     });
@@ -377,7 +395,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                     Assets.images.species.image(width: 24, height: 24),
                     const C(11),
                     Text(
-                      '99999',
+                      balance.toString(),
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w600,
                         color: Colors.white.withOpacity(0.9),
@@ -634,12 +652,24 @@ class _BottomSheetState extends State<_BottomSheet> {
     if (isBag) {
       exit(false);
     } else {
-      bool paySuccess = giftWrappers[selectIndex].gift.price >= 0;
-      if (!paySuccess) {
-        paySuccess =
-            await AlipayPlatform.payV2(giftWrappers[selectIndex].gift.price);
-      }
-      if (paySuccess) {
+      bool canBuy = giftWrappers[selectIndex].gift.price >= 0 &&
+          balance - giftWrappers[selectIndex].gift.price >= 0;
+      if (!canBuy) {
+        await Navigator.pushNamed(context, 'recharge');
+        refreshBalance();
+      } else {
+        if (giftWrappers[selectIndex].gift.price > 0) {
+          await Future.wait([
+            DioClient.post(Api.spendAccount, {
+              'amount': giftWrappers[selectIndex].gift.price,
+            }),
+            DioClient.post(Api.addDetailed, {
+              'income': 0,
+              'expenditure': giftWrappers[selectIndex].gift.price,
+            }),
+          ]);
+          refreshBalance();
+        }
         bool isSend = await showAlert();
         if (isSend) {
           DioClient.post(Api.sendGift, {
@@ -668,8 +698,6 @@ class _BottomSheetState extends State<_BottomSheet> {
             }
           });
         }
-      } else {
-        Fluttertoast.showToast(msg: '支付失败，请重试');
       }
     }
   }

@@ -105,4 +105,20 @@ class Api {
   static const String addBag = "/bag/addBag";
 
   static const String reduceBag = "/bag/reduceBag";
+
+  static const String createAccount = "/account/createAccount";
+
+  static const String rechargeAccount = "/account/rechargeAccount";
+
+  static const String spendAccount = "/account/spendAccount";
+
+  static const String getAccount = "/account/getAccount";
+
+  static const String addDetailed = "/detailed/addDetailed";
+
+  static const String getDetailed = "/detailed/getDetailed";
+
+  static const String getTotalIncome = "/detailed/getTotalIncome";
+
+  static const String getTotalExpenditure = "/detailed/getTotalExpenditure";
 }

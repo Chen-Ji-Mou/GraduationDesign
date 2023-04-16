@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class Account {
     private String id;
     private String userId;
-    private int balance;
+    private Integer balance;
 }

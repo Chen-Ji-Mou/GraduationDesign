@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class Detailed {
     private String id;
     private String userId;
-    private int income;
-    private int expenditure;
+    private Integer income;
+    private Integer expenditure;
+    private Long timestamp;
 }

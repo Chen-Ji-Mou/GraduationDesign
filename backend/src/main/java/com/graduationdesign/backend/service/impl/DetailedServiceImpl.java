@@ -22,4 +22,14 @@ public class DetailedServiceImpl implements IDetailedService {
     public List<Detailed> getDetailed(String userId, Integer pageNum, Integer pageSize) {
         return mapper.getDetailed(userId, pageNum, pageSize);
     }
+
+    @Override
+    public Detailed sumIncome(String userId) {
+        return mapper.sumIncome(userId);
+    }
+
+    @Override
+    public Detailed sumExpenditure(String userId) {
+        return mapper.sumExpenditure(userId);
+    }
 }

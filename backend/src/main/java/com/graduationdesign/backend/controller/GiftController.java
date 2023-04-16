@@ -36,15 +36,23 @@ public class GiftController {
 
     @RequestMapping(value = "/mock", method = RequestMethod.POST)
     private Result mock() {
-        Gift gift = new Gift();
-        String giftId = RandomStringUtils.randomNumeric(3);
-        gift.setId(giftId);
-        gift.setName("荧光棒");
-        gift.setBackgroundColor(0xB23AF2);
-        gift.setTitleColor(0x6950FB);
-        gift.setPrice(0);
-        giftService.addGift(gift);
-        log.info("[GiftController] mock 礼物生成成功 " + gift);
+        Gift gift1 = new Gift();
+        gift1.setId(RandomStringUtils.randomNumeric(3));
+        gift1.setName("荧光棒");
+        gift1.setBackgroundColor(0xB23AF2);
+        gift1.setTitleColor(0x6950FB);
+        gift1.setPrice(0);
+        giftService.addGift(gift1);
+
+        Gift gift2 = new Gift();
+        gift2.setId(RandomStringUtils.randomNumeric(3));
+        gift2.setName("飞机");
+        gift2.setBackgroundColor(0x00CCFF);
+        gift2.setTitleColor(0x0066FF);
+        gift2.setPrice(1000);
+        giftService.addGift(gift2);
+
+        log.info("[GiftController] mock 礼物生成成功");
         return Result.success();
     }
 

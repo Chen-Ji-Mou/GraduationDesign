@@ -33,10 +33,15 @@ class UserContext {
     }
   }
 
+  static Future<void> _createUserAccount() async {
+    await DioClient.post(Api.createAccount);
+  }
+
   static Future<bool> onUserLogin(String token) async {
     bool tokenSaveSuccess = await SpManager.setString('token', token);
     if (tokenSaveSuccess == true) {
       getUserInfoSuccess = await getUserInfo();
+      await _createUserAccount();
     }
     return tokenSaveSuccess && getUserInfoSuccess;
   }

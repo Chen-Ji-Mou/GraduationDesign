@@ -77,6 +77,13 @@ class $AssetsImagesGen {
   AssetGenImage get notFound =>
       const AssetGenImage('assets/images/not-found.png');
 
+  /// File path: assets/images/person-default.png
+  AssetGenImage get personDefault =>
+      const AssetGenImage('assets/images/person-default.png');
+
+  /// File path: assets/images/right.png
+  AssetGenImage get right => const AssetGenImage('assets/images/right.png');
+
   /// File path: assets/images/search.png
   AssetGenImage get search => const AssetGenImage('assets/images/search.png');
 
@@ -118,6 +125,8 @@ class $AssetsImagesGen {
         live,
         love,
         notFound,
+        personDefault,
+        right,
         search,
         send,
         shortVideo,

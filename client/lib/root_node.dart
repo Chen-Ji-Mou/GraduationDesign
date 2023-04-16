@@ -6,6 +6,7 @@ import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
+import 'package:graduationdesign/screen/person_screen.dart';
 import 'package:graduationdesign/user_context.dart';
 
 enum _TabType { home, publish, person }
@@ -17,7 +18,8 @@ class RootNode extends StatefulWidget {
   State<RootNode> createState() => _RootNodeState();
 }
 
-class _RootNodeState extends State<RootNode> {
+class _RootNodeState extends State<RootNode>
+    with SingleTickerProviderStateMixin {
   final List<_BottomTab> tabs = [
     _BottomTab(
       type: _TabType.home,
@@ -44,7 +46,9 @@ class _RootNodeState extends State<RootNode> {
     ),
   ];
 
+  late TabController tabController;
   late Size screenSize;
+
   DateTime? lastPressedTime;
 
   @override
@@ -55,33 +59,50 @@ class _RootNodeState extends State<RootNode> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Widget child = DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-          padding: EdgeInsets.only(top: toolbarHeight),
-          child: TabBarView(
-            physics: const NeverScrollableScrollPhysics(),
-            children: tabs.map((tab) => buildBody(tab.type)).toList(),
-          ),
+    Widget child = Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        padding: EdgeInsets.only(top: toolbarHeight),
+        child: TabBarView(
+          controller: tabController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: tabs.map((tab) => buildBody(tab.type)).toList(),
         ),
-        bottomNavigationBar: ConvexAppBar(
-          activeColor: ColorName.redF63C77,
-          backgroundColor: Colors.white,
-          color: ColorName.black686868,
-          style: TabStyle.fixedCircle,
-          elevation: 1,
-          items: tabs.map((tab) => tab.data).toList(),
-          onTabNotify: (index) {
-            var intercept = index == 1;
-            if (intercept) {
-              showBottomSheet();
+      ),
+      bottomNavigationBar: ConvexAppBar(
+        controller: tabController,
+        activeColor: ColorName.redF63C77,
+        backgroundColor: Colors.white,
+        color: ColorName.black686868,
+        style: TabStyle.fixedCircle,
+        elevation: 1,
+        items: tabs.map((tab) => tab.data).toList(),
+        onTabNotify: (index) {
+          var pass = true;
+          if (index == _TabType.publish.index) {
+            showBottomSheet();
+            pass = false;
+          } else if (index == _TabType.person.index) {
+            if (!UserContext.isLogin) {
+              UserContext.awaitLogin(context);
             }
-            return !intercept;
-          },
-        ),
+            pass = UserContext.isLogin;
+          }
+          return pass;
+        },
       ),
     );
     return WillPopScope(
@@ -106,7 +127,9 @@ class _RootNodeState extends State<RootNode> {
       case _TabType.publish:
         return const C(0);
       case _TabType.person:
-        return const LoadingWidget();
+        return PersonScreen(
+          onUserLogout: () => tabController.animateTo(_TabType.home.index),
+        );
     }
   }
 

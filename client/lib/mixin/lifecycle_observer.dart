@@ -6,8 +6,6 @@ mixin LifecycleObserver<T extends StatefulWidget> on State<T>
 implements WidgetsBindingObserver, RouteAware {
   bool isResume = false;
 
-  bool get isCurrentPage => true == ModalRoute.of(context)?.isCurrent;
-
   @override
   void didChangeDependencies() {
     ModalRoute.of(context)?.let((ModalRoute<Object?> route) {
@@ -36,18 +34,14 @@ implements WidgetsBindingObserver, RouteAware {
 
   @override
   void didPopNext() {
-    if (isCurrentPage) {
-      _internalResume();
-      WidgetsBinding.instance.addObserver(this);
-    }
+    _internalResume();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didPushNext() {
-    if (isCurrentPage) {
-      _internalPause();
-      WidgetsBinding.instance.removeObserver(this);
-    }
+    _internalPause();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override

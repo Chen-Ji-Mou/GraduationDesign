@@ -71,4 +71,16 @@ public class AccountController {
         log.info("[AccountController] spendAccount 账户余额花费成功 userId {} balance {}", userId, curBalance);
         return Result.success();
     }
+
+    @RequestMapping(value = "/getAccount", method = RequestMethod.GET)
+    private Result getAccount(HttpServletRequest request) {
+        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        Account account = accountService.findAccountByUserId(userId);
+        if (account == null) {
+            log.info("[AccountController] getAccount 该用户未创建账户 userId {}", userId);
+            return Result.failed(500, "该用户未创建账户");
+        }
+        log.info("[AccountController] getAccount 获取账户成功 account {}", account);
+        return Result.success(account);
+    }
 }

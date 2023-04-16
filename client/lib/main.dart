@@ -1,11 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
+import 'package:graduationdesign/root_node.dart';
 import 'package:graduationdesign/route.dart';
+import 'package:graduationdesign/screen/login_screen.dart';
+import 'package:graduationdesign/screen/register_screen.dart';
+import 'package:graduationdesign/screen/retrieve_pwd_screen.dart';
 import 'package:graduationdesign/screen/splash_screen.dart';
+import 'package:graduationdesign/screen/start_live_screen.dart';
 import 'package:graduationdesign/sp_manager.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
