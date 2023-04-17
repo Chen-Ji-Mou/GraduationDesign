@@ -24,4 +24,7 @@ public interface LiveMapper {
 
     @Update("UPDATE live SET number=#{number} WHERE id=#{id}")
     void updateLiveNumberById(@Param("id") String id, @Param("number") Integer number);
+
+    @Update("UPDATE live SET coverUrl=#{coverUrl} WHERE id=#{id}")
+    void updateLiveCoverUrlById(@Param("id") String id, @Param("coverUrl") String coverUrl);
 }

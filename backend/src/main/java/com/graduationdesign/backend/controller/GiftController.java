@@ -32,7 +32,7 @@ public class GiftController {
     IUserService userService;
 
     @Autowired
-    private IWebSocketService webSocketService;
+    IWebSocketService webSocketService;
 
     @RequestMapping(value = "/mock", method = RequestMethod.POST)
     private Result mock() {

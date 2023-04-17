@@ -7,11 +7,15 @@ import com.graduationdesign.backend.service.ILiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.List;
 
 @Slf4j
@@ -20,6 +24,9 @@ import java.util.List;
 public class LiveController {
     @Autowired
     private ILiveService liveService;
+
+    @Value("${file.upload.root.path}")
+    private String fileRootPath;
 
     @RequestMapping(value = "/apply", method = RequestMethod.POST)
     private Result apply(HttpServletRequest request) {
@@ -102,5 +109,71 @@ public class LiveController {
         Integer curNumber = liveService.updateLiveNumberById(liveId, false);
         log.info("[LiveController] exitLive 更新直播间人数成功 当前人数 " + curNumber);
         return Result.success();
+    }
+
+    @RequestMapping(value = "/uploadCover", method = RequestMethod.POST)
+    private Result uploadCover(@RequestParam(name = "liveId") String liveId,
+                               @RequestParam("file") MultipartFile file) {
+        String coverFileName = "cover_" + liveId + ".jpg";
+        String coverFilePath = fileRootPath + '/' + coverFileName;
+        File coverFile = new File(coverFilePath);
+        try {
+            // 生成父目录
+            if (!coverFile.getParentFile().exists()) {
+                coverFile.getParentFile().mkdirs();
+            }
+
+            // 覆盖原有文件
+            if (coverFile.exists()) {
+                coverFile.delete();
+                coverFile.createNewFile();
+            } else {
+                coverFile.createNewFile();
+            }
+
+            // 保存视频文件放入本地
+            file.transferTo(coverFile);
+
+            // 生成数据库记录
+            liveService.updateLiveCoverUrlById(liveId, coverFileName);
+
+            log.info("[LiveController] uploadCover 直播间封面上传成功 liveId {} path {}", liveId, coverFilePath);
+            return Result.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("[LiveController] uploadCover 直播间封面上传失败 liveId {}", liveId);
+            return Result.failed(500, "直播间封面上传失败");
+        }
+    }
+
+    @RequestMapping(value = "/downloadCover", method = RequestMethod.GET)
+    private void downloadCover(@RequestParam(name = "liveId") String liveId, HttpServletResponse response) {
+        String coverFileName = liveService.findLiveById(liveId).getCoverUrl();
+        String coverFilePath = fileRootPath + '/' + coverFileName;
+        File file = new File(coverFilePath);
+        if (!file.exists()) {
+            log.info("[LiveController] downloadCover 直播间封面文件不存在 liveId {}", liveId);
+        }
+
+        response.reset();
+        response.setContentType("image/jpeg");
+        response.setCharacterEncoding("utf-8");
+        response.setContentLength((int) file.length());
+        response.setHeader("Content-Disposition", "attachment;filename=" + coverFileName);
+
+        try {
+            // 将文件写入输入流
+            InputStream fis = new BufferedInputStream(new FileInputStream(file));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            // 将文件写入输出流
+            OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
+            outputStream.write(buffer);
+            outputStream.flush();
+            log.info("[LiveController] downloadCover 直播间封面文件下载成功 liveId {} name {}", liveId, coverFileName);
+        } catch (IOException e) {
+            log.info("[LiveController] downloadCover 直播间封面文件下载失败 name {}", coverFileName);
+        }
     }
 }

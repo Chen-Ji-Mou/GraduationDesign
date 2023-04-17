@@ -11,4 +11,5 @@ public interface ILiveService {
     List<Live> getLives(Integer pageNum, Integer pageSize);
     Integer updateLiveNumberById(String id, Boolean increase);
     Live findLiveById(String id);
+    void updateLiveCoverUrlById(String id, String coverUrl);
 }

@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 16/04/2023 17:47:25
+ Date: 17/04/2023 20:44:19
 */
 
 SET NAMES utf8mb4;
@@ -75,6 +75,7 @@ CREATE TABLE `live`  (
   `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `ing` tinyint(1) UNSIGNED NOT NULL,
   `number` int(11) UNSIGNED NOT NULL,
+  `coverUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 
@@ -87,6 +88,19 @@ CREATE TABLE `user`  (
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `pwd` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `email` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `avatarUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for video
+-- ----------------------------
+DROP TABLE IF EXISTS `video`;
+CREATE TABLE `video`  (
+  `id` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `userId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `fileName` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `timestamp` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 

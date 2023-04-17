@@ -49,7 +49,7 @@ final List<String> _ignoreAuthPaths = [
   Api.getLives,
   Api.enterLive,
   Api.exitLive,
-  Api.getLiveBloggerInfo,
+  Api.getUserInfo,
   Api.mockGift,
   Api.getGifts,
 ];
@@ -86,9 +86,19 @@ class Api {
 
   static const String exitLive = "/live/exitLive";
 
-  static const String getLiveBloggerInfo = "/person/getLiveBloggerInfo";
+  static const String uploadCover = "/live/uploadCover";
+
+  static const String downloadCover = "/live/downloadCover";
+
+  static const String getUserInfo = "/person/getUserInfo";
 
   static const String getOwnInfo = "/person/getOwnInfo";
+
+  static const String uploadAvatar = "/person/uploadAvatar";
+
+  static const String getOwnAvatar = "/person/getOwnAvatar";
+
+  static const String getUserAvatar = "/person/getUserAvatar";
 
   static const String mockGift = "/gift/mock";
 
@@ -121,4 +131,10 @@ class Api {
   static const String getTotalIncome = "/detailed/getTotalIncome";
 
   static const String getTotalExpenditure = "/detailed/getTotalExpenditure";
+
+  static const String getVideos = "/video/getVideos";
+
+  static const String uploadVideo = "/video/uploadVideo";
+
+  static const String downloadVideo = "/video/downloadVideo";
 }

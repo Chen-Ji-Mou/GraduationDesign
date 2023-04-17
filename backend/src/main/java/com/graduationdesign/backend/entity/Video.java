@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Live {
+public class Video {
     private String id;
     private String userId;
-    private Boolean ing;
-    private Integer number;
-    private String coverUrl;
+    private String fileName;
+    private Long timestamp;
 }

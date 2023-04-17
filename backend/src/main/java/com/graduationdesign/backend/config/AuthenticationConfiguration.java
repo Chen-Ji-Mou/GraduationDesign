@@ -18,9 +18,13 @@ public class AuthenticationConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/live/getLives")
                 .excludePathPatterns("/live/enterLive")
                 .excludePathPatterns("/live/exitLive")
-                .excludePathPatterns("/person/getLiveBloggerInfo")
+                .excludePathPatterns("/live/downloadCover")
+                .excludePathPatterns("/person/getUserInfo")
+                .excludePathPatterns("/person/getUserAvatar")
                 .excludePathPatterns("/gift/mock")
-                .excludePathPatterns("/gift/getGifts");
+                .excludePathPatterns("/gift/getGifts")
+                .excludePathPatterns("/video/getVideos")
+                .excludePathPatterns("/video/downloadVideo");
     }
 
     @Bean

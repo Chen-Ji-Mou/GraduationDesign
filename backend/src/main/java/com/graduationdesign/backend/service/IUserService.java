@@ -2,9 +2,6 @@ package com.graduationdesign.backend.service;
 
 import com.graduationdesign.backend.entity.User;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-
 public interface IUserService {
     User findUserByEmail(String email);
     void addUser(User user);
@@ -12,4 +9,5 @@ public interface IUserService {
     User findUserByName(String name);
     void updatePwdByEmail(String email, String pwd);
     User findUserById(String id);
+    void updateAvatarUrlById(String id, String avatar);
 }

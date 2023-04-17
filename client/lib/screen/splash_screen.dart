@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 
 class SplashScreen extends StatelessWidget {

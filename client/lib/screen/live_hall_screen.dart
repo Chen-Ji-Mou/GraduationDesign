@@ -257,7 +257,7 @@ class _Live {
 
   Future<void> transformBlogger() async {
     Response response =
-        await DioClient.get(Api.getLiveBloggerInfo, {'userId': blogger});
+        await DioClient.get(Api.getUserInfo, {'userId': blogger});
     if (response.statusCode == 200) {
       if (response.data['code'] == 200) {
         Map<String, dynamic> map = response.data['data'];

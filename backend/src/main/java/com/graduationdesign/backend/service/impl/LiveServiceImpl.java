@@ -50,4 +50,9 @@ public class LiveServiceImpl implements ILiveService {
     public Live findLiveById(String id) {
         return mapper.findLiveById(id);
     }
+
+    @Override
+    public void updateLiveCoverUrlById(String id, String coverUrl) {
+        mapper.updateLiveCoverUrlById(id, coverUrl);
+    }
 }

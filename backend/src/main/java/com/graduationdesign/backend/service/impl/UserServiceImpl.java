@@ -6,8 +6,6 @@ import com.graduationdesign.backend.service.IUserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -43,5 +41,10 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User findUserById(String id) {
         return mapper.findUserById(id);
+    }
+
+    @Override
+    public void updateAvatarUrlById(String id, String avatarUrl) {
+        mapper.updateAvatarUrlById(id, avatarUrl);
     }
 }

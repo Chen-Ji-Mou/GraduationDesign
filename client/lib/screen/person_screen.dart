@@ -17,7 +17,8 @@ class PersonScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _PersonState();
 }
 
-class _PersonState extends State<PersonScreen> with LifecycleObserver {
+class _PersonState extends State<PersonScreen>
+    with LifecycleObserver, AutomaticKeepAliveClientMixin {
   VoidCallback? get onUserLogout => widget.onUserLogout;
 
   late Size screenSize;
@@ -84,6 +85,7 @@ class _PersonState extends State<PersonScreen> with LifecycleObserver {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       alignment: Alignment.center,
       color: ColorName.whiteF5F6F7,
@@ -226,4 +228,7 @@ class _PersonState extends State<PersonScreen> with LifecycleObserver {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
