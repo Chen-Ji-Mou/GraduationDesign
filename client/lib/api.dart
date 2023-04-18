@@ -9,7 +9,7 @@ class DioClient {
     BaseOptions(
       connectTimeout: const Duration(milliseconds: 6000),
       receiveTimeout: const Duration(milliseconds: 6000),
-      baseUrl: "http://${Api._host}:${Api._port}",
+      baseUrl: "http://${Api.host}:${Api.port}",
     ),
   )..interceptors.add(_ApiInterceptor());
 
@@ -57,8 +57,8 @@ final List<String> _ignoreAuthPaths = [
 class Api {
   Api._internal();
 
-  static const _host = '81.71.161.128';
-  static const _port = '8088';
+  static const host = '81.71.161.128';
+  static const port = '8088';
 
   static const String login = "/user/login";
 

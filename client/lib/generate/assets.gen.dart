@@ -36,6 +36,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/bag.png
   AssetGenImage get bag => const AssetGenImage('assets/images/bag.png');
 
+  /// File path: assets/images/comment.png
+  AssetGenImage get comment => const AssetGenImage('assets/images/comment.png');
+
   /// File path: assets/images/cover-text.png
   AssetGenImage get coverText =>
       const AssetGenImage('assets/images/cover-text.png');
@@ -90,6 +93,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/send.png
   AssetGenImage get send => const AssetGenImage('assets/images/send.png');
 
+  /// File path: assets/images/share.png
+  AssetGenImage get share => const AssetGenImage('assets/images/share.png');
+
   /// File path: assets/images/short-video.png
   AssetGenImage get shortVideo =>
       const AssetGenImage('assets/images/short-video.png');
@@ -113,6 +119,7 @@ class $AssetsImagesGen {
         back,
         bagIcon,
         bag,
+        comment,
         coverText,
         cover,
         error,
@@ -129,6 +136,7 @@ class $AssetsImagesGen {
         right,
         search,
         send,
+        share,
         shortVideo,
         species,
         star,

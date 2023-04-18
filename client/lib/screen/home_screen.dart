@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/live_hall_screen.dart';
+import 'package:graduationdesign/screen/short_video_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -56,7 +57,7 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
             child: TabBarView(
               controller: tabController,
               physics: const NeverScrollableScrollPhysics(),
-              children: [const LiveHallScreen(), Container()],
+              children: const [LiveHallScreen(), ShortVideoScreen()],
             ),
           ),
         ],

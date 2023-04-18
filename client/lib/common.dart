@@ -143,8 +143,8 @@ class LoadingWidget extends StatelessWidget {
     return Center(
       child: Lottie.asset(
         'assets/anim/loading.json',
-        width: 100,
-        height: 100,
+        width: 60,
+        height: 60,
         fit: BoxFit.cover,
       ),
     );
