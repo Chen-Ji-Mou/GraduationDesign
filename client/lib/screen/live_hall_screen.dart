@@ -57,7 +57,7 @@ class _LiveHallState extends State<LiveHallScreen>
       'pageNum': curPageNum,
       'pageSize': pageSize,
     }).then((response) async {
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         if (response.data['code'] == 200) {
           List<_Live> result = [];
           for (var live in response.data['data']) {

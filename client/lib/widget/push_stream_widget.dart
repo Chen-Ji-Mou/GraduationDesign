@@ -52,16 +52,18 @@ class PushStreamController {
     }
   }
 
-  Future<void> startRecord() async {
+  Future<bool?> startRecord() async {
     if (_initialized) {
-      await _channel.invokeMethod('startRecord');
+      return await _channel.invokeMethod<bool>('startRecord');
     }
+    return null;
   }
 
-  Future<void> stopRecord() async {
+  Future<String?> stopRecord() async {
     if (_initialized) {
-      await _channel.invokeMethod('stopRecord');
+      return await _channel.invokeMethod<String?>('stopRecord');
     }
+    return null;
   }
 
   Future<void> selectFilter(Filter filter) async {
@@ -112,11 +114,15 @@ class PushStreamController {
 }
 
 class PushStreamWidget extends StatefulWidget {
-  const PushStreamWidget(
-      {Key? key, required this.controller, this.initialComplete})
-      : super(key: key);
+  const PushStreamWidget({
+    Key? key,
+    required this.controller,
+    this.autoPushStream = true,
+    this.initialComplete,
+  }) : super(key: key);
 
   final PushStreamController controller;
+  final bool autoPushStream;
   final VoidCallback? initialComplete;
 
   @override
@@ -126,16 +132,22 @@ class PushStreamWidget extends StatefulWidget {
 class _PushStreamState extends State<PushStreamWidget> with LifecycleObserver {
   PushStreamController get controller => widget.controller;
 
+  bool get autoPushStream => widget.autoPushStream;
+
   VoidCallback? get initialComplete => widget.initialComplete;
 
   @override
   void onResume() {
-    controller.resume();
+    if (autoPushStream) {
+      controller.resume();
+    }
   }
 
   @override
   void onPause() {
-    controller.pause();
+    if (autoPushStream) {
+      controller.pause();
+    }
   }
 
   @override

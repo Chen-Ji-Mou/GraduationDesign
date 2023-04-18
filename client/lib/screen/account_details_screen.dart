@@ -51,7 +51,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
     });
   }
 
-  void getDetails() {
+  void getDetails({VoidCallback? successCall, VoidCallback? errorCall}) {
     DioClient.get(Api.getDetailed, {
       'pageNum': pageNum,
       'pageSize': pageSize,
@@ -68,17 +68,25 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
             )..transformTimestamp();
             result.add(item);
           }
+          successCall?.call();
           if (mounted) {
             setState(() => details.addAll(result));
           }
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
+          errorCall?.call();
         }
+      } else {
+        errorCall?.call();
       }
     });
   }
 
-  void onLoading() {}
+  void onLoading() {
+    getDetails(successCall: () {
+      controller.loadComplete();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +176,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
               top: 36,
               child: Container(
                 height: 24,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),

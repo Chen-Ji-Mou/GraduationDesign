@@ -41,7 +41,7 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         get() {
             val storageDir: File =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
-            return File(storageDir.absolutePath + "/LiveRecord")
+            return File(storageDir.absolutePath)
         }
 
     private val previewSize: Size
@@ -244,9 +244,9 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         }
     }
 
-    fun stopRecord() {
+    fun stopRecord(): String? {
         if (mRtmpCamera1?.isRecording != true) {
-            return
+            return null
         }
         mRtmpCamera1?.stopRecord()
         updateGallery(
@@ -255,6 +255,7 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         Log.d(
             TAG, "[stopRecord] file $currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
         )
+        return "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
     }
 
     fun cancelFilter() {

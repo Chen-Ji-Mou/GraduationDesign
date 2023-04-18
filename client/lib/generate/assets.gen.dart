@@ -110,6 +110,10 @@ class $AssetsImagesGen {
   AssetGenImage get successMark =>
       const AssetGenImage('assets/images/success-mark.png');
 
+  /// File path: assets/images/upload-video.png
+  AssetGenImage get uploadVideo =>
+      const AssetGenImage('assets/images/upload-video.png');
+
   /// File path: assets/images/user.png
   AssetGenImage get user => const AssetGenImage('assets/images/user.png');
 
@@ -141,6 +145,7 @@ class $AssetsImagesGen {
         species,
         star,
         successMark,
+        uploadVideo,
         user
       ];
 }

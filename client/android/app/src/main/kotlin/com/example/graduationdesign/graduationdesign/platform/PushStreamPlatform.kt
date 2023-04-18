@@ -83,8 +83,8 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
     }
 
     private fun stopRecord(result: MethodChannel.Result) {
-        view?.stopRecord()
-        result.success(true)
+        val fileName: String? = view?.stopRecord()
+        result.success(fileName)
     }
 
     private fun cancelFilter(result: MethodChannel.Result) {

@@ -49,9 +49,13 @@ final List<String> _ignoreAuthPaths = [
   Api.getLives,
   Api.enterLive,
   Api.exitLive,
+  Api.downloadCover,
   Api.getUserInfo,
+  Api.getUserAvatar,
   Api.mockGift,
   Api.getGifts,
+  Api.getVideos,
+  Api.downloadVideo,
 ];
 
 class Api {

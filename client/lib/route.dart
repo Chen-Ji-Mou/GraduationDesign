@@ -8,6 +8,7 @@ import 'package:graduationdesign/screen/login_screen.dart';
 import 'package:graduationdesign/screen/register_screen.dart';
 import 'package:graduationdesign/screen/retrieve_pwd_screen.dart';
 import 'package:graduationdesign/screen/enter_live_screen.dart';
+import 'package:graduationdesign/screen/start_record_screen.dart';
 
 RouteObserver<Route<dynamic>> routeObserver = RouteObserver<Route<dynamic>>();
 
@@ -34,6 +35,9 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     case 'details':
       return MaterialPageRoute<void>(
           builder: (_) => const AccountDetailsScreen());
+    case 'startRecord':
+      return MaterialPageRoute<bool?>(
+          builder: (_) => const StartRecordScreen());
     default:
       return MaterialPageRoute<void>(
           builder: (_) => const RouteNotFoundScreen());

@@ -1,13 +1,16 @@
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/person_screen.dart';
 import 'package:graduationdesign/user_context.dart';
+import 'package:image_picker/image_picker.dart';
 
 enum _TabType { home, publish, person }
 
@@ -149,15 +152,17 @@ class _BottomTab {
   _BottomTab({required this.type, required this.data});
 }
 
-enum _BottomSheetType { live, shortVideo }
+enum _BottomSheetType { live, recordVideo, uploadVideo }
 
 extension _BottomSheetExt on _BottomSheetType {
   String get name {
     switch (this) {
       case _BottomSheetType.live:
         return '发起直播';
-      case _BottomSheetType.shortVideo:
+      case _BottomSheetType.recordVideo:
         return '录制短视频';
+      case _BottomSheetType.uploadVideo:
+        return '上传短视频';
     }
   }
 
@@ -165,8 +170,10 @@ extension _BottomSheetExt on _BottomSheetType {
     switch (this) {
       case _BottomSheetType.live:
         return ColorName.redEC008E;
-      case _BottomSheetType.shortVideo:
+      case _BottomSheetType.recordVideo:
         return ColorName.redF14336;
+      case _BottomSheetType.uploadVideo:
+        return ColorName.yellowFFB52D;
     }
   }
 
@@ -174,13 +181,13 @@ extension _BottomSheetExt on _BottomSheetType {
     switch (this) {
       case _BottomSheetType.live:
         return Assets.images.live.provider();
-      case _BottomSheetType.shortVideo:
+      case _BottomSheetType.recordVideo:
         return Assets.images.shortVideo.provider();
+      case _BottomSheetType.uploadVideo:
+        return Assets.images.uploadVideo.provider();
     }
   }
 }
-
-typedef _BottomSheetItemSelect = void Function(_BottomSheetType type);
 
 class _BottomSheet extends StatelessWidget {
   const _BottomSheet({
@@ -220,7 +227,7 @@ class _BottomSheet extends StatelessWidget {
               buildItem(
                 context,
                 _BottomSheetType.live,
-                onTap: (type) {
+                onTap: () {
                   UserContext.checkLoginCallback(
                     context,
                     () => Navigator.pushNamed(context, 'startLive'),
@@ -229,8 +236,18 @@ class _BottomSheet extends StatelessWidget {
               ),
               buildItem(
                 context,
-                _BottomSheetType.shortVideo,
-                onTap: (type) {},
+                _BottomSheetType.recordVideo,
+                onTap: () {
+                  UserContext.checkLoginCallback(
+                    context,
+                    () => Navigator.pushNamed(context, 'startRecord'),
+                  );
+                },
+              ),
+              buildItem(
+                context,
+                _BottomSheetType.uploadVideo,
+                onTap: uploadVideo,
               ),
             ],
           ),
@@ -242,10 +259,10 @@ class _BottomSheet extends StatelessWidget {
   Widget buildItem(
     BuildContext context,
     _BottomSheetType type, {
-    _BottomSheetItemSelect? onTap,
+    VoidCallback? onTap,
   }) {
     return InkWell(
-      onTap: () => onTap?.call(type),
+      onTap: onTap,
       child: Container(
         width: (screenSize.width - 32) / 4,
         alignment: Alignment.center,
@@ -280,5 +297,28 @@ class _BottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> uploadVideo() async {
+    var video = await ImagePicker().pickVideo(source: ImageSource.gallery);
+    String? videoPath = video?.path;
+    if (videoPath != null) {
+      DioClient.post(Api.uploadVideo, {
+        'file': await MultipartFile.fromFile(
+          videoPath,
+          filename: videoPath.substring(
+            videoPath.lastIndexOf('/') + 1,
+          ),
+        ),
+      }).then((response) {
+        if (response.statusCode == 200 && response.data != null) {
+          if (response.data['code'] == 200) {
+            Fluttertoast.showToast(msg: '上传成功');
+          } else {
+            Fluttertoast.showToast(msg: response.data['msg']);
+          }
+        }
+      });
+    }
   }
 }

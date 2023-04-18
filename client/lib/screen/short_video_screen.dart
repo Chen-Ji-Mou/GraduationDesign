@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:graduationdesign/api.dart';
@@ -7,6 +6,7 @@ import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/widget/video_widget.dart';
 import 'package:like_button/like_button.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ShortVideoScreen extends StatefulWidget {
   const ShortVideoScreen({Key? key}) : super(key: key);
@@ -17,13 +17,15 @@ class ShortVideoScreen extends StatefulWidget {
 
 class _ShortVideoState extends State<ShortVideoScreen>
     with AutomaticKeepAliveClientMixin {
+  final RefreshController controller = RefreshController();
+
   late PageController pageController;
 
   final List<_Video> videos = [];
   final int pageSize = 5;
   final int nextPageTrigger = 2;
 
-  int pageNum = 0;
+  int curPageNum = 0;
   bool isLastPage = false;
 
   @override
@@ -33,9 +35,9 @@ class _ShortVideoState extends State<ShortVideoScreen>
     getVideos();
   }
 
-  void getVideos() {
+  void getVideos({VoidCallback? successCall, VoidCallback? errorCall}) {
     DioClient.get(Api.getVideos, {
-      'pageNum': pageNum,
+      'pageNum': curPageNum,
       'pageSize': pageSize,
     }).then((response) {
       if (response.statusCode == 200 && response.data != null) {
@@ -51,13 +53,26 @@ class _ShortVideoState extends State<ShortVideoScreen>
             result.add(item);
           }
           isLastPage = result.length < pageSize;
+          successCall?.call();
           if (mounted) {
             setState(() => videos.addAll(result));
           }
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
+          errorCall?.call();
         }
+      } else {
+        errorCall?.call();
       }
+    });
+  }
+
+  void onLoading() {
+    curPageNum++;
+    getVideos(successCall: () {
+      controller.loadComplete();
+    }, errorCall: () {
+      controller.loadComplete();
     });
   }
 
@@ -76,16 +91,25 @@ class _ShortVideoState extends State<ShortVideoScreen>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          PageView.builder(
-            controller: pageController,
-            scrollDirection: Axis.vertical,
-            itemCount: videos.length,
-            itemBuilder: (context, index) {
-              if (index == videos.length - nextPageTrigger) {
-                getVideos();
-              }
-              return VideoWidget(videoUrl: videos[index].url);
-            },
+          ScrollConfiguration(
+            behavior: NoBoundaryRippleBehavior(),
+            child: SmartRefresher(
+              controller: controller,
+              enablePullDown: false,
+              enablePullUp: true,
+              onLoading: onLoading,
+              child: PageView.builder(
+                controller: pageController,
+                scrollDirection: Axis.vertical,
+                itemCount: videos.length,
+                itemBuilder: (context, index) {
+                  if (index == videos.length - nextPageTrigger) {
+                    getVideos();
+                  }
+                  return VideoWidget(videoUrl: videos[index].url);
+                },
+              ),
+            ),
           ),
           Positioned(
             right: 9,

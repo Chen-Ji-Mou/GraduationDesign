@@ -4,55 +4,35 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
+import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
-import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/push_stream_widget.dart';
-import 'package:graduationdesign/common.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
-class PushStreamScreen extends StatefulWidget {
-  const PushStreamScreen({
-    Key? key,
-    required this.liveId,
-  }) : super(key: key);
-
-  final String liveId;
+class StartRecordScreen extends StatefulWidget {
+  const StartRecordScreen({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PushStreamState();
+  State<StatefulWidget> createState() => _StartRecordState();
 }
 
-class _PushStreamState extends State<PushStreamScreen> {
-  String get liveId => widget.liveId;
-
+class _StartRecordState extends State<StartRecordScreen> {
   late Size screenSize;
   late double buttonWidth;
-  late WebSocketChannel wsChannel;
 
   final PushStreamController controller = PushStreamController();
   final Completer<void> initialCompleter = Completer<void>();
+
+  bool isRecording = false;
+  DateTime? lastPressedTime;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     screenSize = MediaQuery.of(context).size;
-    buttonWidth = (screenSize.width - 24) / 2;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    wsChannel = WebSocketChannel.connect(
-        Uri.parse('ws://81.71.161.128:8088/websocket?lid=$liveId'));
-  }
-
-  @override
-  void dispose() {
-    wsChannel.sink.close();
-    super.dispose();
+    buttonWidth = (screenSize.width - 32) / 3;
   }
 
   Future<bool> checkInit() async {
@@ -66,7 +46,7 @@ class _PushStreamState extends State<PushStreamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    Widget child = Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
         alignment: Alignment.center,
@@ -115,6 +95,21 @@ class _PushStreamState extends State<PushStreamScreen> {
         ),
       ),
     );
+    return WillPopScope(
+      onWillPop: () async {
+        if (isRecording &&
+            (lastPressedTime == null ||
+                DateTime.now().difference(lastPressedTime!) >
+                    const Duration(milliseconds: 1000))) {
+          Fluttertoast.showToast(msg: '当前正在录制，再次返回将会将会自动保存视频');
+          lastPressedTime = DateTime.now();
+          return false;
+        }
+        await controller.stopRecord();
+        return true;
+      },
+      child: child,
+    );
   }
 
   Widget buildContent() {
@@ -123,11 +118,7 @@ class _PushStreamState extends State<PushStreamScreen> {
       children: [
         PushStreamWidget(
           controller: controller,
-          initialComplete: () async {
-            await controller
-                .setRtmpUrl('rtmp://81.71.161.128:1935/live/$liveId');
-            initialCompleter.complete();
-          },
+          initialComplete: () => initialCompleter.complete(),
         ),
         FutureBuilder(
           future: initialCompleter.future,
@@ -148,25 +139,32 @@ class _PushStreamState extends State<PushStreamScreen> {
       fit: StackFit.expand,
       children: [
         Positioned(
-          left: 8,
-          bottom: 58,
-          child:
-              ScrollBarrageWidget(screenSize: screenSize, wsChannel: wsChannel),
-        ),
-        Positioned(
           width: buttonWidth,
           left: 8,
           bottom: 8,
           child: ElevatedButton(
-            onPressed: () => controller.switchCamera(),
-            child: const Text('翻转摄像头'),
+            onPressed: () async =>
+                isRecording = await controller.startRecord() ?? false,
+            child: const Text('开始录制'),
+          ),
+        ),
+        Positioned(
+          width: buttonWidth,
+          left: buttonWidth + 16,
+          bottom: 8,
+          child: ElevatedButton(
+            onPressed: stopRecord,
+            child: const Text('停止录制'),
           ),
         ),
         Positioned(
           width: buttonWidth,
           right: 8,
           bottom: 8,
-          child: _PushStreamButton(controller: controller, liveId: liveId),
+          child: ElevatedButton(
+            onPressed: () => controller.switchCamera(),
+            child: const Text('翻转摄像头'),
+          ),
         ),
         Positioned(
           top: 8,
@@ -181,12 +179,44 @@ class _PushStreamState extends State<PushStreamScreen> {
                 child: Text('取消滤镜'),
               ),
               PopupMenuItem<Filter>(
-                value: Filter.bigEye,
-                child: Text('大眼滤镜'),
+                value: Filter.vintageTV,
+                child: Text('老式电视滤镜'),
               ),
               PopupMenuItem<Filter>(
-                value: Filter.stick,
-                child: Text('贴纸滤镜'),
+                value: Filter.wave,
+                child: Text('波浪滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.beauty,
+                child: Text('美颜滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.cartoon,
+                child: Text('卡通滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.profound,
+                child: Text('深邃滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.snow,
+                child: Text('雪花滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.oldPhoto,
+                child: Text('老式相片滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.lamoish,
+                child: Text('Lamoish滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.money,
+                child: Text('美元花纹滤镜'),
+              ),
+              PopupMenuItem<Filter>(
+                value: Filter.waterRipple,
+                child: Text('水波纹滤镜'),
               ),
             ],
           ),
@@ -194,56 +224,58 @@ class _PushStreamState extends State<PushStreamScreen> {
       ],
     );
   }
-}
 
-class _PushStreamButton extends StatefulWidget {
-  const _PushStreamButton({
-    Key? key,
-    required this.controller,
-    required this.liveId,
-  }) : super(key: key);
-
-  final PushStreamController controller;
-  final String liveId;
-
-  @override
-  State<StatefulWidget> createState() => _PushStreamButtonState();
-}
-
-class _PushStreamButtonState extends State<_PushStreamButton> {
-  PushStreamController get controller => widget.controller;
-
-  String get liveId => widget.liveId;
-
-  bool pushStreaming = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () async {
-        pushStreaming ? await controller.pause() : await controller.resume();
-        reportServer(
-          pushStreaming ? Api.stopLive : Api.startLive,
-          successCall: () {
-            Fluttertoast.showToast(msg: pushStreaming ? '直播开始' : '直播结束');
-          },
-        );
-        setState(() => pushStreaming = !pushStreaming);
-      },
-      child: Text(pushStreaming ? '停止推流' : '开始推流'),
-    );
-  }
-
-  Future<void> reportServer(String url, {VoidCallback? successCall}) async {
-    Response response = await DioClient.post(url, {'liveId': liveId});
-    if (response.statusCode == 200) {
-      if (response.data['code'] == 200) {
-        successCall?.call();
+  Future<void> stopRecord() async {
+    String? filePath = await controller.stopRecord();
+    if (filePath != null) {
+      bool isSend = await showAlert();
+      if (isSend) {
+        DioClient.post(Api.uploadVideo, {
+          'file': await MultipartFile.fromFile(
+            filePath,
+            filename: filePath.substring(
+              filePath.lastIndexOf("/"),
+            ),
+          ),
+        }).then((response) {
+          if (response.statusCode == 200 && response.data != null) {
+            if (response.data['code'] == 200) {
+              Fluttertoast.showToast(msg: '上传成功');
+            } else {
+              Fluttertoast.showToast(msg: response.data['msg']);
+            }
+          }
+          exit(true);
+        });
       } else {
-        Fluttertoast.showToast(msg: response.data['msg']);
+        exit(true);
       }
     }
   }
+
+  Future<bool> showAlert() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('录制完成'),
+            content: const Text('已保存至系统相册，需要现在上传发布吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('是的'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('不了'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  void exit([bool? result]) => Navigator.pop(context, result);
 }
 
 class _ErrorWidget extends StatelessWidget {
