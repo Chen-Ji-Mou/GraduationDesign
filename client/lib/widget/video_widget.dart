@@ -25,36 +25,38 @@ class _VideoState extends State<VideoWidget>
   @override
   void initState() {
     super.initState();
-    controller = BetterPlayerController(
-      BetterPlayerConfiguration(
-        autoPlay: true,
-        looping: true,
-        handleLifecycle: true,
-        fit: BoxFit.contain,
-        playerVisibilityChangedBehavior: onVisibilityChanged,
-        placeholder: const LoadingWidget(),
-        showPlaceholderUntilPlay: true,
+    var dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      videoUrl,
+      cacheConfiguration: BetterPlayerCacheConfiguration(
+        useCache: true,
+        preCacheSize: 1 * 1024 * 1024,
+        maxCacheSize: 20 * 1024 * 1024,
+        maxCacheFileSize: 20 * 1024 * 1024,
+        key: videoUrl,
       ),
-      betterPlayerDataSource: BetterPlayerDataSource(
-        BetterPlayerDataSourceType.network,
-        videoUrl,
-        cacheConfiguration: BetterPlayerCacheConfiguration(
-          useCache: true,
-          preCacheSize: 1 * 1024 * 1024,
-          maxCacheSize: 50 * 1024 * 1024,
-          maxCacheFileSize: 50 * 1024 * 1024,
-          key: videoUrl,
-        ),
+      bufferingConfiguration: const BetterPlayerBufferingConfiguration(
+        minBufferMs: 2000,
+        maxBufferMs: 10000,
+        bufferForPlaybackMs: 1000,
+        bufferForPlaybackAfterRebufferMs: 2000,
       ),
-      betterPlayerPlaylistConfiguration:
-          const BetterPlayerPlaylistConfiguration(),
     );
+    var config = BetterPlayerConfiguration(
+      autoPlay: true,
+      looping: true,
+      fit: BoxFit.contain,
+      playerVisibilityChangedBehavior: onVisibilityChanged,
+      placeholder: const LoadingWidget(),
+      showPlaceholderUntilPlay: true,
+    );
+    controller = BetterPlayerController(config);
+    controller.setupDataSource(dataSource);
     controller.setControlsEnabled(false);
   }
 
   @override
   void dispose() {
-    controller.dispose();
     isDisposing = true;
     super.dispose();
   }

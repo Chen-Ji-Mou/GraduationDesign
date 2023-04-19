@@ -4,7 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+
+typedef _SuccessCallback = void Function(List<_Detail> details);
+typedef _ErrorCallback = void Function();
 
 class AccountDetailsScreen extends StatefulWidget {
   const AccountDetailsScreen({Key? key}) : super(key: key);
@@ -13,7 +17,8 @@ class AccountDetailsScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _AccountDetailsState();
 }
 
-class _AccountDetailsState extends State<AccountDetailsScreen> {
+class _AccountDetailsState extends State<AccountDetailsScreen>
+    with LifecycleObserver {
   final RefreshController controller = RefreshController();
   final int pageSize = 10;
 
@@ -30,10 +35,16 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  void onResume() {
     getBalance();
-    getDetails();
+    getDetails(successCall: (result) {
+      if (mounted) {
+        setState(() => details
+          ..clear()
+          ..addAll(result)
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
+      }
+    });
   }
 
   void getBalance() {
@@ -51,7 +62,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
     });
   }
 
-  void getDetails({VoidCallback? successCall, VoidCallback? errorCall}) {
+  void getDetails({_SuccessCallback? successCall, _ErrorCallback? errorCall}) {
     DioClient.get(Api.getDetailed, {
       'pageNum': pageNum,
       'pageSize': pageSize,
@@ -68,10 +79,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
             )..transformTimestamp();
             result.add(item);
           }
-          successCall?.call();
-          if (mounted) {
-            setState(() => details.addAll(result));
-          }
+          successCall?.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
           errorCall?.call();
@@ -83,7 +91,15 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
   }
 
   void onLoading() {
-    getDetails(successCall: () {
+    pageNum++;
+    getDetails(successCall: (result) {
+      if (mounted) {
+        setState(() => details
+          ..addAll(result)
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
+      }
+      controller.loadComplete();
+    }, errorCall: () {
       controller.loadComplete();
     });
   }
@@ -213,8 +229,8 @@ class _AccountDetailsState extends State<AccountDetailsScreen> {
         children: [
           Text(
             detail.income == 0
-                ? '送礼物花费${detail.expenditure}金币'
-                : '充值获取${detail.income}金币',
+                ? '送礼物消费${detail.expenditure}金币'
+                : '充值获得${detail.income}金币',
             style: GoogleFonts.roboto(
               height: 1,
               fontSize: 14,

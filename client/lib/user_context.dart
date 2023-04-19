@@ -10,20 +10,24 @@ class UserContext {
 
   static String? _name;
   static String? _email;
+  static String? _avatarUrl;
 
   static String get name => _name ?? '';
 
   static String get email => _email ?? '';
 
+  static String get avatarUrl => _avatarUrl ?? '';
+
   static bool get isLogin => SpManager.getString('token') != null;
 
   static Future<bool> getUserInfo() async {
     Response response = await DioClient.get(Api.getOwnInfo);
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
         Map<String, dynamic> map = response.data['data'];
         _name = map['name'];
         _email = map['email'];
+        _avatarUrl = map['avatarUrl'];
         return true;
       } else {
         return false;

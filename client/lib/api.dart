@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:graduationdesign/sp_manager.dart';
 
 class DioClient {
@@ -38,6 +39,13 @@ class _ApiInterceptor extends Interceptor {
     }
     handler.next(options);
   }
+
+  @override
+  void onError(DioError err, ErrorInterceptorHandler handler) {
+    debugPrint(
+        'DioError: url ${err.requestOptions.path} code: ${err.response?.statusCode} message: ${err.message}');
+    handler.next(err);
+  }
 }
 
 final List<String> _ignoreAuthPaths = [
@@ -51,7 +59,7 @@ final List<String> _ignoreAuthPaths = [
   Api.exitLive,
   Api.downloadCover,
   Api.getUserInfo,
-  Api.getUserAvatar,
+  Api.downloadAvatar,
   Api.mockGift,
   Api.getGifts,
   Api.getVideos,
@@ -100,9 +108,7 @@ class Api {
 
   static const String uploadAvatar = "/person/uploadAvatar";
 
-  static const String getOwnAvatar = "/person/getOwnAvatar";
-
-  static const String getUserAvatar = "/person/getUserAvatar";
+  static const String downloadAvatar = "/person/downloadAvatar";
 
   static const String mockGift = "/gift/mock";
 

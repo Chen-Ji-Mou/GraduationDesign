@@ -50,17 +50,27 @@ public class DetailedController {
     private Result getTotalIncome(HttpServletRequest request) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         Detailed detailed = detailedService.sumIncome(userId);
-        Integer totalIncome = detailed.getIncome();
-        log.info("[DetailedController] getTotalIncome 获取该用户账户总收入成功 totalIncome {}", totalIncome);
-        return Result.success(totalIncome);
+        if (detailed == null) {
+            log.info("[DetailedController] getTotalIncome 账户明细为空 totalIncome {}", 0);
+            return Result.success(0);
+        } else {
+            Integer totalIncome = detailed.getIncome();
+            log.info("[DetailedController] getTotalIncome 获取该用户账户总收入成功 totalIncome {}", totalIncome);
+            return Result.success(totalIncome);
+        }
     }
 
     @RequestMapping(value = "/getTotalExpenditure", method = RequestMethod.GET)
     private Result getTotalExpenditure(HttpServletRequest request) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         Detailed detailed = detailedService.sumExpenditure(userId);
-        Integer totalExpenditure = detailed.getExpenditure();
-        log.info("[DetailedController] getTotalExpenditure 获取该用户账户总支出成功 totalExpenditure {}", totalExpenditure);
-        return Result.success(totalExpenditure);
+        if (detailed == null) {
+            log.info("[DetailedController] getTotalExpenditure 账户明细为空 totalIncome {}", 0);
+            return Result.success(0);
+        } else {
+            Integer totalExpenditure = detailed.getExpenditure();
+            log.info("[DetailedController] getTotalExpenditure 获取该用户账户总支出成功 totalExpenditure {}", totalExpenditure);
+            return Result.success(totalExpenditure);
+        }
     }
 }

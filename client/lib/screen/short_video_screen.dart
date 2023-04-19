@@ -22,8 +22,7 @@ class _ShortVideoState extends State<ShortVideoScreen>
   late PageController pageController;
 
   final List<_Video> videos = [];
-  final int pageSize = 5;
-  final int nextPageTrigger = 2;
+  final int pageSize = 6;
 
   int curPageNum = 0;
   bool isLastPage = false;
@@ -55,7 +54,9 @@ class _ShortVideoState extends State<ShortVideoScreen>
           isLastPage = result.length < pageSize;
           successCall?.call();
           if (mounted) {
-            setState(() => videos.addAll(result));
+            setState(() => videos
+              ..addAll(result)
+              ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
           }
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
@@ -64,15 +65,6 @@ class _ShortVideoState extends State<ShortVideoScreen>
       } else {
         errorCall?.call();
       }
-    });
-  }
-
-  void onLoading() {
-    curPageNum++;
-    getVideos(successCall: () {
-      controller.loadComplete();
-    }, errorCall: () {
-      controller.loadComplete();
     });
   }
 
@@ -93,22 +85,23 @@ class _ShortVideoState extends State<ShortVideoScreen>
         children: [
           ScrollConfiguration(
             behavior: NoBoundaryRippleBehavior(),
-            child: SmartRefresher(
-              controller: controller,
-              enablePullDown: false,
-              enablePullUp: true,
-              onLoading: onLoading,
-              child: PageView.builder(
-                controller: pageController,
-                scrollDirection: Axis.vertical,
-                itemCount: videos.length,
-                itemBuilder: (context, index) {
-                  if (index == videos.length - nextPageTrigger) {
-                    getVideos();
-                  }
+            child: PageView.builder(
+              controller: pageController,
+              scrollDirection: Axis.vertical,
+              itemCount: videos.length + (isLastPage ? 0 : 1),
+              onPageChanged: (index) {
+                if (index == videos.length) {
+                  curPageNum++;
+                  getVideos();
+                }
+              },
+              itemBuilder: (context, index) {
+                if (index == videos.length) {
+                  return const C(0);
+                } else {
                   return VideoWidget(videoUrl: videos[index].url);
-                },
-              ),
+                }
+              },
             ),
           ),
           Positioned(

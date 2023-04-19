@@ -87,21 +87,19 @@ public class PersonController {
         }
     }
 
-    @RequestMapping(value = "/getOwnAvatar", method = RequestMethod.GET)
-    private void getOwnAvatar(HttpServletRequest request, HttpServletResponse response) {
-        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        String avatarFileName = userService.findUserById(userId).getAvatarUrl();
-        String avatarFilePath = fileRootPath + '/' + avatarFileName;
+    @RequestMapping(value = "/downloadAvatar", method = RequestMethod.GET)
+    private void downloadAvatar(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+        String avatarFilePath = fileRootPath + '/' + fileName;
         File file = new File(avatarFilePath);
         if (!file.exists()) {
-            log.info("[PersonController] getOwnAvatar 头像文件不存在 userId {}", userId);
+            log.info("[PersonController] downloadAvatar 头像文件不存在 name {}", fileName);
         }
 
         response.reset();
-        response.setContentType("image/jpeg");
+        response.setContentType("application/octet-stream");
         response.setCharacterEncoding("utf-8");
         response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "attachment;filename=" + avatarFileName);
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
 
         try {
             // 将文件写入输入流
@@ -113,40 +111,9 @@ public class PersonController {
             OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
             outputStream.write(buffer);
             outputStream.flush();
-            log.info("[PersonController] getOwnAvatar 头像文件下载成功 userId {} name {}", userId, avatarFileName);
+            log.info("[PersonController] downloadAvatar 头像文件下载成功 name {}", fileName);
         } catch (IOException e) {
-            log.info("[PersonController] getOwnAvatar 头像文件下载失败 name {}", avatarFileName);
-        }
-    }
-
-    @RequestMapping(value = "/getUserAvatar", method = RequestMethod.GET)
-    private void getUserAvatar(@RequestParam(value = "userId") String userId, HttpServletResponse response) {
-        String avatarFileName = userService.findUserById(userId).getAvatarUrl();
-        String avatarFilePath = fileRootPath + '/' + avatarFileName;
-        File file = new File(avatarFilePath);
-        if (!file.exists()) {
-            log.info("[PersonController] getUserAvatar 头像文件不存在 userId {}", userId);
-        }
-
-        response.reset();
-        response.setContentType("image/jpeg");
-        response.setCharacterEncoding("utf-8");
-        response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "attachment;filename=" + avatarFileName);
-
-        try {
-            // 将文件写入输入流
-            InputStream fis = new BufferedInputStream(new FileInputStream(file));
-            byte[] buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
-            // 将文件写入输出流
-            OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
-            outputStream.write(buffer);
-            outputStream.flush();
-            log.info("[PersonController] getUserAvatar 头像文件下载成功 userId {} name {}", userId, avatarFileName);
-        } catch (IOException e) {
-            log.info("[PersonController] getUserAvatar 头像文件下载失败 name {}", avatarFileName);
+            log.info("[PersonController] downloadAvatar 头像文件下载失败 name {}", fileName);
         }
     }
 }

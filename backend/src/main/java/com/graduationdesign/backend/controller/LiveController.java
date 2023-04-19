@@ -156,7 +156,7 @@ public class LiveController {
         }
 
         response.reset();
-        response.setContentType("image/jpeg");
+        response.setContentType("application/octet-stream");
         response.setCharacterEncoding("utf-8");
         response.setContentLength((int) file.length());
         response.setHeader("Content-Disposition", "attachment;filename=" + coverFileName);

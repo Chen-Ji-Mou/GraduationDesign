@@ -37,6 +37,7 @@ class FileLoadChannel(binaryMessenger: BinaryMessenger, context: Context) :
                 Log.d("FileLoadChannel", "[loadFile] 文件加载中")
                 Thread.sleep(200)
             }
+            Log.d("FileLoadChannel", "[loadFile] 文件加载成功")
             methodResult.success(result1.get() && result2.get())
         } catch (e: java.lang.Exception) {
             Log.e("FileLoadChannel", "[loadFile] $e")

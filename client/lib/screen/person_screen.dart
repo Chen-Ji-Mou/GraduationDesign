@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +9,7 @@ import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 import 'package:graduationdesign/user_context.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PersonScreen extends StatefulWidget {
   const PersonScreen({Key? key, this.onUserLogout}) : super(key: key);
@@ -26,6 +29,7 @@ class _PersonState extends State<PersonScreen>
   int balance = 0;
   int income = 0;
   int expenditure = 0;
+  String avatarUrl = '';
 
   @override
   void didChangeDependencies() {
@@ -38,6 +42,10 @@ class _PersonState extends State<PersonScreen>
     refreshBalance();
     refreshIncome();
     refreshExpenditure();
+    if (UserContext.avatarUrl.isNotEmpty) {
+      avatarUrl =
+          'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}';
+    }
   }
 
   void refreshBalance() {
@@ -92,21 +100,33 @@ class _PersonState extends State<PersonScreen>
       child: Column(
         children: [
           const C(26),
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: ColorName.gray969696.withOpacity(0.3),
-                  offset: const Offset(0, 20),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Assets.images.personDefault.image(
-              width: 109,
-              height: 109,
-              fit: BoxFit.cover,
+          InkWell(
+            onTap: uploadAvatar,
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorName.gray969696.withOpacity(0.3),
+                    offset: const Offset(10, 20),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: avatarUrl.isEmpty
+                  ? Assets.images.personDefault.image(
+                      width: 109,
+                      height: 109,
+                      fit: BoxFit.cover,
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: avatarUrl,
+                      width: 109,
+                      height: 109,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const LoadingWidget(),
+                    ),
             ),
           ),
           const C(26),
@@ -151,18 +171,18 @@ class _PersonState extends State<PersonScreen>
                 ),
                 buildItem(
                   number: income,
-                  title: '总收入',
+                  title: '总充值',
                   onTap: () => Navigator.pushNamed(context, 'details'),
                 ),
                 buildItem(
                   number: expenditure,
-                  title: '总支出',
+                  title: '总消费',
                   onTap: () => Navigator.pushNamed(context, 'details'),
                 ),
               ],
             ),
           ),
-          const C(26),
+          const C(32),
           InkWell(
             onTap: () async {
               bool isLogout = await UserContext.onUserLogout();
@@ -227,6 +247,36 @@ class _PersonState extends State<PersonScreen>
         ],
       ),
     );
+  }
+
+  Future<void> uploadAvatar() async {
+    var image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    String? imagePath = image?.path;
+    if (imagePath != null) {
+      DioClient.post(Api.uploadAvatar, {
+        'file': await MultipartFile.fromFile(
+          imagePath,
+          filename: imagePath.substring(
+            imagePath.lastIndexOf('/') + 1,
+          ),
+        ),
+      }).then((response) async {
+        if (response.statusCode == 200 && response.data != null) {
+          if (response.data['code'] == 200) {
+            Fluttertoast.showToast(msg: '上传成功');
+            bool refreshUserInfoSuccess = await UserContext.getUserInfo();
+            if (refreshUserInfoSuccess) {
+              if (mounted) {
+                setState(() => avatarUrl =
+                    'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}');
+              }
+            }
+          } else {
+            Fluttertoast.showToast(msg: response.data['msg']);
+          }
+        }
+      });
+    }
   }
 
   @override
