@@ -3,44 +3,42 @@ package com.example.graduationdesign.graduationdesign
 import android.content.Context
 import android.opengl.GLES20
 import android.util.Log
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
+import java.util.concurrent.*
 
 object Utils {
     private const val TAG = "Utils"
-    private val threadPool = Executors.newSingleThreadExecutor()
+    val normalThreadPool: ExecutorService = Executors.newFixedThreadPool(2)
+    val scheduleThreadPool: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     /**
      * 拷贝Assets文件放入Sdcard
      * @param context
      * @param fileName
      */
-    fun copyAssetsToSdcard(context: Context, fileName: String) : Future<Boolean> {
-        return threadPool.submit(Callable {
+    fun copyAssetsToSdcard(context: Context, fileName: String): Future<Boolean> {
+        return normalThreadPool.submit(Callable {
             try {
                 val dir = context.externalCacheDir
                 val file = File("${dir?.absolutePath}/$fileName")
                 if (file.exists()) {
                     return@Callable true
                 }
-                val inputStream = context.assets.open(fileName)
-                val outputStream = FileOutputStream(file)
-                val buffer = ByteArray(1024)
-                var byteCount: Int
-                do {
-                    byteCount = inputStream.read(buffer)
-                    if (byteCount != -1) {
-                        outputStream.write(buffer, 0, byteCount)
-                    }
-                } while (byteCount != -1)
-                outputStream.flush()
+                // 将文件写入输入流
+                val inputStream = BufferedInputStream(context.assets.open(fileName))
+                val buffer = ByteArray(inputStream.available())
+                inputStream.read(buffer)
                 inputStream.close()
+                // 将文件写入输出流
+                val outputStream = BufferedOutputStream(FileOutputStream(file))
+                outputStream.write(buffer)
+                outputStream.flush()
                 outputStream.close()
                 return@Callable true
             } catch (e: Exception) {
@@ -113,5 +111,66 @@ object Utils {
             //3，解绑纹理（传0 表示与当前纹理解绑）
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         }
+    }
+
+    /**
+     * 将NV21图像旋转270度
+     * @param data
+     * @param imageWidth
+     * @param imageHeight
+     */
+    fun rotateNV21Degree270(data: ByteArray, imageWidth: Int, imageHeight: Int): ByteArray {
+        val yuv = ByteArray(imageWidth * imageHeight * 3 / 2)
+        // Rotate the Y luma
+        var i = 0
+        for (x in imageWidth - 1 downTo 0) {
+            for (y in 0 until imageHeight) {
+                yuv[i] = data[y * imageWidth + x]
+                i++
+            }
+        } // Rotate the U and V color components
+        i = imageWidth * imageHeight
+        var x = imageWidth - 1
+        while (x > 0) {
+            for (y in 0 until imageHeight / 2) {
+                yuv[i] = data[imageWidth * imageHeight + y * imageWidth + (x - 1)]
+                i++
+                yuv[i] = data[imageWidth * imageHeight + y * imageWidth + x]
+                i++
+            }
+            x -= 2
+        }
+        return yuv
+    }
+
+    /**
+     * 将NV21图像水平翻转
+     * @param data
+     * @param imageWidth
+     * @param imageHeight
+     */
+    fun reverseNV21(data: ByteArray, imageWidth: Int, imageHeight: Int): ByteArray {
+        val dst = ByteArray(imageWidth * imageHeight * 3 / 2)
+        var index = 0
+        for (y in 0 until imageHeight) for (x in 0 until imageWidth) {
+            val oldX = imageWidth - 1 - x
+            val oldIndex = y * imageWidth + oldX
+            dst[index++] = data[oldIndex]
+        }
+        var y = 0
+        while (y < imageHeight) {
+            var x = 0
+            while (x < imageWidth) {
+                val oldY = y
+                val oldX = imageWidth - 1 - (x + 1)
+                val vuY = imageHeight + oldY / 2
+                val vuIndex = vuY * imageWidth + oldX
+                dst[index++] = data[vuIndex]
+                dst[index++] = data[vuIndex + 1]
+                x += 2
+            }
+            y += 2
+        }
+        return dst
     }
 }

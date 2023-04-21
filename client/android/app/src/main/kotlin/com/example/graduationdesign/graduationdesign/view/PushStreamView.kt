@@ -2,6 +2,9 @@ package com.example.graduationdesign.graduationdesign.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.hardware.Camera
 import android.media.CamcorderProfile
 import android.media.MediaScannerConnection
@@ -11,6 +14,7 @@ import android.util.Size
 import android.view.SurfaceHolder
 import android.widget.RelativeLayout
 import com.example.graduationdesign.graduationdesign.Camera1ApiManagerProxy
+import com.example.graduationdesign.graduationdesign.Utils
 import com.example.graduationdesign.graduationdesign.filter.BigEyeFilterRender
 import com.example.graduationdesign.graduationdesign.filter.StickFilterRender
 import com.example.graduationdesign.graduationdesign.track.FaceTrack
@@ -22,20 +26,32 @@ import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.rtmp.RtmpCamera1
 import com.pedro.rtplibrary.view.AspectRatioMode
 import com.pedro.rtplibrary.view.OpenGlView
+import java.io.BufferedOutputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
-class PushStreamView(context: Context) : RelativeLayout(context, null, 0), ConnectCheckerRtmp,
-    SurfaceHolder.Callback, Camera1ApiManagerProxy.PreviewCallback {
+class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
+    RelativeLayout(context), ConnectCheckerRtmp, SurfaceHolder.Callback,
+    Camera1ApiManagerProxy.PreviewCallback {
     private val mContext: Context
+    private val mCallback: (filePath: String) -> Unit
+
     private var rtmpUrl: String? = null
     private var mSurfaceView: OpenGlView? = null
     private var mRtmpCamera1: RtmpCamera1? = null
     private var currentDateAndTime: String = ""
     private var mFaceTrack: FaceTrack? = null
     private var yuvBuffer: ByteArray? = null
+    private var mScheduleTask: ScheduledFuture<Unit>? = null
+    private var mPreviewImagePath: String = ""
+    private var previewBuffer: ByteArray? = null
 
     private val mRecordFolder: File
         get() {
@@ -57,6 +73,7 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
 
     init {
         mContext = context
+        mCallback = callback
         createSurfaceView()
         initRtmpCamera1()
     }
@@ -119,7 +136,40 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
 
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         mFaceTrack?.detector(data)
+        previewBuffer = data
         camera.addCallbackBuffer(yuvBuffer)
+    }
+
+    private fun generatePreviewImage(data: ByteArray?) {
+        if (data == null) {
+            Log.e(TAG, "[generatePreviewImage] 相机预览数据为空")
+            return
+        }
+        try {
+            val dataAfterRotate =
+                Utils.rotateNV21Degree270(data, previewSize.width, previewSize.height)
+            val originalData =
+                Utils.reverseNV21(dataAfterRotate, previewSize.height, previewSize.width)
+            val yuvImage = YuvImage(
+                originalData, ImageFormat.NV21, previewSize.height, previewSize.width, null
+            )
+            val imageOutputStream = ByteArrayOutputStream()
+            yuvImage.compressToJpeg(
+                Rect(0, 0, previewSize.height, previewSize.width), 80, imageOutputStream
+            )
+            val jpegData = imageOutputStream.toByteArray()
+            mPreviewImagePath =
+                "${mContext.externalCacheDir?.absolutePath}/camera_snapshot_${System.currentTimeMillis()}.jpg"
+            val file = File(mPreviewImagePath)
+            val fileOutputStream = BufferedOutputStream(FileOutputStream(file))
+            fileOutputStream.write(jpegData, 0, jpegData.size)
+            fileOutputStream.flush()
+            fileOutputStream.close()
+            Log.e(TAG, "[generatePreviewImage] 相机快照生成成功 path $mPreviewImagePath")
+            mCallback(mPreviewImagePath)
+        } catch (e: Exception) {
+            Log.e(TAG, "[generatePreviewImage] 相机快照生成失败 $e")
+        }
     }
 
     override fun onAuthErrorRtmp() {
@@ -171,6 +221,12 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         } else {
             Log.w(TAG, "[resume] Error preparing stream, This device cant do it")
         }
+        Utils.normalThreadPool.execute {
+            generatePreviewImage(previewBuffer)
+        }
+        mScheduleTask = Utils.scheduleThreadPool.schedule(Callable {
+            generatePreviewImage(previewBuffer)
+        }, 15, TimeUnit.MINUTES)
     }
 
     fun pause() {
@@ -178,14 +234,17 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             return
         }
         mRtmpCamera1?.stopStream()
+        mScheduleTask?.cancel(true)
+        mScheduleTask = null
     }
 
     fun release() {
         if (mRtmpCamera1?.isRecording == true) {
             mRtmpCamera1?.stopRecord()
-            updateGallery("${mRecordFolder.absolutePath}/$currentDateAndTime.mp4")
+            updateGallery("${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4")
             Log.d(
-                TAG, "[release] file $currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
+                TAG,
+                "[release] file video_$currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
             )
             currentDateAndTime = ""
         }
@@ -195,11 +254,14 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         mRtmpCamera1?.stopPreview()
         mSurfaceView?.holder?.removeCallback(this)
         mFaceTrack?.stopTrack()
+        mScheduleTask?.cancel(true)
 
         mSurfaceView = null
         mRtmpCamera1 = null
         mFaceTrack = null
         yuvBuffer = null
+        mScheduleTask = null
+        previewBuffer = null
     }
 
     fun switchCamera() {
@@ -223,7 +285,7 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
             if (mRtmpCamera1?.isStreaming != true) {
                 if (mRtmpCamera1?.prepareAudio() == true && mRtmpCamera1?.prepareVideo() == true) {
                     mRtmpCamera1?.startRecord(
-                        "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
+                        "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
                     )
                     Log.d(TAG, "[startRecord] Recording...")
                 } else {
@@ -231,14 +293,14 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
                 }
             } else {
                 mRtmpCamera1?.startRecord(
-                    "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
+                    "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
                 )
                 Log.d(TAG, "[startRecord] Recording...")
             }
         } catch (e: IOException) {
             mRtmpCamera1?.stopRecord()
             updateGallery(
-                "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
+                "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
             )
             Log.e(TAG, "[startRecord] Exception: ${e.message}")
         }
@@ -250,12 +312,13 @@ class PushStreamView(context: Context) : RelativeLayout(context, null, 0), Conne
         }
         mRtmpCamera1?.stopRecord()
         updateGallery(
-            "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
+            "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
         )
         Log.d(
-            TAG, "[stopRecord] file $currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
+            TAG,
+            "[stopRecord] file video_$currentDateAndTime.mp4 saved in ${mRecordFolder.absolutePath}"
         )
-        return "${mRecordFolder.absolutePath}/$currentDateAndTime.mp4"
+        return "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
     }
 
     fun cancelFilter() {

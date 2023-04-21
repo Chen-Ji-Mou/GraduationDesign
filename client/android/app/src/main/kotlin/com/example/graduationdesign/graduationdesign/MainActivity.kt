@@ -1,7 +1,6 @@
 package com.example.graduationdesign.graduationdesign
 
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.util.Log
 import com.alipay.sdk.app.EnvUtils
 import com.example.graduationdesign.graduationdesign.alipay.AlipayChannel
@@ -55,5 +54,11 @@ class MainActivity : FlutterActivity() {
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onDestroy() {
+        Utils.normalThreadPool.shutdown()
+        Utils.scheduleThreadPool.shutdown()
+        super.onDestroy()
     }
 }

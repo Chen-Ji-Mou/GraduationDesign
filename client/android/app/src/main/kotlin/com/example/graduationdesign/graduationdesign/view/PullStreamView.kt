@@ -6,7 +6,7 @@ import android.view.SurfaceView
 import android.widget.RelativeLayout
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 
-class PullStreamView(context: Context) : RelativeLayout(context, null, 0), SurfaceHolder.Callback {
+class PullStreamView(context: Context) : RelativeLayout(context), SurfaceHolder.Callback {
     private var specHeightSize: Int = 0
     private var specWidthSize: Int = 0
 

@@ -1,6 +1,8 @@
 package com.example.graduationdesign.graduationdesign.platform
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import com.example.graduationdesign.graduationdesign.view.PushStreamView
 import io.flutter.plugin.common.BinaryMessenger
@@ -12,18 +14,28 @@ import io.flutter.plugin.platform.PlatformViewFactory
 
 class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : PlatformView,
     MethodChannel.MethodCallHandler {
+
+    private var channel: MethodChannel?
     private var view: PushStreamView?
+    private var handler: Handler? = Handler(Looper.getMainLooper())
 
     init {
-        view = PushStreamView(context)
-        MethodChannel(messenger, "pushStreamChannel").setMethodCallHandler(this)
+        channel =
+            MethodChannel(messenger, "pushStreamChannel").also { it.setMethodCallHandler(this) }
+        view = PushStreamView(context) {
+            handler?.post {
+                channel?.invokeMethod("returnCameraSnapshotPath", it)
+            }
+        }
     }
 
     override fun getView(): View? = view
 
     override fun dispose() {
+        channel = null
         view?.release()
         view = null
+        handler = null
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {

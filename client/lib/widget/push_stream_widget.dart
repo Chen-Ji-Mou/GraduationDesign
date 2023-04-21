@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 
 enum Filter {
@@ -19,7 +21,8 @@ enum Filter {
 }
 
 class PushStreamController {
-  static const MethodChannel _channel = MethodChannel('pushStreamChannel');
+  static final MethodChannel _channel = const MethodChannel('pushStreamChannel')
+    ..setMethodCallHandler(_onMethodCall);
   bool _initialized = false;
 
   Future<void> setRtmpUrl(String url) async {
@@ -109,6 +112,32 @@ class PushStreamController {
           await _channel.invokeMethod('addStickFilter');
           break;
       }
+    }
+  }
+
+  static Future<dynamic> _onMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case 'returnCameraSnapshotPath':
+        String filePath = call.arguments as String;
+        DioClient.post(Api.uploadCover, {
+          'file': await MultipartFile.fromFile(
+            filePath,
+            filename: filePath.substring(
+              filePath.lastIndexOf('/') + 1,
+            ),
+          ),
+        }).then((response) {
+          if (response.statusCode == 200 && response.data != null) {
+            if (response.data['code'] == 200) {
+              debugPrint(
+                  '[PushStreamController] onMethodCall method: returnCameraSnapshotPath result: success');
+            } else {
+              debugPrint(
+                  '[PushStreamController] onMethodCall method: returnCameraSnapshotPath result: fail msg: ${response.data['msg']}');
+            }
+          }
+        });
+        break;
     }
   }
 }

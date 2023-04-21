@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -61,12 +62,15 @@ class _LiveHallState extends State<LiveHallScreen>
         if (response.data['code'] == 200) {
           List<_Live> result = [];
           for (var live in response.data['data']) {
-            result.add(_Live(
-              live['id'],
-              live['userId'],
-              live['ing'],
-              live['number'],
-            ));
+            if (live['ing'] == true) {
+              result.add(_Live(
+                live['id'],
+                live['userId'],
+                live['ing'],
+                live['number'],
+                live['coverUrl'],
+              ));
+            }
           }
           await Future.wait(result.map((e) => e.transformBlogger()));
           successCall?.call(result);
@@ -183,7 +187,10 @@ class _LiveHallState extends State<LiveHallScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           image: DecorationImage(
-            image: Assets.images.cover.provider(),
+            image: live.coverUrl == null
+                ? Assets.images.cover.provider()
+                : CachedNetworkImageProvider(
+                    'http://${Api.host}:${Api.port}/live/downloadCover?fileName=${live.coverUrl}'),
             fit: BoxFit.cover,
           ),
         ),
@@ -252,8 +259,9 @@ class _Live {
   String blogger;
   bool ing;
   int number;
+  String? coverUrl;
 
-  _Live(this.id, this.blogger, this.ing, this.number);
+  _Live(this.id, this.blogger, this.ing, this.number, this.coverUrl);
 
   Future<void> transformBlogger() async {
     Response response =

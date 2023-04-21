@@ -112,8 +112,14 @@ public class LiveController {
     }
 
     @RequestMapping(value = "/uploadCover", method = RequestMethod.POST)
-    private Result uploadCover(@RequestParam(name = "liveId") String liveId,
-                               @RequestParam("file") MultipartFile file) {
+    private Result uploadCover(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        Live live = liveService.findLiveByUserId(userId);
+        if (live == null) {
+            log.info("[LiveController] uploadCover 用户未拥有直播间 userId {}", userId);
+            return Result.failed(500, "用户未拥有直播间");
+        }
+        String liveId = live.getId();
         String coverFileName = "cover_" + liveId + ".jpg";
         String coverFilePath = fileRootPath + '/' + coverFileName;
         File coverFile = new File(coverFilePath);
@@ -147,19 +153,18 @@ public class LiveController {
     }
 
     @RequestMapping(value = "/downloadCover", method = RequestMethod.GET)
-    private void downloadCover(@RequestParam(name = "liveId") String liveId, HttpServletResponse response) {
-        String coverFileName = liveService.findLiveById(liveId).getCoverUrl();
-        String coverFilePath = fileRootPath + '/' + coverFileName;
+    private void downloadCover(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+        String coverFilePath = fileRootPath + '/' + fileName;
         File file = new File(coverFilePath);
         if (!file.exists()) {
-            log.info("[LiveController] downloadCover 直播间封面文件不存在 liveId {}", liveId);
+            log.info("[LiveController] downloadCover 直播间封面文件不存在 name {}", fileName);
         }
 
         response.reset();
         response.setContentType("application/octet-stream");
         response.setCharacterEncoding("utf-8");
         response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "attachment;filename=" + coverFileName);
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
 
         try {
             // 将文件写入输入流
@@ -171,9 +176,9 @@ public class LiveController {
             OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
             outputStream.write(buffer);
             outputStream.flush();
-            log.info("[LiveController] downloadCover 直播间封面文件下载成功 liveId {} name {}", liveId, coverFileName);
+            log.info("[LiveController] downloadCover 直播间封面文件下载成功 name {}", fileName);
         } catch (IOException e) {
-            log.info("[LiveController] downloadCover 直播间封面文件下载失败 name {}", coverFileName);
+            log.info("[LiveController] downloadCover 直播间封面文件下载失败 name {}", fileName);
         }
     }
 }
