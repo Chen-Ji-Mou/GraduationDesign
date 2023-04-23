@@ -26,6 +26,10 @@ class $AssetsImagesGen {
   AssetGenImage get arrowLeft =>
       const AssetGenImage('assets/images/arrow-left.png');
 
+  /// File path: assets/images/auth-icon.png
+  AssetGenImage get authIcon =>
+      const AssetGenImage('assets/images/auth-icon.png');
+
   /// File path: assets/images/back.png
   AssetGenImage get back => const AssetGenImage('assets/images/back.png');
 
@@ -73,12 +77,24 @@ class $AssetsImagesGen {
   /// File path: assets/images/live.png
   AssetGenImage get live => const AssetGenImage('assets/images/live.png');
 
+  /// File path: assets/images/logout-icon.png
+  AssetGenImage get logoutIcon =>
+      const AssetGenImage('assets/images/logout-icon.png');
+
   /// File path: assets/images/love.png
   AssetGenImage get love => const AssetGenImage('assets/images/love.png');
+
+  /// File path: assets/images/no-merchants.png
+  AssetGenImage get noMerchants =>
+      const AssetGenImage('assets/images/no-merchants.png');
 
   /// File path: assets/images/not-found.png
   AssetGenImage get notFound =>
       const AssetGenImage('assets/images/not-found.png');
+
+  /// File path: assets/images/order-icon.png
+  AssetGenImage get orderIcon =>
+      const AssetGenImage('assets/images/order-icon.png');
 
   /// File path: assets/images/person-default.png
   AssetGenImage get personDefault =>
@@ -120,6 +136,7 @@ class $AssetsImagesGen {
   /// List of all assets
   List<AssetGenImage> get values => [
         arrowLeft,
+        authIcon,
         back,
         bagIcon,
         bag,
@@ -134,8 +151,11 @@ class $AssetsImagesGen {
         lightStick,
         like,
         live,
+        logoutIcon,
         love,
+        noMerchants,
         notFound,
+        orderIcon,
         personDefault,
         right,
         search,

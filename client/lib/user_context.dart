@@ -11,12 +11,15 @@ class UserContext {
   static String? _name;
   static String? _email;
   static String? _avatarUrl;
+  static String? _enterpriseId;
 
   static String get name => _name ?? '';
 
   static String get email => _email ?? '';
 
   static String get avatarUrl => _avatarUrl ?? '';
+
+  static bool get isEnterprise => _enterpriseId != null;
 
   static bool get isLogin => SpManager.getString('token') != null;
 
@@ -28,6 +31,7 @@ class UserContext {
         _name = map['name'];
         _email = map['email'];
         _avatarUrl = map['avatarUrl'];
+        _enterpriseId = map['enterpriseId'];
         return true;
       } else {
         return false;

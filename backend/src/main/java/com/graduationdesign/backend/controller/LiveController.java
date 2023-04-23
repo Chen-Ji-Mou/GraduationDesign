@@ -120,7 +120,8 @@ public class LiveController {
             return Result.failed(500, "用户未拥有直播间");
         }
         String liveId = live.getId();
-        String coverFileName = "cover_" + liveId + ".jpg";
+        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String coverFileName = "cover_" + liveId + fileSuffix;
         String coverFilePath = fileRootPath + '/' + coverFileName;
         File coverFile = new File(coverFilePath);
         try {

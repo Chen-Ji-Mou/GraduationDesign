@@ -12,7 +12,7 @@ import 'package:graduationdesign/screen/person_screen.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:image_picker/image_picker.dart';
 
-enum _TabType { home, publish, person }
+enum _TabType { home, favorite, publish, cart, person }
 
 class RootNode extends StatefulWidget {
   const RootNode({Key? key}) : super(key: key);
@@ -26,7 +26,19 @@ class _RootNodeState extends State<RootNode>
   final List<_BottomTab> tabs = [
     _BottomTab(
       type: _TabType.home,
-      data: const TabItem(icon: Icons.home, title: '首页'),
+      data: const TabItem(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        title: '首页',
+      ),
+    ),
+    _BottomTab(
+      type: _TabType.favorite,
+      data: const TabItem(
+        icon: Icons.favorite_border,
+        activeIcon: Icons.favorite,
+        title: '收藏',
+      ),
     ),
     _BottomTab(
       type: _TabType.publish,
@@ -44,8 +56,20 @@ class _RootNodeState extends State<RootNode>
       ),
     ),
     _BottomTab(
+      type: _TabType.cart,
+      data: const TabItem(
+        icon: Icons.shopping_cart_outlined,
+        activeIcon: Icons.shopping_cart,
+        title: '购物车',
+      ),
+    ),
+    _BottomTab(
       type: _TabType.person,
-      data: const TabItem(icon: Icons.person, title: '我的'),
+      data: const TabItem(
+        icon: Icons.person_outlined,
+        activeIcon: Icons.person,
+        title: '我的',
+      ),
     ),
   ];
 
@@ -89,23 +113,11 @@ class _RootNodeState extends State<RootNode>
         controller: tabController,
         activeColor: ColorName.redF63C77,
         backgroundColor: Colors.white,
-        color: ColorName.black686868,
+        color: ColorName.gray8A8A8A,
         style: TabStyle.fixedCircle,
         elevation: 1,
         items: tabs.map((tab) => tab.data).toList(),
-        onTabNotify: (index) {
-          var pass = true;
-          if (index == _TabType.publish.index) {
-            showBottomSheet();
-            pass = false;
-          } else if (index == _TabType.person.index) {
-            if (!UserContext.isLogin) {
-              UserContext.awaitLogin(context);
-            }
-            pass = UserContext.isLogin;
-          }
-          return pass;
-        },
+        onTabNotify: bottomTabIntercept,
       ),
     );
     return WillPopScope(
@@ -127,13 +139,38 @@ class _RootNodeState extends State<RootNode>
     switch (type) {
       case _TabType.home:
         return const HomeScreen();
+      case _TabType.favorite:
+        return Container();
       case _TabType.publish:
         return const C(0);
+      case _TabType.cart:
+        return Container();
       case _TabType.person:
         return PersonScreen(
           onUserLogout: () => tabController.animateTo(_TabType.home.index),
         );
     }
+  }
+
+  bool bottomTabIntercept(int index) {
+    var pass = true;
+    if (index == _TabType.publish.index) {
+      showBottomSheet();
+      pass = false;
+    } else if (index == _TabType.person.index) {
+      if (!UserContext.isLogin) {
+        UserContext.checkLoginCallback(context, () {
+          if (UserContext.isLogin) {
+            tabController.animateTo(_TabType.person.index);
+          }
+        });
+      }
+      pass = UserContext.isLogin;
+    } else if ([_TabType.favorite.index, _TabType.cart.index].contains(index)) {
+      Fluttertoast.showToast(msg: '功能还未开发，敬请期待');
+      pass = false;
+    }
+    return pass;
   }
 
   Future<bool?> showBottomSheet() async {

@@ -51,7 +51,7 @@ class _LiveHallState extends State<LiveHallScreen>
   }
 
   void requestLives({
-    _SuccessCallback? successCall,
+    required _SuccessCallback successCall,
     _ErrorCallback? errorCall,
   }) {
     DioClient.get(Api.getLives, {
@@ -73,7 +73,7 @@ class _LiveHallState extends State<LiveHallScreen>
             }
           }
           await Future.wait(result.map((e) => e.transformBlogger()));
-          successCall?.call(result);
+          successCall.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
           errorCall?.call();
@@ -128,16 +128,36 @@ class _LiveHallState extends State<LiveHallScreen>
                 enablePullUp: true,
                 onRefresh: onRefresh,
                 onLoading: onLoading,
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 7,
-                    childAspectRatio: aspectRatio,
-                  ),
-                  itemCount: lives.length,
-                  itemBuilder: (context, index) => buildLiveItem(lives[index]),
-                ),
+                child: lives.isNotEmpty
+                    ? GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 7,
+                          childAspectRatio: aspectRatio,
+                        ),
+                        itemCount: lives.length,
+                        itemBuilder: (context, index) =>
+                            buildLiveItem(lives[index]),
+                      )
+                    : Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 48),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Assets.images.noMerchants.image(fit: BoxFit.cover),
+                            Text(
+                              '当前没有直播间正在直播',
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: ColorName.black686868.withOpacity(0.4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             ),
           ),

@@ -55,7 +55,8 @@ public class PersonController {
     @RequestMapping(value = "/uploadAvatar", method = RequestMethod.POST)
     private Result uploadAvatar(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        String avatarFileName = "avatar_" + userId + ".jpg";
+        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String avatarFileName = "avatar_" + userId + fileSuffix;
         String avatarFilePath = fileRootPath + '/' + avatarFileName;
         File avatarFile = new File(avatarFilePath);
         try {
@@ -115,5 +116,17 @@ public class PersonController {
         } catch (IOException e) {
             log.info("[PersonController] downloadAvatar 头像文件下载失败 name {}", fileName);
         }
+    }
+
+    @RequestMapping(value = "/verifyUserHasAuth", method = RequestMethod.GET)
+    private Result verifyUserHasAuth(HttpServletRequest request) {
+        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        User user = userService.findUserById(userId);
+        if (user.getEnterpriseId() == null) {
+            log.info("[PersonController] verifyUserHasAuth 用户未进行商家认证 userId {}", userId);
+            return Result.failed(500, "用户未进行商家认证");
+        }
+        log.info("[PersonController] verifyUserHasAuth 用户已进行商家认证 userId {}", userId);
+        return Result.success();
     }
 }

@@ -47,4 +47,9 @@ public class UserServiceImpl implements IUserService {
     public void updateAvatarUrlById(String id, String avatarUrl) {
         mapper.updateAvatarUrlById(id, avatarUrl);
     }
+
+    @Override
+    public void updateEnterpriseId(String id, String enterpriseId) {
+        mapper.updateEnterpriseId(id, enterpriseId);
+    }
 }

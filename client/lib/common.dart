@@ -173,3 +173,40 @@ class ErrorWidget extends StatelessWidget {
     );
   }
 }
+
+class DefaultAvatarWidget extends StatelessWidget {
+  const DefaultAvatarWidget({
+    Key? key,
+    required this.width,
+    required this.height,
+    required this.iconSize,
+  }) : super(key: key);
+
+  final double width;
+  final double height;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomCenter,
+          colors: [
+            ColorName.redEC008E,
+            ColorName.redFC6767,
+          ],
+        ),
+      ),
+      child: Icon(
+        Icons.person,
+        color: Colors.white,
+        size: iconSize,
+      ),
+    );
+  }
+}

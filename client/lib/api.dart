@@ -33,6 +33,7 @@ class _ApiInterceptor extends Interceptor {
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
+    debugPrint('DioRequest: url ${options.uri}');
     if (!_ignoreAuthPaths.contains(options.path)) {
       String? token = SpManager.getString('token');
       options.headers['token'] = token;
@@ -41,9 +42,16 @@ class _ApiInterceptor extends Interceptor {
   }
 
   @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    debugPrint(
+        'DioResponse: url ${response.realUri} code ${response.statusCode} data ${response.data}');
+    handler.next(response);
+  }
+
+  @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     debugPrint(
-        'DioError: url ${err.requestOptions.path} code: ${err.response?.statusCode} message: ${err.message}');
+        'DioError: url ${err.requestOptions.uri} code: ${err.response?.statusCode} message: ${err.message}');
     handler.next(err);
   }
 }
@@ -64,6 +72,7 @@ final List<String> _ignoreAuthPaths = [
   Api.getGifts,
   Api.getVideos,
   Api.downloadVideo,
+  Api.downloadLicense,
 ];
 
 class Api {
@@ -110,6 +119,8 @@ class Api {
 
   static const String downloadAvatar = "/person/downloadAvatar";
 
+  static const String verifyUserHasAuth = "/person/verifyUserHasAuth";
+
   static const String mockGift = "/gift/mock";
 
   static const String getGifts = "/gift/getGifts";
@@ -147,4 +158,10 @@ class Api {
   static const String uploadVideo = "/video/uploadVideo";
 
   static const String downloadVideo = "/video/downloadVideo";
+
+  static const String uploadLicense = "/enterprise/uploadLicense";
+
+  static const String downloadLicense = "/enterprise/downloadLicense";
+
+  static const String enterpriseRegister = "/enterprise/register";
 }

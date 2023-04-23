@@ -29,7 +29,8 @@ class _PersonState extends State<PersonScreen>
   int balance = 0;
   int income = 0;
   int expenditure = 0;
-  String avatarUrl = '';
+  String? avatarUrl;
+  String avatarKey = UniqueKey().toString();
 
   @override
   void didChangeDependencies() {
@@ -39,12 +40,16 @@ class _PersonState extends State<PersonScreen>
 
   @override
   void onResume() {
-    refreshBalance();
-    refreshIncome();
-    refreshExpenditure();
-    if (UserContext.avatarUrl.isNotEmpty) {
-      avatarUrl =
-          'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}';
+    if (UserContext.isLogin) {
+      refreshBalance();
+      refreshIncome();
+      refreshExpenditure();
+      if (UserContext.avatarUrl.isNotEmpty) {
+        avatarUrl =
+            'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}';
+      } else {
+        avatarUrl = null;
+      }
     }
   }
 
@@ -97,116 +102,45 @@ class _PersonState extends State<PersonScreen>
     return Container(
       alignment: Alignment.center,
       color: ColorName.whiteF5F6F7,
-      child: Column(
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          const C(26),
-          InkWell(
-            onTap: uploadAvatar,
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorName.gray969696.withOpacity(0.3),
-                    offset: const Offset(10, 20),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: avatarUrl.isEmpty
-                  ? Assets.images.personDefault.image(
-                      width: 109,
-                      height: 109,
-                      fit: BoxFit.cover,
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: avatarUrl,
-                      width: 109,
-                      height: 109,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const LoadingWidget(),
-                    ),
-            ),
-          ),
-          const C(26),
-          Text(
-            UserContext.name,
-            style: GoogleFonts.roboto(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: ColorName.black35405A,
-            ),
-          ),
-          Text(
-            UserContext.email,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: ColorName.grayB2B6C0,
-            ),
-          ),
-          const C(24),
-          Container(
-            width: screenSize.width * 315 / 375,
-            height: 78,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorName.gray969696.withOpacity(0.3),
-                  offset: const Offset(10, 20),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildItem(
-                  number: balance,
-                  title: '余额',
-                  onTap: () => Navigator.pushNamed(context, 'recharge'),
-                ),
-                buildItem(
-                  number: income,
-                  title: '总充值',
-                  onTap: () => Navigator.pushNamed(context, 'details'),
-                ),
-                buildItem(
-                  number: expenditure,
-                  title: '总消费',
-                  onTap: () => Navigator.pushNamed(context, 'details'),
-                ),
-              ],
-            ),
-          ),
-          const C(32),
-          InkWell(
-            onTap: () async {
-              bool isLogout = await UserContext.onUserLogout();
-              if (isLogout) {
-                Fluttertoast.showToast(msg: '已退出登录');
-                onUserLogout?.call();
-              }
-            },
-            child: Container(
-              width: screenSize.width * 315 / 375,
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '退出登录',
+          Column(
+            children: [
+              const C(26),
+              buildAvatar(),
+              const C(26),
+              Text(
+                UserContext.name,
                 style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  height: 20 / 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: ColorName.black35405A,
                 ),
+              ),
+              Text(
+                UserContext.email,
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: ColorName.grayB2B6C0,
+                ),
+              ),
+              const C(24),
+              buildStatusBar(),
+              const C(48),
+              buildOptionList(),
+            ],
+          ),
+          Positioned(
+            top: 20,
+            right: 24,
+            child: InkWell(
+              onTap: logout,
+              child: Assets.images.logoutIcon.image(
+                width: 24,
+                height: 24,
+                color: ColorName.black35405A,
               ),
             ),
           ),
@@ -215,7 +149,103 @@ class _PersonState extends State<PersonScreen>
     );
   }
 
-  Widget buildItem({
+  Widget buildAvatar() {
+    return InkWell(
+      onTap: uploadAvatar,
+      child: Stack(
+        children: [
+          Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.7),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: ColorName.gray969696.withOpacity(0.3),
+                  offset: const Offset(10, 20),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: avatarUrl == null
+                ? const DefaultAvatarWidget(
+                    width: 109,
+                    height: 109,
+                    iconSize: 64,
+                  )
+                : CachedNetworkImage(
+                    imageUrl: avatarUrl!,
+                    width: 109,
+                    height: 109,
+                    fit: BoxFit.cover,
+                    cacheKey: avatarKey,
+                    placeholder: (context, url) => const LoadingWidget(),
+                  ),
+          ),
+          if (UserContext.isEnterprise)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                child: Assets.images.authIcon.image(
+                  width: 24,
+                  height: 24,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildStatusBar() {
+    return Container(
+      width: screenSize.width * 315 / 375,
+      height: 78,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: ColorName.gray969696.withOpacity(0.3),
+            offset: const Offset(10, 20),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          buildStatusBarItem(
+            number: balance,
+            title: '余额',
+            onTap: () => Navigator.pushNamed(context, 'recharge'),
+          ),
+          buildStatusBarItem(
+            number: income,
+            title: '总充值',
+            onTap: () => Navigator.pushNamed(context, 'details'),
+          ),
+          buildStatusBarItem(
+            number: expenditure,
+            title: '总消费',
+            onTap: () => Navigator.pushNamed(context, 'details'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildStatusBarItem({
     required int number,
     required String title,
     VoidCallback? onTap,
@@ -249,6 +279,82 @@ class _PersonState extends State<PersonScreen>
     );
   }
 
+  Widget buildOptionList() {
+    return Container(
+      width: screenSize.width * 315 / 375,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: ColorName.gray969696.withOpacity(0.3),
+            offset: const Offset(10, 20),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          buildOptionListItem(
+            icon: Assets.images.orderIcon.provider(),
+            title: '我的订单',
+          ),
+          const Divider(height: 1, indent: 8),
+          buildOptionListItem(
+            onTap: () async {
+              bool? result =
+                  await Navigator.pushNamed(context, 'enterpriseAuth');
+              if (result == true) {
+                Fluttertoast.showToast(msg: '认证商家成功');
+                bool refreshUserInfoSuccess = await UserContext.getUserInfo();
+                if (refreshUserInfoSuccess && mounted) {
+                  setState(() {});
+                }
+              }
+            },
+            icon: Assets.images.authIcon.provider(),
+            title: '认证商家',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildOptionListItem({
+    required ImageProvider icon,
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Image(
+              image: icon,
+              width: 24,
+              height: 24,
+              color: ColorName.black35405A,
+            ),
+            const C(8),
+            Text(
+              title,
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                height: 24 / 14,
+                fontWeight: FontWeight.w500,
+                color: ColorName.black35405A,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> uploadAvatar() async {
     var image = await ImagePicker().pickImage(source: ImageSource.gallery);
     String? imagePath = image?.path;
@@ -266,6 +372,7 @@ class _PersonState extends State<PersonScreen>
             Fluttertoast.showToast(msg: '上传成功');
             bool refreshUserInfoSuccess = await UserContext.getUserInfo();
             if (refreshUserInfoSuccess) {
+              avatarKey = UniqueKey().toString();
               if (mounted) {
                 setState(() => avatarUrl =
                     'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}');
@@ -279,6 +386,39 @@ class _PersonState extends State<PersonScreen>
     }
   }
 
+  Future<void> logout() async {
+    bool isConfirm = await showAlert();
+    if (isConfirm) {
+      bool isLogout = await UserContext.onUserLogout();
+      if (isLogout) {
+        Fluttertoast.showToast(msg: '已退出登录');
+        onUserLogout?.call();
+      }
+    }
+  }
+
+  Future<bool> showAlert() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('提示'),
+            content: const Text('是否要退出当前账号？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('是的'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('点错了'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => UserContext.isLogin;
 }

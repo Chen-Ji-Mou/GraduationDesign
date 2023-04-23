@@ -7,11 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Enterprise {
     private String id;
-    private String name;
-    private String pwd;
-    private String email;
-    private String avatarUrl;
-    private String enterpriseId;
+    private String code;
+    private String licenseUrl;
 }

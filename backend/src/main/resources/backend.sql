@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 17/04/2023 20:44:19
+ Date: 23/04/2023 15:42:28
 */
 
 SET NAMES utf8mb4;
@@ -54,6 +54,17 @@ CREATE TABLE `detailed`  (
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
+-- Table structure for enterprise
+-- ----------------------------
+DROP TABLE IF EXISTS `enterprise`;
+CREATE TABLE `enterprise`  (
+  `id` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `code` varchar(18) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `licenseUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for gift
 -- ----------------------------
 DROP TABLE IF EXISTS `gift`;
@@ -89,6 +100,7 @@ CREATE TABLE `user`  (
   `pwd` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `email` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `avatarUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `enterpriseId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = DYNAMIC;
 

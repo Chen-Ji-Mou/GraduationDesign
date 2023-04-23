@@ -203,9 +203,9 @@ class _LoginState extends State<LoginScreen> {
         'email': emailEditController.text,
         'pwd': pwdEditController.text,
       });
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         if (response.data['code'] == 200) {
-          UserContext.onUserLogin(response.data['data']);
+          await UserContext.onUserLogin(response.data['data']);
           Fluttertoast.showToast(msg: '登录成功');
           exit(true);
         } else {

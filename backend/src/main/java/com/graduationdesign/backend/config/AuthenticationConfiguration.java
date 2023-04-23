@@ -24,7 +24,8 @@ public class AuthenticationConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/gift/mock")
                 .excludePathPatterns("/gift/getGifts")
                 .excludePathPatterns("/video/getVideos")
-                .excludePathPatterns("/video/downloadVideo");
+                .excludePathPatterns("/video/downloadVideo")
+                .excludePathPatterns("/enterprise/downloadLicense");
     }
 
     @Bean
