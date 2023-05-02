@@ -21,16 +21,16 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/bag")
 public class BagController {
+
     @Autowired
     IBagService bagService;
-
     @Autowired
     IGiftService giftService;
 
     @RequestMapping(value = "/getUserBag", method = RequestMethod.GET)
     private Result getUserBag(HttpServletRequest request) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        List<Bag> bags = bagService.getUserBags(userId);
+        List<Bag> bags = bagService.findBagsByUserId(userId);
         log.info("[BagController] getUserBag 获取用户礼物背包成功 userId {}", userId);
         return Result.success(bags);
     }
@@ -38,7 +38,7 @@ public class BagController {
     @RequestMapping(value = "/getGiftNumber", method = RequestMethod.GET)
     private Result getGiftNumber(HttpServletRequest request, @RequestParam(name = "giftId") String giftId) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        Bag bag = bagService.getBag(userId, giftId);
+        Bag bag = bagService.findBagByUserIdAndGiftId(userId, giftId);
         if (bag == null) {
             log.info("[BagController] getGiftNumber 用户未拥有该礼物 userId {} giftId {}", userId, giftId);
             return Result.failed(500, "用户未拥有该礼物");
@@ -56,7 +56,7 @@ public class BagController {
             log.info("[BagController] addBag 礼物不存在 giftId {}", giftId);
             return Result.failed(500, "礼物不存在");
         }
-        Bag bag = bagService.getBag(userId, giftId);
+        Bag bag = bagService.findBagByUserIdAndGiftId(userId, giftId);
         if (bag == null) {
             Bag newBag = new Bag();
             String bagId = RandomStringUtils.randomNumeric(11);
@@ -69,7 +69,7 @@ public class BagController {
         } else {
             String bagId = bag.getId();
             Integer curNumber = bag.getNumber();
-            bagService.updateBag(userId, giftId, ++curNumber);
+            bagService.updateNumberByUserIdAndGiftId(userId, giftId, ++curNumber);
             log.info("[BagController] addBag 用户背包记录更改成功 bagId {} number {}", bagId, curNumber);
         }
         return Result.success();
@@ -83,14 +83,14 @@ public class BagController {
             log.info("[BagController] reduceBag 礼物不存在 giftId {}", giftId);
             return Result.failed(500, "礼物不存在");
         }
-        Bag bag = bagService.getBag(userId, giftId);
+        Bag bag = bagService.findBagByUserIdAndGiftId(userId, giftId);
         if (bag == null) {
             log.info("[BagController] reduceBag 用户背包记录不存在 userId {}", userId);
             return Result.failed(500, "用户背包记录不存在");
         }
         String bagId = bag.getId();
         Integer curNumber = bag.getNumber();
-        bagService.updateBag(userId, giftId, --curNumber);
+        bagService.updateNumberByUserIdAndGiftId(userId, giftId, --curNumber);
         log.info("[BagController] reduceBag 用户背包记录更改成功 bagId {} number {}", bagId, curNumber);
         return Result.success();
     }

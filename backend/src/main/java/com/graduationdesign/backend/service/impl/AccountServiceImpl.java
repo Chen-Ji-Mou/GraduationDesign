@@ -23,7 +23,7 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public void accountChange(String userId, int balance) {
-        mapper.accountChange(userId, balance);
+    public void updateBalanceByUserId(String userId, int balance) {
+        mapper.updateBalanceByUserId(userId, balance);
     }
 }

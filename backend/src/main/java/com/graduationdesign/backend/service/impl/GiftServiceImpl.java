@@ -24,7 +24,7 @@ public class GiftServiceImpl implements IGiftService {
     }
 
     @Override
-    public List<Gift> getGifts() {
-        return mapper.getGifts();
+    public List<Gift> findGifts() {
+        return mapper.findGifts();
     }
 }

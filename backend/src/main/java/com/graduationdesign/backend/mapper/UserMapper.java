@@ -22,7 +22,4 @@ public interface UserMapper {
 
     @Update("UPDATE user SET avatarUrl=#{avatarUrl} WHERE id=#{id}")
     void updateAvatarUrlById(@Param("id") String id, @Param("avatarUrl") String avatarUrl);
-
-    @Update("UPDATE user SET enterpriseId=#{enterpriseId} WHERE id=#{id}")
-    void updateEnterpriseId(@Param("id") String id, @Param("enterpriseId") String enterpriseId);
 }

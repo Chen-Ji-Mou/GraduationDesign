@@ -6,10 +6,10 @@ import java.util.List;
 
 public interface ILiveService {
     void addLive(Live live);
-    void updateLiveStatusById(String id, Boolean status);
+    void updateStatusById(String id, Boolean status);
     Live findLiveByUserId(String userId);
-    List<Live> getLives(Integer pageNum, Integer pageSize);
-    Integer updateLiveNumberById(String id, Boolean increase);
+    List<Live> findLives(Integer pageNum, Integer pageSize);
     Live findLiveById(String id);
-    void updateLiveCoverUrlById(String id, String coverUrl);
+    Integer updateNumberById(String id, Boolean increase);
+    void updateCoverUrlById(String id, String coverUrl);
 }

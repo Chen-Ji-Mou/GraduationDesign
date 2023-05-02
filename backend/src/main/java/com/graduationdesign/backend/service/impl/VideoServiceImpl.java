@@ -19,17 +19,27 @@ public class VideoServiceImpl implements IVideoService {
     }
 
     @Override
-    public List<Video> getVideos(Integer pageNum, Integer pageSize) {
-        return mapper.getVideos(pageNum, pageSize);
+    public List<Video> findVideos(Integer pageNum, Integer pageSize) {
+        return mapper.findVideos(pageNum, pageSize);
     }
 
     @Override
-    public Video getVideo(String name) {
-        return mapper.getVideo(name);
+    public Video findVideoByFileName(String name) {
+        return mapper.findVideoByFileName(name);
     }
 
     @Override
-    public void deleteVideo(String name) {
-        mapper.deleteVideo(name);
+    public void deleteVideoByFileName(String name) {
+        mapper.deleteVideoByFileName(name);
+    }
+
+    @Override
+    public Video findVideoById(String id) {
+        return mapper.findVideoById(id);
+    }
+
+    @Override
+    public void updateShareCountById(String id, Integer shareCount) {
+        mapper.updateShareCountById(id, shareCount);
     }
 }

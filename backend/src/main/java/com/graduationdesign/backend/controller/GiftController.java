@@ -25,12 +25,11 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/gift")
 public class GiftController {
+
     @Autowired
     IGiftService giftService;
-
     @Autowired
     IUserService userService;
-
     @Autowired
     IWebSocketService webSocketService;
 
@@ -58,7 +57,7 @@ public class GiftController {
 
     @RequestMapping(value = "/getGifts", method = RequestMethod.GET)
     private Result getGifts() {
-        List<Gift> gifts = giftService.getGifts();
+        List<Gift> gifts = giftService.findGifts();
         log.info("[GiftController] getGifts 获取礼物列表成功 {}", gifts);
         return Result.success(gifts);
     }

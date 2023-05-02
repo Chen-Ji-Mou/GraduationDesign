@@ -24,18 +24,19 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/video")
 public class VideoController {
+
     @Autowired
     IVideoService videoService;
-
     @Value("${file.upload.root.path}")
     private String fileRootPath;
 
     private final LRUCache<String, String> videoCache = new LRUCache<>(500); // 最多保存500个视频文件
 
     @RequestMapping(value = "/getVideos", method = RequestMethod.GET)
-    public Result getVideos(@RequestParam(name = "pageNum") Integer pageNum, @RequestParam(name = "pageSize") Integer pageSize) {
+    public Result getVideos(@RequestParam(name = "pageNum") Integer pageNum,
+                            @RequestParam(name = "pageSize") Integer pageSize) {
         pageNum *= pageSize;
-        List<Video> videos = videoService.getVideos(pageNum, pageSize);
+        List<Video> videos = videoService.findVideos(pageNum, pageSize);
         log.info("[VideoController] getVideos 获取视频列表成功 pageNum " + pageNum + " pageSize " + pageSize);
         return Result.success(videos);
     }
@@ -43,9 +44,10 @@ public class VideoController {
     @RequestMapping(value = "/uploadVideo", method = RequestMethod.POST)
     public Result uploadVideo(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        String fileName = file.getOriginalFilename();
-        String filePath = fileRootPath + '/' + fileName;
-        File dest = new File(filePath);
+        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String videoFileName = "video_" + System.currentTimeMillis() + fileSuffix;
+        String videoFilePath = fileRootPath + '/' + videoFileName;
+        File dest = new File(videoFilePath);
         try {
             // 生成父目录
             if (!dest.getParentFile().exists()) {
@@ -68,28 +70,35 @@ public class VideoController {
             String videoId = RandomStringUtils.randomNumeric(11);
             video.setId(videoId);
             video.setUserId(userId);
-            video.setFileName(fileName);
+            video.setFileName(videoFileName);
             video.setTimestamp(System.currentTimeMillis());
+            video.setShareCount(0);
             videoService.addVideo(video);
 
             // 视频缓存插入
-            insertCache(videoId, fileName);
+            insertCache(videoId, videoFileName);
 
-            log.info("[VideoController] upload 视频上传成功 path {}", filePath);
+            log.info("[VideoController] upload 视频上传成功 path {}", videoFilePath);
             return Result.success();
         } catch (Exception e) {
             e.printStackTrace();
-            log.info("[VideoController] upload 视频上传失败 path {}", filePath);
+            log.info("[VideoController] upload 视频上传失败 path {}", videoFilePath);
             return Result.failed(500, "视频上传失败");
         }
     }
 
     @RequestMapping(value = "/downloadVideo", method = RequestMethod.GET)
-    public void downloadVideo(HttpServletResponse response, @RequestParam("fileName") String fileName) {
+    public void downloadVideo(HttpServletResponse response, @RequestParam("fileName") String fileName) throws IOException {
         String filePath = fileRootPath + '/' + fileName;
         File file = new File(filePath);
         if (!file.exists()) {
             log.info("[VideoController] download 视频文件不存在 name {}", fileName);
+            response.reset();
+            response.setStatus(500);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().write("视频文件不存在");
+            return;
         }
 
         response.reset();
@@ -114,20 +123,33 @@ public class VideoController {
         }
     }
 
+    @RequestMapping(value = "/updateShareCount", method = RequestMethod.POST)
+    private Result updateShareCount(@RequestParam("videoId") String videoId) {
+        Video video = videoService.findVideoById(videoId);
+        if (video == null) {
+            log.info("[VideoController] updateShareCount 视频不存在 videoId {}", videoId);
+            return Result.failed(500, "视频不存在");
+        }
+        Integer curShareCount = video.getShareCount();
+        videoService.updateShareCountById(videoId, ++curShareCount);
+        log.info("[VideoController] updateShareCount 更新视频分享数成功 videoId {} shareCount {}", videoId, curShareCount);
+        return Result.success(curShareCount);
+    }
+
     private void insertCache(String videoId, String fileName) {
         String deleteFileName = videoCache.put(videoId, fileName);
         if (deleteFileName != null) {
-            log.info("[FileController] insertFileCache cache缓存达到最大值，需要删除文件");
+            log.info("[VideoController] insertFileCache cache缓存达到最大值，需要删除文件");
             String deleteFilePath = fileRootPath + '/' + deleteFileName;
             File deleteFile = new File(deleteFilePath);
             boolean deleteSuccess = deleteFile.delete();
             if (deleteSuccess) {
-                log.info("[FileController] insertFileCache 成功删除文件 path {}", deleteFilePath);
-                videoService.deleteVideo(deleteFileName);
+                log.info("[VideoController] insertFileCache 成功删除文件 path {}", deleteFilePath);
+                videoService.deleteVideoByFileName(deleteFileName);
             } else {
-                log.info("[FileController] insertFileCache 文件删除失败，正在恢复cache数据");
+                log.info("[VideoController] insertFileCache 文件删除失败，正在恢复cache数据");
                 // 如果文件删除失败则需要从数据库恢复数据，因为cache中已经删除，需要将数据重新插入cache
-                Video restoreVideo = videoService.getVideo(deleteFileName);
+                Video restoreVideo = videoService.findVideoByFileName(deleteFileName);
                 insertCache(restoreVideo.getId(), restoreVideo.getFileName());
             }
         }

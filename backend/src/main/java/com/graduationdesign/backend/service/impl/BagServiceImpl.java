@@ -14,13 +14,13 @@ public class BagServiceImpl implements IBagService {
     BagMapper mapper;
 
     @Override
-    public List<Bag> getUserBags(String userId) {
-        return mapper.getUserBags(userId);
+    public List<Bag> findBagsByUserId(String userId) {
+        return mapper.findBagsByUserId(userId);
     }
 
     @Override
-    public Bag getBag(String userId, String giftId) {
-        return mapper.getBag(userId, giftId);
+    public Bag findBagByUserIdAndGiftId(String userId, String giftId) {
+        return mapper.findBagByUserIdAndGiftId(userId, giftId);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class BagServiceImpl implements IBagService {
     }
 
     @Override
-    public void updateBag(String userId, String giftId, Integer number) {
-        mapper.updateBag(userId, giftId, number);
+    public void updateNumberByUserIdAndGiftId(String userId, String giftId, Integer number) {
+        mapper.updateNumberByUserIdAndGiftId(userId, giftId, number);
     }
 }

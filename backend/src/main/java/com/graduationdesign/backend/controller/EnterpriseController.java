@@ -4,7 +4,6 @@ import com.graduationdesign.backend.Result;
 import com.graduationdesign.backend.Utils;
 import com.graduationdesign.backend.entity.Enterprise;
 import com.graduationdesign.backend.service.IEnterpriseService;
-import com.graduationdesign.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,18 +25,13 @@ public class EnterpriseController {
 
     @Autowired
     private IEnterpriseService enterpriseService;
-
-    @Autowired
-    private IUserService userService;
-
     @Value("${file.upload.root.path}")
     private String fileRootPath;
 
     @RequestMapping(value = "/uploadLicense", method = RequestMethod.POST)
-    private Result uploadLicense(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+    private Result uploadLicense(@RequestParam("file") MultipartFile file) {
         String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        String licenseFileName = "license_" + userId + fileSuffix;
+        String licenseFileName = "license_" + System.currentTimeMillis() + fileSuffix;
         String licenseFilePath = fileRootPath + '/' + licenseFileName;
         File licenseFile = new File(licenseFilePath);
         try {
@@ -67,11 +61,17 @@ public class EnterpriseController {
     }
 
     @RequestMapping(value = "/downloadLicense", method = RequestMethod.GET)
-    private void downloadLicense(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+    private void downloadLicense(@RequestParam("fileName") String fileName, HttpServletResponse response) throws IOException {
         String licenseFilePath = fileRootPath + '/' + fileName;
         File file = new File(licenseFilePath);
         if (!file.exists()) {
             log.info("[EnterpriseController] downloadLicense 营业执照文件不存在 name {}", fileName);
+            response.reset();
+            response.setStatus(500);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().write("营业执照文件不存在");
+            return;
         }
 
         response.reset();
@@ -96,18 +96,34 @@ public class EnterpriseController {
         }
     }
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    private Result register(HttpServletRequest request, @RequestParam("code") String code,
+    @RequestMapping(value = "/authentication", method = RequestMethod.POST)
+    private Result authentication(HttpServletRequest request, @RequestParam("code") String code,
                             @RequestParam("license") String license) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        if (enterpriseService.findEnterpriseByUserId(userId) != null) {
+            log.info("[EnterpriseController] authentication 当前用户已认证 userId {}", userId);
+            return Result.failed(500, "当前用户已认证");
+        }
         Enterprise enterprise = new Enterprise();
         String enterpriseId = RandomStringUtils.randomNumeric(11);
         enterprise.setId(enterpriseId);
+        enterprise.setUserId(userId);
         enterprise.setCode(code);
         enterprise.setLicenseUrl(license);
         enterpriseService.addEnterprise(enterprise);
-        userService.updateEnterpriseId(userId, enterpriseId);
-        log.info("[EnterpriseController] register 商家认证成功 {}", enterpriseId);
+        log.info("[EnterpriseController] authentication 商家认证成功 enterpriseId {}", enterpriseId);
         return Result.success();
+    }
+
+    @RequestMapping(value = "/verifyUserHasAuthenticated", method = RequestMethod.GET)
+    private Result verifyUserHasAuthenticated(HttpServletRequest request) {
+        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        Enterprise enterprise = enterpriseService.findEnterpriseByUserId(userId);
+        if (enterprise == null) {
+            log.info("[EnterpriseController] verifyUserHasAuthenticated 当前用户未认证 userId {}", userId);
+            return Result.failed(500, "当前用户未认证");
+        }
+        log.info("[EnterpriseController] verifyUserHasAuthenticated 当前用户已认证 userId {} enterpriseId {}", userId, enterprise.getId());
+        return Result.success(enterprise.getId());
     }
 }

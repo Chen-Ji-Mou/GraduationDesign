@@ -12,4 +12,5 @@ public class Video {
     private String userId;
     private String fileName;
     private Long timestamp;
+    private Integer shareCount;
 }

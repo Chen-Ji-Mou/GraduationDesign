@@ -10,5 +10,4 @@ public interface IUserService {
     void updatePwdByEmail(String email, String pwd);
     User findUserById(String id);
     void updateAvatarUrlById(String id, String avatar);
-    void updateEnterpriseId(String id, String enterpriseId);
 }

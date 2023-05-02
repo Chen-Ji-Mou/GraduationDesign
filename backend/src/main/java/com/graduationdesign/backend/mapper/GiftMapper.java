@@ -3,7 +3,6 @@ package com.graduationdesign.backend.mapper;
 import com.graduationdesign.backend.entity.Gift;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
@@ -16,5 +15,5 @@ public interface GiftMapper {
     Gift findGiftById(String id);
 
     @Select("SELECT * FROM gift")
-    List<Gift> getGifts();
+    List<Gift> findGifts();
 }

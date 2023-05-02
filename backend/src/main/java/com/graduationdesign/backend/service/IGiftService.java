@@ -6,5 +6,5 @@ import java.util.List;
 public interface IGiftService {
     void addGift(Gift gift);
     Gift findGiftById(String id);
-    List<Gift> getGifts();
+    List<Gift> findGifts();
 }

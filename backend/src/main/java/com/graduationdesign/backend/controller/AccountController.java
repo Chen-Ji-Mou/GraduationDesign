@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping(value = "/account")
 public class AccountController {
+
     @Autowired
     IAccountService accountService;
 
@@ -48,7 +49,7 @@ public class AccountController {
         }
         Integer curBalance = account.getBalance();
         curBalance += amount;
-        accountService.accountChange(userId, curBalance);
+        accountService.updateBalanceByUserId(userId, curBalance);
         log.info("[AccountController] rechargeAccount 账户余额充值成功 userId {} balance {}", userId, curBalance);
         return Result.success();
     }
@@ -67,7 +68,7 @@ public class AccountController {
             return Result.failed(500, "账户余额不足");
         }
         curBalance -= amount;
-        accountService.accountChange(userId, curBalance);
+        accountService.updateBalanceByUserId(userId, curBalance);
         log.info("[AccountController] spendAccount 账户余额花费成功 userId {} balance {}", userId, curBalance);
         return Result.success();
     }

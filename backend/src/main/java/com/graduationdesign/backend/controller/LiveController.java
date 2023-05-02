@@ -22,9 +22,9 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/live")
 public class LiveController {
+
     @Autowired
     private ILiveService liveService;
-
     @Value("${file.upload.root.path}")
     private String fileRootPath;
 
@@ -35,7 +35,7 @@ public class LiveController {
         live.setId(liveId);
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         live.setUserId(userId);
-        live.setIng(false);
+        live.setStatus(false);
         live.setNumber(0);
         liveService.addLive(live);
         log.info("[LiveController] apply 申请直播间成功 " + liveId);
@@ -49,7 +49,7 @@ public class LiveController {
             log.info("[LiveController] start 直播间不存在 " + liveId);
             return Result.failed(500, "直播间不存在");
         }
-        liveService.updateLiveStatusById(liveId, true);
+        liveService.updateStatusById(liveId, true);
         log.info("[LiveController] start 直播间状态改变成功 active");
         return Result.success();
     }
@@ -61,7 +61,7 @@ public class LiveController {
             log.info("[LiveController] stop 直播间不存在 " + liveId);
             return Result.failed(500, "直播间不存在");
         }
-        liveService.updateLiveStatusById(liveId, false);
+        liveService.updateStatusById(liveId, false);
         log.info("[LiveController] stop 直播间状态改变成功 interdict");
         return Result.success();
     }
@@ -82,7 +82,7 @@ public class LiveController {
     private Result getLives(@RequestParam(name = "pageNum") Integer pageNum,
                             @RequestParam(name = "pageSize") Integer pageSize) {
         pageNum *= pageSize;
-        List<Live> lives = liveService.getLives(pageNum, pageSize);
+        List<Live> lives = liveService.findLives(pageNum, pageSize);
         log.info("[LiveController] getLives 获取直播间列表成功 pageNum " + pageNum + " pageSize " + pageSize);
         return Result.success(lives);
     }
@@ -94,7 +94,7 @@ public class LiveController {
             log.info("[LiveController] enterLive 直播间不存在 " + liveId);
             return Result.failed(500, "直播间不存在");
         }
-        Integer curNumber = liveService.updateLiveNumberById(liveId, true);
+        Integer curNumber = liveService.updateNumberById(liveId, true);
         log.info("[LiveController] enterLive 更新直播间人数成功 当前人数 " + curNumber);
         return Result.success();
     }
@@ -106,7 +106,7 @@ public class LiveController {
             log.info("[LiveController] exitLive 直播间不存在 " + liveId);
             return Result.failed(500, "直播间不存在");
         }
-        Integer curNumber = liveService.updateLiveNumberById(liveId, false);
+        Integer curNumber = liveService.updateNumberById(liveId, false);
         log.info("[LiveController] exitLive 更新直播间人数成功 当前人数 " + curNumber);
         return Result.success();
     }
@@ -121,7 +121,7 @@ public class LiveController {
         }
         String liveId = live.getId();
         String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        String coverFileName = "cover_" + liveId + fileSuffix;
+        String coverFileName = "cover_" + System.currentTimeMillis() + fileSuffix;
         String coverFilePath = fileRootPath + '/' + coverFileName;
         File coverFile = new File(coverFilePath);
         try {
@@ -142,7 +142,7 @@ public class LiveController {
             file.transferTo(coverFile);
 
             // 生成数据库记录
-            liveService.updateLiveCoverUrlById(liveId, coverFileName);
+            liveService.updateCoverUrlById(liveId, coverFileName);
 
             log.info("[LiveController] uploadCover 直播间封面上传成功 liveId {} path {}", liveId, coverFilePath);
             return Result.success();
@@ -154,11 +154,17 @@ public class LiveController {
     }
 
     @RequestMapping(value = "/downloadCover", method = RequestMethod.GET)
-    private void downloadCover(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+    private void downloadCover(@RequestParam("fileName") String fileName, HttpServletResponse response) throws IOException {
         String coverFilePath = fileRootPath + '/' + fileName;
         File file = new File(coverFilePath);
         if (!file.exists()) {
             log.info("[LiveController] downloadCover 直播间封面文件不存在 name {}", fileName);
+            response.reset();
+            response.setStatus(500);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().write("直播间封面文件不存在");
+            return;
         }
 
         response.reset();

@@ -21,13 +21,10 @@ import javax.mail.internet.MimeMessage;
 public class UserController {
     @Autowired
     private IUserService userService;
-
     @Autowired
     private JavaMailSender emailSender;
-
     @Autowired
     private RedisUtil redisUtil;
-
     @Value("${spring.mail.username}")
     private String from;
 

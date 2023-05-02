@@ -10,12 +10,18 @@ public interface VideoMapper {
     @Insert("INSERT INTO video(id, userId, fileName, timestamp) VALUES(#{id}, #{userId}, #{fileName}, #{timestamp})")
     void addVideo(Video video);
 
-    @Select("SELECT * FROM video limit #{pageNum},#{pageSize}")
-    List<Video> getVideos(@Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
+    @Select("SELECT * FROM video ORDER BY timestamp DESC LIMIT #{pageNum},#{pageSize}")
+    List<Video> findVideos(@Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
 
     @Select("SELECT * FROM video WHERE fileName=#{fileName}")
-    Video getVideo(String fileName);
+    Video findVideoByFileName(String fileName);
 
     @Delete("DELETE FROM video WHERE fileName=#{fileName}")
-    void deleteVideo(String fileName);
+    void deleteVideoByFileName(String fileName);
+
+    @Select("SELECT * FROM video WHERE id=#{id}")
+    Video findVideoById(String id);
+
+    @Update("UPDATE video SET shareCount=#{shareCount} WHERE id=#{id}")
+    void updateShareCountById(@Param("id") String id, @Param("shareCount") Integer shareCount);
 }

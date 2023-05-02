@@ -3,6 +3,7 @@ package com.graduationdesign.backend.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +11,8 @@ import lombok.NoArgsConstructor;
 public class Live {
     private String id;
     private String userId;
-    private Boolean ing;
+    private Boolean status;
     private Integer number;
+    @Nullable
     private String coverUrl;
 }

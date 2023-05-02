@@ -16,4 +16,14 @@ public class EnterpriseServiceImpl implements IEnterpriseService {
     public void addEnterprise(Enterprise enterprise) {
         mapper.addEnterprise(enterprise);
     }
+
+    @Override
+    public Enterprise findEnterpriseByUserId(String userId) {
+        return mapper.findEnterpriseByUserId(userId);
+    }
+
+    @Override
+    public Enterprise findEnterpriseById(String id) {
+        return mapper.findEnterpriseById(id);
+    }
 }

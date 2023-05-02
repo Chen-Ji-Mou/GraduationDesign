@@ -3,6 +3,7 @@ package com.graduationdesign.backend.controller;
 import com.graduationdesign.backend.Result;
 import com.graduationdesign.backend.Utils;
 import com.graduationdesign.backend.entity.User;
+import com.graduationdesign.backend.service.IEnterpriseService;
 import com.graduationdesign.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,9 @@ import java.io.*;
 @RestController
 @RequestMapping(value = "/person")
 public class PersonController {
+
     @Autowired
     private IUserService userService;
-
     @Value("${file.upload.root.path}")
     private String fileRootPath;
 
@@ -56,7 +57,7 @@ public class PersonController {
     private Result uploadAvatar(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        String avatarFileName = "avatar_" + userId + fileSuffix;
+        String avatarFileName = "avatar_" + System.currentTimeMillis() + fileSuffix;
         String avatarFilePath = fileRootPath + '/' + avatarFileName;
         File avatarFile = new File(avatarFilePath);
         try {
@@ -89,11 +90,17 @@ public class PersonController {
     }
 
     @RequestMapping(value = "/downloadAvatar", method = RequestMethod.GET)
-    private void downloadAvatar(@RequestParam("fileName") String fileName, HttpServletResponse response) {
+    private void downloadAvatar(@RequestParam("fileName") String fileName, HttpServletResponse response) throws IOException {
         String avatarFilePath = fileRootPath + '/' + fileName;
         File file = new File(avatarFilePath);
         if (!file.exists()) {
             log.info("[PersonController] downloadAvatar 头像文件不存在 name {}", fileName);
+            response.reset();
+            response.setStatus(500);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().write("头像文件不存在");
+            return;
         }
 
         response.reset();
@@ -116,17 +123,5 @@ public class PersonController {
         } catch (IOException e) {
             log.info("[PersonController] downloadAvatar 头像文件下载失败 name {}", fileName);
         }
-    }
-
-    @RequestMapping(value = "/verifyUserHasAuth", method = RequestMethod.GET)
-    private Result verifyUserHasAuth(HttpServletRequest request) {
-        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        User user = userService.findUserById(userId);
-        if (user.getEnterpriseId() == null) {
-            log.info("[PersonController] verifyUserHasAuth 用户未进行商家认证 userId {}", userId);
-            return Result.failed(500, "用户未进行商家认证");
-        }
-        log.info("[PersonController] verifyUserHasAuth 用户已进行商家认证 userId {}", userId);
-        return Result.success();
     }
 }

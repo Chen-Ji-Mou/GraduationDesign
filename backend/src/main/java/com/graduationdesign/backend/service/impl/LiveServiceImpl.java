@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 public class LiveServiceImpl implements ILiveService {
+
     @Resource
     private LiveMapper mapper;
 
@@ -19,22 +20,22 @@ public class LiveServiceImpl implements ILiveService {
     }
 
     @Override
-    public void updateLiveStatusById(String id, Boolean status) {
-        mapper.updateLiveStatusById(id, status);
+    public void updateStatusById(String id, Boolean status) {
+        mapper.updateStatusById(id, status);
     }
 
     @Override
     public Live findLiveByUserId(String userId) {
-        return mapper.getLiveByUserId(userId);
+        return mapper.findLiveByUserId(userId);
     }
 
     @Override
-    public List<Live> getLives(Integer pageNum, Integer pageSize) {
-        return mapper.getLives(pageNum, pageSize);
+    public List<Live> findLives(Integer pageNum, Integer pageSize) {
+        return mapper.findLives(pageNum, pageSize);
     }
 
     @Override
-    public Integer updateLiveNumberById(String id, Boolean increase) {
+    public Integer updateNumberById(String id, Boolean increase) {
         Live live = mapper.findLiveById(id);
         Integer curNumber = live.getNumber();
         if (increase) {
@@ -42,7 +43,7 @@ public class LiveServiceImpl implements ILiveService {
         } else {
             curNumber--;
         }
-        mapper.updateLiveNumberById(id, curNumber);
+        mapper.updateNumberById(id, curNumber);
         return curNumber;
     }
 
@@ -52,7 +53,7 @@ public class LiveServiceImpl implements ILiveService {
     }
 
     @Override
-    public void updateLiveCoverUrlById(String id, String coverUrl) {
-        mapper.updateLiveCoverUrlById(id, coverUrl);
+    public void updateCoverUrlById(String id, String coverUrl) {
+        mapper.updateCoverUrlById(id, coverUrl);
     }
 }

@@ -12,5 +12,5 @@ public interface AccountMapper {
     Account findAccountByUserId(String userId);
 
     @Update("UPDATE account SET balance=#{balance} WHERE userId=#{userId}")
-    void accountChange(@Param("userId") String userId, @Param("balance") int balance);
+    void updateBalanceByUserId(@Param("userId") String userId, @Param("balance") int balance);
 }
