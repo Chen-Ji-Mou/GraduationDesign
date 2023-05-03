@@ -63,7 +63,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
   }
 
   void getDetails({_SuccessCallback? successCall, _ErrorCallback? errorCall}) {
-    DioClient.get(Api.getDetailed, {
+    DioClient.get(Api.getDetail, {
       'pageNum': pageNum,
       'pageSize': pageSize,
     }).then((response) {

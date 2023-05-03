@@ -273,7 +273,7 @@ class _EnterpriseAuthState extends State<EnterpriseAuthScreen> {
 
   Future<void> submit() async {
     if (formKey.currentState?.validate() ?? true) {
-      Response response = await DioClient.post(Api.enterpriseRegister, {
+      Response response = await DioClient.post(Api.authentication, {
         'code': codeEditController.text,
         'license': licenseUrl,
       });

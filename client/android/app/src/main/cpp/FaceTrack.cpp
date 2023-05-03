@@ -34,17 +34,12 @@ void FaceTrack::detector(const Mat &src, vector<Rect2f> &rects) {
     // src :灰度图（去除 不需要的色彩信息）
     tracker->process(src); // 处理灰度图(OpenCV的东西，灰度，色彩 影响我们人脸追踪)
     tracker->getObjects(faces); // 得到人脸框框的Rect - OpenCV的东西
-//    __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.size %lu", faces.size());
     if (!faces.empty()) { // 判断true，说明非零，有人脸
-        Rect face = faces[0]; // 有人脸就去第一个人脸，我没有去管，多个人脸了哦
-//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.x %d", face.x);
-//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.y %d", face.y);
-//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.width %d", face.width);
-//        __android_log_print(ANDROID_LOG_DEBUG, "FaceTrack", "face.height %d", face.height);
+        Rect face = faces[0]; // 获取第一个人脸
         // 然后把跟踪出来的这个人脸，保存到rects里面去
         rects.emplace_back(face.x, face.y, face.width, face.height);
 
-        // TODO 根据前面的OpenCV人脸最终成果， 做 人脸关键点定位
+        // 根据前面的OpenCV人脸最终成果， 做 人脸关键点定位
         seeta::ImageData image_data(src.cols, src.rows); // image_data就是图像数据
         image_data.data = src.data; // (人脸的信息 要送去检测的) = (把待检测图像)
 
@@ -59,7 +54,7 @@ void FaceTrack::detector(const Mat &src, vector<Rect2f> &rects) {
 
         seeta::FacialLandmark points[5]; // 特征点的检测，固定了5个点
 
-        // 执行采集出 五个点
+        // 执行中科院人脸识别算法采集出五个点
         faceAlignment->PointDetectLandmarks(image_data, face_info, points);
 
         // 把五个点 转换 ，因为第二个参数需要 Rect2f

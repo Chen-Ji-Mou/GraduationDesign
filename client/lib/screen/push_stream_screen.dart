@@ -29,7 +29,6 @@ class _PushStreamState extends State<PushStreamScreen> {
   String get liveId => widget.liveId;
 
   late Size screenSize;
-  late double buttonWidth;
   late WebSocketChannel wsChannel;
 
   final PushStreamController controller = PushStreamController();
@@ -39,7 +38,6 @@ class _PushStreamState extends State<PushStreamScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     screenSize = MediaQuery.of(context).size;
-    buttonWidth = (screenSize.width - 24) / 2;
   }
 
   @override
@@ -92,7 +90,7 @@ class _PushStreamState extends State<PushStreamScreen> {
             Positioned(
               left: 16,
               top: 12,
-              child: GestureDetector(
+              child: InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
                   width: 42,
@@ -100,13 +98,13 @@ class _PushStreamState extends State<PushStreamScreen> {
                   alignment: Alignment.center,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
+                    shape: BoxShape.circle,
                     color: ColorName.redFF6FA2.withOpacity(0.35),
-                    borderRadius: BorderRadius.circular(21),
                   ),
                   child: Assets.images.arrowLeft.image(
                     width: 24,
                     height: 24,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -133,7 +131,12 @@ class _PushStreamState extends State<PushStreamScreen> {
           future: initialCompleter.future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return buildControlView();
+              return _PushStreamControllerView(
+                controller: controller,
+                wsChannel: wsChannel,
+                screenSize: screenSize,
+                liveId: liveId,
+              );
             } else {
               return const LoadingWidget();
             }
@@ -142,108 +145,286 @@ class _PushStreamState extends State<PushStreamScreen> {
       ],
     );
   }
+}
 
-  Widget buildControlView() {
+class _PushStreamControllerView extends StatefulWidget {
+  const _PushStreamControllerView({
+    Key? key,
+    required this.controller,
+    required this.wsChannel,
+    required this.screenSize,
+    required this.liveId,
+  }) : super(key: key);
+
+  final PushStreamController controller;
+  final WebSocketChannel wsChannel;
+  final Size screenSize;
+  final String liveId;
+
+  @override
+  State<StatefulWidget> createState() => _PushStreamControllerViewState();
+}
+
+class _PushStreamControllerViewState extends State<_PushStreamControllerView> {
+  PushStreamController get controller => widget.controller;
+
+  WebSocketChannel get wsChannel => widget.wsChannel;
+
+  Size get screenSize => widget.screenSize;
+
+  String get liveId => widget.liveId;
+
+  bool pushStreaming = false;
+  bool isBeauty = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
         Positioned(
-          left: 8,
-          bottom: 58,
-          child:
-              ScrollBarrageWidget(screenSize: screenSize, wsChannel: wsChannel),
-        ),
-        Positioned(
-          width: buttonWidth,
-          left: 8,
-          bottom: 8,
-          child: ElevatedButton(
-            onPressed: () => controller.switchCamera(),
-            child: const Text('翻转摄像头'),
+          left: 16,
+          bottom: 72,
+          child: ScrollBarrageWidget(
+            screenSize: screenSize,
+            wsChannel: wsChannel,
           ),
         ),
         Positioned(
-          width: buttonWidth,
-          right: 8,
-          bottom: 8,
-          child: _PushStreamButton(controller: controller, liveId: liveId),
-        ),
-        Positioned(
-          top: 8,
-          right: 8,
-          child: PopupMenuButton<Filter>(
-            onSelected: (filter) => controller.selectFilter(filter),
-            icon: Icon(Icons.more_vert,
-                size: 24, color: Colors.white.withOpacity(0.8)),
-            itemBuilder: (BuildContext context) => const [
-              PopupMenuItem<Filter>(
-                value: Filter.cancel,
-                child: Text('取消滤镜'),
+          right: 16,
+          top: 12,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildIcon(
+                icon: Assets.images.switchCamera.provider(),
+                onTap: () => controller.switchCamera(),
               ),
-              PopupMenuItem<Filter>(
-                value: Filter.bigEye,
-                child: Text('大眼滤镜'),
+              const C(12),
+              buildIcon(
+                icon: Assets.images.beautyIcon.provider(),
+                onTap: () async {
+                  if (isBeauty) {
+                    bool result = await controller.removeBeauty();
+                    isBeauty = !result;
+                  } else {
+                    isBeauty = await controller.addBeauty();
+                  }
+                },
               ),
-              PopupMenuItem<Filter>(
-                value: Filter.stick,
-                child: Text('贴纸滤镜'),
+              const C(12),
+              buildIcon(
+                icon: Assets.images.filterIcon.provider(),
+                onTap: () => showBottomSheet(),
               ),
             ],
+          ),
+        ),
+        Positioned(
+          left: 60,
+          right: 60,
+          bottom: 20,
+          child: buildButton(
+            onTap: () => reportServer(
+              pushStreaming ? Api.stopLive : Api.startLive,
+              successCall: () async {
+                pushStreaming
+                    ? await controller.pause()
+                    : await controller.resume();
+                Fluttertoast.showToast(msg: pushStreaming ? '直播结束' : '直播开始');
+                setState(() => pushStreaming = !pushStreaming);
+              },
+            ),
           ),
         ),
       ],
     );
   }
-}
 
-class _PushStreamButton extends StatefulWidget {
-  const _PushStreamButton({
-    Key? key,
-    required this.controller,
-    required this.liveId,
-  }) : super(key: key);
-
-  final PushStreamController controller;
-  final String liveId;
-
-  @override
-  State<StatefulWidget> createState() => _PushStreamButtonState();
-}
-
-class _PushStreamButtonState extends State<_PushStreamButton> {
-  PushStreamController get controller => widget.controller;
-
-  String get liveId => widget.liveId;
-
-  bool pushStreaming = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () async {
-        pushStreaming ? await controller.pause() : await controller.resume();
-        reportServer(
-          pushStreaming ? Api.stopLive : Api.startLive,
-          successCall: () {
-            Fluttertoast.showToast(msg: pushStreaming ? '直播开始' : '直播结束');
-          },
-        );
-        setState(() => pushStreaming = !pushStreaming);
-      },
-      child: Text(pushStreaming ? '停止推流' : '开始推流'),
+  Widget buildIcon({required ImageProvider icon, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        alignment: Alignment.center,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: ColorName.redFF6FA2.withOpacity(0.35),
+        ),
+        child: Image(
+          image: icon,
+          width: 24,
+          height: 24,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
-  Future<void> reportServer(String url, {VoidCallback? successCall}) async {
+  Widget buildButton({VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: pushStreaming ? Colors.red : null,
+          gradient: !pushStreaming
+              ? const LinearGradient(
+                  colors: [ColorName.redEC008E, ColorName.redFC6767],
+                )
+              : null,
+        ),
+        child: Text(
+          pushStreaming ? '停止推流' : '开始推流',
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> reportServer(
+    String url, {
+    VoidCallback? successCall,
+    VoidCallback? failCall,
+  }) async {
     Response response = await DioClient.post(url, {'liveId': liveId});
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
         successCall?.call();
       } else {
         Fluttertoast.showToast(msg: response.data['msg']);
+        failCall?.call();
       }
+    } else {
+      Fluttertoast.showToast(msg: response.statusMessage ?? '');
     }
   }
+
+  Future<bool?> showBottomSheet() async {
+    return await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          _BottomSheet(screenSize: screenSize, controller: controller),
+    );
+  }
+}
+
+class _BottomSheetItem {
+  final Filter filterType;
+  final ImageProvider icon;
+  final String title;
+
+  _BottomSheetItem(
+      {required this.filterType, required this.icon, required this.title});
+}
+
+class _BottomSheet extends StatefulWidget {
+  const _BottomSheet({
+    Key? key,
+    required this.screenSize,
+    required this.controller,
+  }) : super(key: key);
+
+  final Size screenSize;
+  final PushStreamController controller;
+
+  @override
+  State<StatefulWidget> createState() => _BottomSheetState();
+}
+
+class _BottomSheetState extends State<_BottomSheet> {
+  Size get screenSize => widget.screenSize;
+
+  PushStreamController get controller => widget.controller;
+
+  final List<_BottomSheetItem> items = [
+    _BottomSheetItem(
+      filterType: Filter.cancel,
+      icon: Assets.images.filterDefault.provider(),
+      title: '还原',
+    ),
+    _BottomSheetItem(
+      filterType: Filter.bigEye,
+      icon: Assets.images.filterDefault.provider(),
+      title: '大眼滤镜',
+    ),
+    _BottomSheetItem(
+      filterType: Filter.stick,
+      icon: Assets.images.filterDefault.provider(),
+      title: '兔耳滤镜',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: screenSize.width / 4 + 16,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+      ),
+      child: Scrollbar(
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: items.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) => buildItem(items[index]),
+          separatorBuilder: (context, index) => const C(10),
+        ),
+      ),
+    );
+  }
+
+  Widget buildItem(_BottomSheetItem item) {
+    return InkWell(
+      onTap: () async {
+        await controller.selectFilter(item.filterType);
+        exit();
+      },
+      child: Container(
+        width: screenSize.width / 4,
+        height: screenSize.width / 4,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white, width: 0.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image(
+              image: item.icon,
+              width: 36,
+              height: 36,
+              fit: BoxFit.cover,
+            ),
+            const C(8),
+            Text(
+              item.title,
+              style: GoogleFonts.roboto(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                height: 14 / 13,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void exit() => Navigator.pop(context);
 }
 
 class _ErrorWidget extends StatelessWidget {

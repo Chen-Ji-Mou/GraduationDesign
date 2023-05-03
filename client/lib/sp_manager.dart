@@ -5,48 +5,48 @@ bool spInitSuccess = false;
 class SpManager {
   SpManager._internal();
 
-  static SharedPreferences? prefs;
+  static SharedPreferences? _prefs;
 
   static Future<bool> init() async {
-    prefs = await SharedPreferences.getInstance();
-    return prefs != null;
+    _prefs = await SharedPreferences.getInstance();
+    return _prefs != null;
   }
 
   static Future<bool> setInt(String key, int value) async {
-    return await prefs?.setInt(key, value) ?? false;
+    return await _prefs?.setInt(key, value) ?? false;
   }
 
   static int? getInt(String key) {
-    return prefs?.getInt(key);
+    return _prefs?.getInt(key);
   }
 
   static Future<bool> setDouble(String key, double value) async {
-    return await prefs?.setDouble(key, value) ?? false;
+    return await _prefs?.setDouble(key, value) ?? false;
   }
 
   static double? getDouble(String key) {
-    return prefs?.getDouble(key);
+    return _prefs?.getDouble(key);
   }
 
   static Future<bool> setBool(String key, bool value) async {
-    return await prefs?.setBool(key, value) ?? false;
+    return await _prefs?.setBool(key, value) ?? false;
   }
 
   static bool? getBool(String key) {
-    return prefs?.getBool(key);
+    return _prefs?.getBool(key);
   }
 
   static Future<bool> setString(String key, String value) async {
-    return await prefs?.setString(key, value) ?? false;
+    return await _prefs?.setString(key, value) ?? false;
   }
 
   static String? getString(String key) {
-    return prefs?.getString(key);
+    return _prefs?.getString(key);
   }
 
   static Future<bool> remove(String key) async {
-    return await prefs?.remove(key) ?? false;
+    return await _prefs?.remove(key) ?? false;
   }
 
-  static bool? containsKey(String key) => prefs?.containsKey(key);
+  static bool? containsKey(String key) => _prefs?.containsKey(key);
 }

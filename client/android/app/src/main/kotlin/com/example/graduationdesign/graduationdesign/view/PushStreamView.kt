@@ -52,6 +52,8 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     private var mScheduleTask: ScheduledFuture<Unit>? = null
     private var mPreviewImagePath: String = ""
     private var previewBuffer: ByteArray? = null
+    private var beautyFilterIndex: Int = -1
+    private var otherFilterIndex: Int = -1
 
     private val mRecordFolder: File
         get() {
@@ -87,7 +89,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         mSurfaceView?.isKeepAspectRatio = true
         mSurfaceView?.setAspectRatioMode(AspectRatioMode.Fill)
         mSurfaceView?.enableAA(true)
-        ManagerRender.numFilters = 1
+        ManagerRender.numFilters = FILTER_MAX_NUM
         mSurfaceView?.holder?.addCallback(this)
 
         val surfaceParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
@@ -251,6 +253,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         if (mRtmpCamera1?.isStreaming == true) {
             mRtmpCamera1?.stopStream()
         }
+        mRtmpCamera1?.glInterface?.clearFilters()
         mRtmpCamera1?.stopPreview()
         mSurfaceView?.holder?.removeCallback(this)
         mFaceTrack?.stopTrack()
@@ -321,56 +324,138 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         return "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
     }
 
-    fun cancelFilter() {
-        mRtmpCamera1?.glInterface?.clearFilters()
+    fun clearFilter() {
+        if (otherFilterIndex != -1) {
+            mRtmpCamera1?.glInterface?.removeFilter(otherFilterIndex)
+            otherFilterIndex = -1
+        }
     }
 
     fun addVintageTVFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(AnalogTVFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(AnalogTVFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, AnalogTVFilterRender())
+        }
     }
 
     fun addWaveFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(BasicDeformationFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(BasicDeformationFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, BasicDeformationFilterRender())
+        }
     }
 
     fun addBeautyFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(BeautyFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(BeautyFilterRender())
+            beautyFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(beautyFilterIndex, BeautyFilterRender())
+        }
+    }
+
+    fun removeBeautyFilter() {
+        if (beautyFilterIndex != -1) {
+            mRtmpCamera1?.glInterface?.removeFilter(beautyFilterIndex)
+            beautyFilterIndex  = -1
+        }
     }
 
     fun addCartoonFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(CartoonFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(CartoonFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, CartoonFilterRender())
+        }
     }
 
     fun addProfoundFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(EarlyBirdFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(EarlyBirdFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, EarlyBirdFilterRender())
+        }
     }
 
     fun addSnowFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(SnowFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(SnowFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, SnowFilterRender())
+        }
     }
 
     fun addOldPhotoFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(SepiaFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(SepiaFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, SepiaFilterRender())
+        }
     }
 
     fun addLamoishFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(LamoishFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(LamoishFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, LamoishFilterRender())
+        }
     }
 
     fun addMoneyFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(MoneyFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(MoneyFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, MoneyFilterRender())
+        }
     }
 
     fun addWaterRippleFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(RippleFilterRender())
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(RippleFilterRender())
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, RippleFilterRender())
+        }
     }
 
     fun addBigEyeFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(BigEyeFilterRender(mFaceTrack))
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(BigEyeFilterRender(mFaceTrack))
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, BigEyeFilterRender(mFaceTrack))
+        }
     }
 
     fun addStickFilter() {
-        mRtmpCamera1?.glInterface?.setFilter(StickFilterRender(mContext, mFaceTrack))
+        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM) {
+            mRtmpCamera1?.glInterface?.addFilter(StickFilterRender(mContext, mFaceTrack))
+            otherFilterIndex = filterCount
+        } else {
+            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, StickFilterRender(mContext, mFaceTrack))
+        }
     }
 
     private fun updateGallery(path: String) = MediaScannerConnection.scanFile(
@@ -379,5 +464,6 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
     companion object {
         const val TAG: String = "PushStreamView"
+        const val FILTER_MAX_NUM = 2
     }
 }

@@ -143,8 +143,7 @@ class _StartRecordState extends State<StartRecordScreen> {
           left: 8,
           bottom: 8,
           child: ElevatedButton(
-            onPressed: () async =>
-                isRecording = await controller.startRecord() ?? false,
+            onPressed: () async => isRecording = await controller.startRecord(),
             child: const Text('开始录制'),
           ),
         ),
@@ -185,10 +184,6 @@ class _StartRecordState extends State<StartRecordScreen> {
               PopupMenuItem<Filter>(
                 value: Filter.wave,
                 child: Text('波浪滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.beauty,
-                child: Text('美颜滤镜'),
               ),
               PopupMenuItem<Filter>(
                 value: Filter.cartoon,

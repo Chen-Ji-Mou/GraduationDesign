@@ -47,10 +47,11 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
             "switchCamera" -> switchCamera(result)
             "startRecord" -> startRecord(result)
             "stopRecord" -> stopRecord(result)
-            "cancelFilter" -> cancelFilter(result)
+            "clearFilter" -> clearFilter(result)
             "addVintageTVFilter" -> addVintageTVFilter(result)
             "addWaveFilter" -> addWaveFilter(result)
             "addBeautyFilter" -> addBeautyFilter(result)
+            "removeBeautyFilter" -> removeBeautyFilter(result)
             "addCartoonFilter" -> addCartoonFilter(result)
             "addProfoundFilter" -> addProfoundFilter(result)
             "addSnowFilter" -> addSnowFilter(result)
@@ -99,8 +100,8 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
         result.success(fileName)
     }
 
-    private fun cancelFilter(result: MethodChannel.Result) {
-        view?.cancelFilter()
+    private fun clearFilter(result: MethodChannel.Result) {
+        view?.clearFilter()
         result.success(true)
     }
 
@@ -116,6 +117,11 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
 
     private fun addBeautyFilter(result: MethodChannel.Result) {
         view?.addBeautyFilter()
+        result.success(true)
+    }
+
+    private fun removeBeautyFilter(result: MethodChannel.Result) {
+        view?.removeBeautyFilter()
         result.success(true)
     }
 

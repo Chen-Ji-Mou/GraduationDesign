@@ -227,7 +227,7 @@ class _RechargeSpeciesState extends State<RechargeSpeciesScreen> {
       await Future.wait([
         DioClient.post(Api.rechargeAccount, {'amount': option.quantity}),
         DioClient.post(
-            Api.addDetailed, {'income': option.quantity, 'expenditure': 0}),
+            Api.addDetail, {'income': option.quantity, 'expenditure': 0}),
       ]);
       refreshBalance();
     } else {

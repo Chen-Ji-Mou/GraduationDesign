@@ -40,6 +40,14 @@ class $AssetsImagesGen {
   /// File path: assets/images/bag.png
   AssetGenImage get bag => const AssetGenImage('assets/images/bag.png');
 
+  /// File path: assets/images/beauty-icon.png
+  AssetGenImage get beautyIcon =>
+      const AssetGenImage('assets/images/beauty-icon.png');
+
+  /// File path: assets/images/bigEye-icon.png
+  AssetGenImage get bigEyeIcon =>
+      const AssetGenImage('assets/images/bigEye-icon.png');
+
   /// File path: assets/images/comment.png
   AssetGenImage get comment => const AssetGenImage('assets/images/comment.png');
 
@@ -52,6 +60,14 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/error.png
   AssetGenImage get error => const AssetGenImage('assets/images/error.png');
+
+  /// File path: assets/images/filter-default.png
+  AssetGenImage get filterDefault =>
+      const AssetGenImage('assets/images/filter-default.png');
+
+  /// File path: assets/images/filter-icon.png
+  AssetGenImage get filterIcon =>
+      const AssetGenImage('assets/images/filter-icon.png');
 
   /// File path: assets/images/gift-box.png
   AssetGenImage get giftBox =>
@@ -126,6 +142,10 @@ class $AssetsImagesGen {
   AssetGenImage get successMark =>
       const AssetGenImage('assets/images/success-mark.png');
 
+  /// File path: assets/images/switch-camera.png
+  AssetGenImage get switchCamera =>
+      const AssetGenImage('assets/images/switch-camera.png');
+
   /// File path: assets/images/upload-video.png
   AssetGenImage get uploadVideo =>
       const AssetGenImage('assets/images/upload-video.png');
@@ -140,10 +160,14 @@ class $AssetsImagesGen {
         back,
         bagIcon,
         bag,
+        beautyIcon,
+        bigEyeIcon,
         comment,
         coverText,
         cover,
         error,
+        filterDefault,
+        filterIcon,
         giftBox,
         giftIcon,
         heart,
@@ -165,6 +189,7 @@ class $AssetsImagesGen {
         species,
         star,
         successMark,
+        switchCamera,
         uploadVideo,
         user
       ];

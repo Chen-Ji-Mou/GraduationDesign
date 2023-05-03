@@ -2,13 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduationdesign/api.dart';
-import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 
 enum Filter {
   cancel,
   vintageTV,
   wave,
-  beauty,
   cartoon,
   profound,
   snow,
@@ -25,93 +23,108 @@ class PushStreamController {
     ..setMethodCallHandler(_onMethodCall);
   bool _initialized = false;
 
-  Future<void> setRtmpUrl(String url) async {
+  Future<bool> setRtmpUrl(String url) async {
     if (_initialized) {
-      await _channel.invokeMethod('setRtmpUrl', url);
+      return await _channel.invokeMethod<bool>('setRtmpUrl', url) ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> resume() async {
+  Future<bool> resume() async {
     if (_initialized) {
-      await _channel.invokeMethod('resume');
+      return await _channel.invokeMethod<bool>('resume') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> pause() async {
+  Future<bool> pause() async {
     if (_initialized) {
-      await _channel.invokeMethod('pause');
+      return await _channel.invokeMethod<bool>('pause') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> release() async {
+  Future<bool> release() async {
     if (_initialized) {
-      await _channel.invokeMethod('release');
+      return await _channel.invokeMethod<bool>('release') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> switchCamera() async {
+  Future<bool> switchCamera() async {
     if (_initialized) {
-      await _channel.invokeMethod('switchCamera');
+      return await _channel.invokeMethod<bool>('switchCamera') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<bool?> startRecord() async {
+  Future<bool> addBeauty() async {
     if (_initialized) {
-      return await _channel.invokeMethod<bool>('startRecord');
+      return await _channel.invokeMethod<bool>('addBeautyFilter') ?? false;
+    } else {
+      return false;
     }
-    return null;
+  }
+
+  Future<bool> removeBeauty() async {
+    if (_initialized) {
+      return await _channel.invokeMethod<bool>('removeBeautyFilter') ?? false;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> startRecord() async {
+    if (_initialized) {
+      return await _channel.invokeMethod<bool>('startRecord') ?? false;
+    } else {
+      return false;
+    }
   }
 
   Future<String?> stopRecord() async {
     if (_initialized) {
       return await _channel.invokeMethod<String?>('stopRecord');
+    } else {
+      return null;
     }
-    return null;
   }
 
-  Future<void> selectFilter(Filter filter) async {
+  Future<bool> selectFilter(Filter filter) async {
     if (_initialized) {
       switch (filter) {
         case Filter.cancel:
-          await _channel.invokeMethod('cancelFilter');
-          break;
+          return await _channel.invokeMethod<bool>('clearFilter') ?? false;
         case Filter.vintageTV:
-          await _channel.invokeMethod('addVintageTVFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addVintageTVFilter') ?? false;
         case Filter.wave:
-          await _channel.invokeMethod('addWaveFilter');
-          break;
-        case Filter.beauty:
-          await _channel.invokeMethod('addBeautyFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addWaveFilter') ?? false;
         case Filter.cartoon:
-          await _channel.invokeMethod('addCartoonFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addCartoonFilter') ?? false;
         case Filter.profound:
-          await _channel.invokeMethod('addProfoundFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addProfoundFilter') ?? false;
         case Filter.snow:
-          await _channel.invokeMethod('addSnowFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addSnowFilter') ?? false;
         case Filter.oldPhoto:
-          await _channel.invokeMethod('addOldPhotoFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addOldPhotoFilter') ?? false;
         case Filter.lamoish:
-          await _channel.invokeMethod('addLamoishFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addLamoishFilter') ?? false;
         case Filter.money:
-          await _channel.invokeMethod('addMoneyFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addMoneyFilter') ?? false;
         case Filter.waterRipple:
-          await _channel.invokeMethod('addWaterRippleFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addWaterRippleFilter') ?? false;
         case Filter.bigEye:
-          await _channel.invokeMethod('addBigEyeFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addBigEyeFilter') ?? false;
         case Filter.stick:
-          await _channel.invokeMethod('addStickFilter');
-          break;
+          return await _channel.invokeMethod<bool>('addStickFilter') ?? false;
       }
+    } else {
+      return false;
     }
   }
 
@@ -146,38 +159,20 @@ class PushStreamWidget extends StatefulWidget {
   const PushStreamWidget({
     Key? key,
     required this.controller,
-    this.autoPushStream = true,
     this.initialComplete,
   }) : super(key: key);
 
   final PushStreamController controller;
-  final bool autoPushStream;
   final VoidCallback? initialComplete;
 
   @override
   State<StatefulWidget> createState() => _PushStreamState();
 }
 
-class _PushStreamState extends State<PushStreamWidget> with LifecycleObserver {
+class _PushStreamState extends State<PushStreamWidget> {
   PushStreamController get controller => widget.controller;
 
-  bool get autoPushStream => widget.autoPushStream;
-
   VoidCallback? get initialComplete => widget.initialComplete;
-
-  @override
-  void onResume() {
-    if (autoPushStream) {
-      controller.resume();
-    }
-  }
-
-  @override
-  void onPause() {
-    if (autoPushStream) {
-      controller.pause();
-    }
-  }
 
   @override
   void dispose() {

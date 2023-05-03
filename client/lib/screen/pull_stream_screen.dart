@@ -669,7 +669,7 @@ class _BottomSheetState extends State<_BottomSheet> {
             DioClient.post(Api.spendAccount, {
               'amount': giftWrappers[selectIndex].gift.price,
             }),
-            DioClient.post(Api.addDetailed, {
+            DioClient.post(Api.addDetail, {
               'income': 0,
               'expenditure': giftWrappers[selectIndex].gift.price,
             }),

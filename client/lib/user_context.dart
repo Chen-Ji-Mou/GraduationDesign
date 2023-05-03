@@ -4,6 +4,8 @@ import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/sp_manager.dart';
 
 bool getUserInfoSuccess = false;
+bool userAccountCreateSuccess = false;
+bool userHasAuthenticated = false;
 
 class UserContext {
   UserContext._internal();
@@ -19,6 +21,8 @@ class UserContext {
 
   static String get avatarUrl => _avatarUrl ?? '';
 
+  static String get enterpriseId => _enterpriseId ?? '';
+
   static bool get isEnterprise => _enterpriseId != null;
 
   static bool get isLogin => SpManager.getString('token') != null;
@@ -31,7 +35,6 @@ class UserContext {
         _name = map['name'];
         _email = map['email'];
         _avatarUrl = map['avatarUrl'];
-        _enterpriseId = map['enterpriseId'];
         return true;
       } else {
         return false;
@@ -41,17 +44,44 @@ class UserContext {
     }
   }
 
-  static Future<void> _createUserAccount() async {
-    await DioClient.post(Api.createAccount);
+  static Future<bool> _createUserAccount() async {
+    Response response = await DioClient.post(Api.createAccount);
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  static Future<bool> _verifyUserHasAuthenticated() async {
+    Response response = await DioClient.get(Api.verifyUserHasAuthenticated);
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        _enterpriseId = response.data['data'];
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   static Future<bool> onUserLogin(String token) async {
     bool tokenSaveSuccess = await SpManager.setString('token', token);
     if (tokenSaveSuccess == true) {
       getUserInfoSuccess = await getUserInfo();
-      await _createUserAccount();
+      userAccountCreateSuccess = await _createUserAccount();
+      userHasAuthenticated = await _verifyUserHasAuthenticated();
     }
-    return tokenSaveSuccess && getUserInfoSuccess;
+    return tokenSaveSuccess &&
+        getUserInfoSuccess &&
+        userAccountCreateSuccess &&
+        userHasAuthenticated;
   }
 
   static Future<bool> onUserLogout() async {

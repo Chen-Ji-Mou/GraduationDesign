@@ -33,7 +33,7 @@ class _ApiInterceptor extends Interceptor {
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    debugPrint('DioRequest: url ${options.uri}');
+    debugPrint('[ApiInterceptor] DioRequest: url ${options.uri}');
     if (!_ignoreAuthPaths.contains(options.path)) {
       String? token = SpManager.getString('token');
       options.headers['token'] = token;
@@ -44,14 +44,14 @@ class _ApiInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     debugPrint(
-        'DioResponse: url ${response.realUri} code ${response.statusCode} data ${response.data}');
+        '[ApiInterceptor] DioResponse: url ${response.realUri} code ${response.statusCode} data ${response.data}');
     handler.next(response);
   }
 
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     debugPrint(
-        'DioError: url ${err.requestOptions.uri} code: ${err.response?.statusCode} message: ${err.message}');
+        '[ApiInterceptor] DioError: url ${err.requestOptions.uri} code: ${err.response?.statusCode} message: ${err.message}');
     handler.next(err);
   }
 }
@@ -68,11 +68,15 @@ final List<String> _ignoreAuthPaths = [
   Api.downloadCover,
   Api.getUserInfo,
   Api.downloadAvatar,
-  Api.mockGift,
   Api.getGifts,
   Api.getVideos,
   Api.downloadVideo,
   Api.downloadLicense,
+  Api.getComments,
+  Api.getVideoCommentCount,
+  Api.getVideoFavoriteCount,
+  Api.downloadProductCover,
+  Api.getLiveProducts,
 ];
 
 class Api {
@@ -119,10 +123,6 @@ class Api {
 
   static const String downloadAvatar = "/person/downloadAvatar";
 
-  static const String verifyUserHasAuth = "/person/verifyUserHasAuth";
-
-  static const String mockGift = "/gift/mock";
-
   static const String getGifts = "/gift/getGifts";
 
   static const String sendGift = "/gift/sendGift";
@@ -145,13 +145,13 @@ class Api {
 
   static const String getAccount = "/account/getAccount";
 
-  static const String addDetailed = "/detailed/addDetailed";
+  static const String addDetail = "/detail/addDetail";
 
-  static const String getDetailed = "/detailed/getDetailed";
+  static const String getDetail = "/detail/getDetail";
 
-  static const String getTotalIncome = "/detailed/getTotalIncome";
+  static const String getTotalIncome = "/detail/getTotalIncome";
 
-  static const String getTotalExpenditure = "/detailed/getTotalExpenditure";
+  static const String getTotalExpenditure = "/detail/getTotalExpenditure";
 
   static const String getVideos = "/video/getVideos";
 
@@ -159,9 +159,78 @@ class Api {
 
   static const String downloadVideo = "/video/downloadVideo";
 
+  static const String updateShareCount = "/video/updateShareCount";
+
   static const String uploadLicense = "/enterprise/uploadLicense";
 
   static const String downloadLicense = "/enterprise/downloadLicense";
 
-  static const String enterpriseRegister = "/enterprise/register";
+  static const String authentication = "/enterprise/authentication";
+
+  static const String verifyUserHasAuthenticated =
+      "/enterprise/verifyUserHasAuthenticated";
+
+  static const String addAddress = "/address/addAddress";
+
+  static const String getAddresses = "/address/getAddresses";
+
+  static const String updateAddress = "/address/updateAddress";
+
+  static const String deleteAddress = "/address/deleteAddress";
+
+  static const String addCart = "/cart/addCart";
+
+  static const String getCarts = "/cart/getCarts";
+
+  static const String deleteCart = "/cart/deleteCart";
+
+  static const String addChat = "/chat/addChat";
+
+  static const String getChatList = "/chat/getChatList";
+
+  static const String getChat = "/chat/getChat";
+
+  static const String addComment = "/comment/addComment";
+
+  static const String getComments = "/comment/getComments";
+
+  static const String getVideoCommentCount = "/comment/getVideoCommentCount";
+
+  static const String addFavorite = "/favorite/addFavorite";
+
+  static const String getVideoFavoriteCount = "/favorite/getVideoFavoriteCount";
+
+  static const String getUserFavorites = "/favorite/getUserFavorites";
+
+  static const String deleteFavorite = "/favorite/deleteFavorite";
+
+  static const String addOrder = "/order/addOrder";
+
+  static const String getUserOrders = "/order/getUserOrders";
+
+  static const String getEnterpriseOrders = "/order/getEnterpriseOrders";
+
+  static const String updateOrderStatus = "/order/updateOrderStatus";
+
+  static const String addProduct = "/product/addProduct";
+
+  static const String getEnterpriseProducts = "/product/getEnterpriseProducts";
+
+  static const String getLiveProducts = "/product/getLiveProducts";
+
+  static const String updateProduct = "/product/updateProduct";
+
+  static const String deleteProduct = "/product/deleteProduct";
+
+  static const String uploadProductCover = "/product/uploadCover";
+
+  static const String downloadProductCover = "/product/downloadCover";
+
+  static const String addRefund = "/refund/addRefund";
+
+  static const String getUserRefunds = "/refund/getUserRefunds";
+
+  static const String getEnterpriseRefunds = "/refund/getEnterpriseRefunds";
+
+  static const String updateRefundStatus = "/refund/updateRefundStatus";
 }
