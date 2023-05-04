@@ -6,33 +6,43 @@ class PullStreamController {
   static const MethodChannel _channel = MethodChannel('pullStreamChannel');
   bool _initialized = false;
 
-  Future<void> setRtmpUrl(String url) async {
+  Future<bool> setRtmpUrl(String url) async {
     if (_initialized) {
-      await _channel.invokeMethod('setRtmpUrl', url);
+      return await _channel.invokeMethod<bool>('setRtmpUrl', url) ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> setFillXY(bool fillXY) async {
+  Future<bool> setFillXY(bool fillXY) async {
     if (_initialized) {
-      await _channel.invokeMethod('setFillXY', fillXY);
+      return await _channel.invokeMethod<bool>('setFillXY', fillXY) ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> resume() async {
+  Future<bool> resume() async {
     if (_initialized) {
-      await _channel.invokeMethod('resume');
+      return await _channel.invokeMethod<bool>('resume') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> pause() async {
+  Future<bool> pause() async {
     if (_initialized) {
-      await _channel.invokeMethod('pause');
+      return await _channel.invokeMethod<bool>('pause') ?? false;
+    } else {
+      return false;
     }
   }
 
-  Future<void> release() async {
+  Future<bool> release() async {
     if (_initialized) {
-      await _channel.invokeMethod('release');
+      return await _channel.invokeMethod<bool>('release') ?? false;
+    } else {
+      return false;
     }
   }
 }

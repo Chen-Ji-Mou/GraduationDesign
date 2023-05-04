@@ -131,7 +131,7 @@ class _PushStreamState extends State<PushStreamScreen> {
           future: initialCompleter.future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return _PushStreamControllerView(
+              return _ControllerView(
                 controller: controller,
                 wsChannel: wsChannel,
                 screenSize: screenSize,
@@ -147,8 +147,8 @@ class _PushStreamState extends State<PushStreamScreen> {
   }
 }
 
-class _PushStreamControllerView extends StatefulWidget {
-  const _PushStreamControllerView({
+class _ControllerView extends StatefulWidget {
+  const _ControllerView({
     Key? key,
     required this.controller,
     required this.wsChannel,
@@ -162,10 +162,10 @@ class _PushStreamControllerView extends StatefulWidget {
   final String liveId;
 
   @override
-  State<StatefulWidget> createState() => _PushStreamControllerViewState();
+  State<StatefulWidget> createState() => _ControllerViewState();
 }
 
-class _PushStreamControllerViewState extends State<_PushStreamControllerView> {
+class _ControllerViewState extends State<_ControllerView> {
   PushStreamController get controller => widget.controller;
 
   WebSocketChannel get wsChannel => widget.wsChannel;

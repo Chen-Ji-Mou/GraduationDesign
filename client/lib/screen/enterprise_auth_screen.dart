@@ -24,7 +24,6 @@ class _EnterpriseAuthState extends State<EnterpriseAuthScreen> {
 
   bool buttonEnable = false;
   String? licenseUrl;
-  String licenseKey = UniqueKey().toString();
 
   @override
   void initState() {
@@ -39,10 +38,9 @@ class _EnterpriseAuthState extends State<EnterpriseAuthScreen> {
   }
 
   void editChange() {
-    if (codeEditController.text.isNotEmpty && licenseUrl != null) {
-      setState(() => buttonEnable = true);
-    } else {
-      setState(() => buttonEnable = false);
+    if (mounted) {
+      setState(() => buttonEnable =
+          codeEditController.text.isNotEmpty && licenseUrl != null);
     }
   }
 
@@ -211,7 +209,6 @@ class _EnterpriseAuthState extends State<EnterpriseAuthScreen> {
                 : CachedNetworkImage(
                     imageUrl:
                         'http://${Api.host}:${Api.port}${Api.downloadLicense}?fileName=$licenseUrl',
-                    cacheKey: licenseKey,
                     width: screenSize.width - 40,
                     height: (screenSize.width - 40) * 460 / 650,
                     fit: BoxFit.cover,
@@ -259,9 +256,12 @@ class _EnterpriseAuthState extends State<EnterpriseAuthScreen> {
         if (response.statusCode == 200 && response.data != null) {
           if (response.data['code'] == 200) {
             Fluttertoast.showToast(msg: '上传成功');
-            licenseKey = UniqueKey().toString();
             if (mounted) {
-              setState(() => licenseUrl = response.data['data']);
+              setState(() {
+                licenseUrl = response.data['data'];
+                buttonEnable =
+                    codeEditController.text.isNotEmpty && licenseUrl != null;
+              });
             }
           } else {
             Fluttertoast.showToast(msg: response.data['msg']);

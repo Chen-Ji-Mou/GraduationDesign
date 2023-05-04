@@ -191,7 +191,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
               right: 24,
               top: 36,
               child: Container(
-                height: 24,
+                height: 28,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(

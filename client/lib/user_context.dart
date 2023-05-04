@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/sp_manager.dart';
 
-bool getUserInfoSuccess = false;
-bool userAccountCreateSuccess = false;
-bool userHasAuthenticated = false;
-
 class UserContext {
   UserContext._internal();
 
@@ -25,16 +21,25 @@ class UserContext {
 
   static bool get isEnterprise => _enterpriseId != null;
 
-  static bool get isLogin => SpManager.getString('token') != null;
+  static bool get isLogin => SpManager.containsKey('token') ?? false;
 
-  static Future<bool> getUserInfo() async {
+  static Future<List<bool>> refreshUser() async {
+    return await Future.wait<bool>([
+      _getUserInfo(),
+      _verifyUserHasAuthenticated(),
+    ]);
+  }
+
+  static Future<bool> _getUserInfo() async {
     Response response = await DioClient.get(Api.getOwnInfo);
     if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
         Map<String, dynamic> map = response.data['data'];
         _name = map['name'];
         _email = map['email'];
-        _avatarUrl = map['avatarUrl'];
+        _avatarUrl = map['avatarUrl'] != null
+            ? 'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${map['avatarUrl']}'
+            : null;
         return true;
       } else {
         return false;
@@ -74,20 +79,18 @@ class UserContext {
   static Future<bool> onUserLogin(String token) async {
     bool tokenSaveSuccess = await SpManager.setString('token', token);
     if (tokenSaveSuccess == true) {
-      getUserInfoSuccess = await getUserInfo();
-      userAccountCreateSuccess = await _createUserAccount();
-      userHasAuthenticated = await _verifyUserHasAuthenticated();
+      await _createUserAccount();
+      await refreshUser();
     }
-    return tokenSaveSuccess &&
-        getUserInfoSuccess &&
-        userAccountCreateSuccess &&
-        userHasAuthenticated;
+    return tokenSaveSuccess;
   }
 
   static Future<bool> onUserLogout() async {
     bool result = await SpManager.remove('token');
     _name = null;
     _email = null;
+    _avatarUrl = null;
+    _enterpriseId = null;
     return result;
   }
 

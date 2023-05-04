@@ -20,7 +20,6 @@ class StartRecordScreen extends StatefulWidget {
 
 class _StartRecordState extends State<StartRecordScreen> {
   late Size screenSize;
-  late double buttonWidth;
 
   final PushStreamController controller = PushStreamController();
   final Completer<void> initialCompleter = Completer<void>();
@@ -32,7 +31,6 @@ class _StartRecordState extends State<StartRecordScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     screenSize = MediaQuery.of(context).size;
-    buttonWidth = (screenSize.width - 32) / 3;
   }
 
   Future<bool> checkInit() async {
@@ -97,15 +95,18 @@ class _StartRecordState extends State<StartRecordScreen> {
     );
     return WillPopScope(
       onWillPop: () async {
-        if (isRecording &&
-            (lastPressedTime == null ||
-                DateTime.now().difference(lastPressedTime!) >
-                    const Duration(milliseconds: 1000))) {
-          Fluttertoast.showToast(msg: '当前正在录制，再次返回将会将会自动保存视频');
-          lastPressedTime = DateTime.now();
-          return false;
+        if (isRecording) {
+          if (lastPressedTime == null ||
+              DateTime.now().difference(lastPressedTime!) >
+                  const Duration(milliseconds: 3000)) {
+            Fluttertoast.showToast(msg: '当前正在录制，再次返回将会将会自动保存视频');
+            lastPressedTime = DateTime.now();
+            return false;
+          }
+          String? filePath = await controller.stopRecord();
+          String? fileName = filePath?.substring(filePath.lastIndexOf("/") + 1);
+          Fluttertoast.showToast(msg: '视频保存成功 $fileName');
         }
-        await controller.stopRecord();
         return true;
       },
       child: child,
@@ -124,7 +125,12 @@ class _StartRecordState extends State<StartRecordScreen> {
           future: initialCompleter.future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return buildControlView();
+              return _ControllerView(
+                controller: controller,
+                screenSize: screenSize,
+                recordCall: (isRecording) => this.isRecording = isRecording,
+                exitCall: exit,
+              );
             } else {
               return const LoadingWidget();
             }
@@ -134,90 +140,129 @@ class _StartRecordState extends State<StartRecordScreen> {
     );
   }
 
-  Widget buildControlView() {
+  void exit([bool? result]) => Navigator.pop(context, result);
+}
+
+class _ControllerView extends StatefulWidget {
+  const _ControllerView({
+    Key? key,
+    required this.controller,
+    required this.screenSize,
+    required this.recordCall,
+    required this.exitCall,
+  }) : super(key: key);
+
+  final PushStreamController controller;
+  final Size screenSize;
+  final void Function(bool isRecording) recordCall;
+  final void Function([bool? result]) exitCall;
+
+  @override
+  State<StatefulWidget> createState() => _ControllerViewState();
+}
+
+class _ControllerViewState extends State<_ControllerView> {
+  PushStreamController get controller => widget.controller;
+
+  Size get screenSize => widget.screenSize;
+
+  bool isRecording = false;
+  bool isBeauty = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
         Positioned(
-          width: buttonWidth,
-          left: 8,
-          bottom: 8,
-          child: ElevatedButton(
-            onPressed: () async => isRecording = await controller.startRecord(),
-            child: const Text('开始录制'),
-          ),
-        ),
-        Positioned(
-          width: buttonWidth,
-          left: buttonWidth + 16,
-          bottom: 8,
-          child: ElevatedButton(
-            onPressed: stopRecord,
-            child: const Text('停止录制'),
-          ),
-        ),
-        Positioned(
-          width: buttonWidth,
-          right: 8,
-          bottom: 8,
-          child: ElevatedButton(
-            onPressed: () => controller.switchCamera(),
-            child: const Text('翻转摄像头'),
-          ),
-        ),
-        Positioned(
-          top: 8,
-          right: 8,
-          child: PopupMenuButton<Filter>(
-            onSelected: (filter) => controller.selectFilter(filter),
-            icon: Icon(Icons.more_vert,
-                size: 24, color: Colors.white.withOpacity(0.8)),
-            itemBuilder: (BuildContext context) => const [
-              PopupMenuItem<Filter>(
-                value: Filter.cancel,
-                child: Text('取消滤镜'),
+          right: 16,
+          top: 12,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildIcon(
+                icon: Assets.images.beautyIcon.provider(),
+                onTap: () async {
+                  if (isBeauty) {
+                    bool result = await controller.removeBeauty();
+                    isBeauty = !result;
+                  } else {
+                    isBeauty = await controller.addBeauty();
+                  }
+                },
               ),
-              PopupMenuItem<Filter>(
-                value: Filter.vintageTV,
-                child: Text('老式电视滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.wave,
-                child: Text('波浪滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.cartoon,
-                child: Text('卡通滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.profound,
-                child: Text('深邃滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.snow,
-                child: Text('雪花滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.oldPhoto,
-                child: Text('老式相片滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.lamoish,
-                child: Text('Lamoish滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.money,
-                child: Text('美元花纹滤镜'),
-              ),
-              PopupMenuItem<Filter>(
-                value: Filter.waterRipple,
-                child: Text('水波纹滤镜'),
+              const C(12),
+              buildIcon(
+                icon: Assets.images.filterIcon.provider(),
+                onTap: () {},
               ),
             ],
           ),
         ),
+        Positioned(
+          bottom: 48,
+          child: SizedBox(
+            width: screenSize.width,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: InkWell(
+                      onTap: isRecording ? stopRecord : startRecord,
+                      child: Image(
+                        image: isRecording
+                            ? Assets.images.stopRecord.provider()
+                            : Assets.images.startRecord.provider(),
+                        width: 80,
+                        height: 80,
+                        color: isRecording ? Colors.red : ColorName.redFF6FA2,
+                      ),
+                    ),
+                  ),
+                ),
+                C(screenSize.width / 2 - 114),
+                buildIcon(
+                  icon: Assets.images.switchCamera.provider(),
+                  onTap: () => controller.switchCamera(),
+                ),
+                const C(32),
+              ],
+            ),
+          ),
+        ),
       ],
     );
+  }
+
+  Widget buildIcon({required ImageProvider icon, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        alignment: Alignment.center,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: ColorName.redFF6FA2.withOpacity(0.35),
+        ),
+        child: Image(
+          image: icon,
+          width: 24,
+          height: 24,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Future<void> startRecord() async {
+    isRecording = await controller.startRecord();
+    if (mounted) {
+      setState(() => widget.recordCall.call(isRecording));
+    }
   }
 
   Future<void> stopRecord() async {
@@ -229,7 +274,7 @@ class _StartRecordState extends State<StartRecordScreen> {
           'file': await MultipartFile.fromFile(
             filePath,
             filename: filePath.substring(
-              filePath.lastIndexOf("/"),
+              filePath.lastIndexOf("/") + 1,
             ),
           ),
         }).then((response) {
@@ -240,10 +285,10 @@ class _StartRecordState extends State<StartRecordScreen> {
               Fluttertoast.showToast(msg: response.data['msg']);
             }
           }
-          exit(true);
+          widget.exitCall.call(true);
         });
       } else {
-        exit(true);
+        widget.exitCall.call(true);
       }
     }
   }
@@ -269,8 +314,6 @@ class _StartRecordState extends State<StartRecordScreen> {
         ) ??
         false;
   }
-
-  void exit([bool? result]) => Navigator.pop(context, result);
 }
 
 class _ErrorWidget extends StatelessWidget {

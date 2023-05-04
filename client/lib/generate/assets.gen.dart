@@ -116,6 +116,10 @@ class $AssetsImagesGen {
   AssetGenImage get personDefault =>
       const AssetGenImage('assets/images/person-default.png');
 
+  /// File path: assets/images/product-icon.png
+  AssetGenImage get productIcon =>
+      const AssetGenImage('assets/images/product-icon.png');
+
   /// File path: assets/images/right.png
   AssetGenImage get right => const AssetGenImage('assets/images/right.png');
 
@@ -137,6 +141,14 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/star.png
   AssetGenImage get star => const AssetGenImage('assets/images/star.png');
+
+  /// File path: assets/images/start-record.png
+  AssetGenImage get startRecord =>
+      const AssetGenImage('assets/images/start-record.png');
+
+  /// File path: assets/images/stop-record.png
+  AssetGenImage get stopRecord =>
+      const AssetGenImage('assets/images/stop-record.png');
 
   /// File path: assets/images/success-mark.png
   AssetGenImage get successMark =>
@@ -181,6 +193,7 @@ class $AssetsImagesGen {
         notFound,
         orderIcon,
         personDefault,
+        productIcon,
         right,
         search,
         send,
@@ -188,6 +201,8 @@ class $AssetsImagesGen {
         shortVideo,
         species,
         star,
+        startRecord,
+        stopRecord,
         successMark,
         switchCamera,
         uploadVideo,

@@ -222,7 +222,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         if (mRtmpCamera?.isStreaming == true) {
             return
         }
-        if (mRtmpCamera?.isRecording == true || mRtmpCamera?.prepareAudio() == true && mRtmpCamera?.prepareVideo() == true) {
+        if (mRtmpCamera?.prepareAudio() == true && mRtmpCamera?.prepareVideo() == true) {
             mRtmpCamera?.startStream(rtmpUrl)
         } else {
             Log.w(TAG, "[resume] Error preparing stream, This device cant do it")

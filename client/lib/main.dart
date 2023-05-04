@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     requestPermissionSuccess = await PermissionPlatform.requestPermission();
     loadFileSuccess = await FileLoadPlatform.loadFile();
     spInitSuccess = await SpManager.init();
-    getUserInfoSuccess = await UserContext.getUserInfo();
+    await UserContext.refreshUser();
   }
 
   @override

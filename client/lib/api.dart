@@ -51,7 +51,7 @@ class _ApiInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     debugPrint(
-        '[ApiInterceptor] DioError: url ${err.requestOptions.uri} code: ${err.response?.statusCode} message: ${err.message}');
+        '[ApiInterceptor] DioError: url ${err.requestOptions.uri} message: ${err.response?.statusMessage}');
     handler.next(err);
   }
 }

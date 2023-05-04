@@ -24,13 +24,14 @@ class _PersonState extends State<PersonScreen>
     with LifecycleObserver, AutomaticKeepAliveClientMixin {
   VoidCallback? get onUserLogout => widget.onUserLogout;
 
+  bool get isEnterprise => UserContext.isEnterprise;
+
   late Size screenSize;
 
   int balance = 0;
   int income = 0;
   int expenditure = 0;
-  String? avatarUrl;
-  String avatarKey = UniqueKey().toString();
+  bool exiting = false;
 
   @override
   void didChangeDependencies() {
@@ -40,16 +41,15 @@ class _PersonState extends State<PersonScreen>
 
   @override
   void onResume() {
-    if (UserContext.isLogin) {
+    if (UserContext.isLogin && !exiting) {
       refreshBalance();
       refreshIncome();
       refreshExpenditure();
-      if (UserContext.avatarUrl.isNotEmpty) {
-        avatarUrl =
-            'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}';
-      } else {
-        avatarUrl = null;
-      }
+      UserContext.refreshUser().then((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
@@ -167,22 +167,21 @@ class _PersonState extends State<PersonScreen>
                 ),
               ],
             ),
-            child: avatarUrl == null
+            child: UserContext.avatarUrl.isEmpty
                 ? const DefaultAvatarWidget(
                     width: 109,
                     height: 109,
                     iconSize: 64,
                   )
                 : CachedNetworkImage(
-                    imageUrl: avatarUrl!,
+                    imageUrl: UserContext.avatarUrl,
                     width: 109,
                     height: 109,
                     fit: BoxFit.cover,
-                    cacheKey: avatarKey,
                     placeholder: (context, url) => const LoadingWidget(),
                   ),
           ),
-          if (UserContext.isEnterprise)
+          if (isEnterprise)
             Positioned(
               right: 0,
               bottom: 0,
@@ -192,7 +191,7 @@ class _PersonState extends State<PersonScreen>
                 alignment: Alignment.center,
                 clipBehavior: Clip.antiAlias,
                 decoration: const BoxDecoration(
-                  color: Colors.black,
+                  color: ColorName.yellowFFB52D,
                   shape: BoxShape.circle,
                 ),
                 child: Assets.images.authIcon.image(
@@ -261,7 +260,7 @@ class _PersonState extends State<PersonScreen>
               fontSize: 20,
               height: 21 / 20,
               fontWeight: FontWeight.bold,
-              color: ColorName.black35405A,
+              color: ColorName.yellowFFB52D,
             ),
           ),
           const C(2),
@@ -302,21 +301,28 @@ class _PersonState extends State<PersonScreen>
             title: '我的订单',
           ),
           const Divider(height: 1, indent: 8),
-          buildOptionListItem(
-            onTap: () async {
-              bool? result =
-                  await Navigator.pushNamed(context, 'enterpriseAuth');
-              if (result == true) {
-                Fluttertoast.showToast(msg: '认证商家成功');
-                bool refreshUserInfoSuccess = await UserContext.getUserInfo();
-                if (refreshUserInfoSuccess && mounted) {
-                  setState(() {});
+          if (!isEnterprise) ...[
+            buildOptionListItem(
+              onTap: () async {
+                bool? result =
+                    await Navigator.pushNamed(context, 'enterpriseAuth');
+                if (result == true) {
+                  Fluttertoast.showToast(msg: '认证商家成功');
+                  await UserContext.refreshUser();
+                  if (mounted) {
+                    setState(() {});
+                  }
                 }
-              }
-            },
-            icon: Assets.images.authIcon.provider(),
-            title: '认证商家',
-          ),
+              },
+              icon: Assets.images.authIcon.provider(),
+              title: '商家认证',
+            ),
+          ] else ...[
+            buildOptionListItem(
+              icon: Assets.images.productIcon.provider(),
+              title: '我的产品',
+            ),
+          ],
         ],
       ),
     );
@@ -337,7 +343,7 @@ class _PersonState extends State<PersonScreen>
               image: icon,
               width: 24,
               height: 24,
-              color: ColorName.black35405A,
+              color: ColorName.yellowFFB52D,
             ),
             const C(8),
             Text(
@@ -370,13 +376,9 @@ class _PersonState extends State<PersonScreen>
         if (response.statusCode == 200 && response.data != null) {
           if (response.data['code'] == 200) {
             Fluttertoast.showToast(msg: '上传成功');
-            bool refreshUserInfoSuccess = await UserContext.getUserInfo();
-            if (refreshUserInfoSuccess) {
-              avatarKey = UniqueKey().toString();
-              if (mounted) {
-                setState(() => avatarUrl =
-                    'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${UserContext.avatarUrl}');
-              }
+            await UserContext.refreshUser();
+            if (mounted) {
+              setState(() {});
             }
           } else {
             Fluttertoast.showToast(msg: response.data['msg']);
@@ -387,6 +389,7 @@ class _PersonState extends State<PersonScreen>
   }
 
   Future<void> logout() async {
+    exiting = true;
     bool isConfirm = await showAlert();
     if (isConfirm) {
       bool isLogout = await UserContext.onUserLogout();
@@ -394,6 +397,8 @@ class _PersonState extends State<PersonScreen>
         Fluttertoast.showToast(msg: '已退出登录');
         onUserLogout?.call();
       }
+    } else {
+      exiting = false;
     }
   }
 

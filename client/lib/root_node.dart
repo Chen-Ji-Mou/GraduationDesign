@@ -250,15 +250,7 @@ class _BottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          InkWell(
-            onTap: () => Navigator.pop(context),
-            child: Icon(
-              Icons.cancel,
-              size: 28,
-              color: Colors.black.withOpacity(0.7),
-            ),
-          ),
-          const C(20),
+          const C(16),
           Row(
             children: [
               buildItem(
