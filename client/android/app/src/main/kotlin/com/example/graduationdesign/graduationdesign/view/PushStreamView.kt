@@ -26,16 +26,16 @@ import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.rtmp.RtmpCamera1
 import com.pedro.rtplibrary.view.AspectRatioMode
 import com.pedro.rtplibrary.view.OpenGlView
-import java.io.BufferedOutputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+
+enum class FilterType {
+    vintageTV, wave, cartoon, profound, snow, oldPhoto, lamoish, money, waterRipple, bigEye, stick,
+}
 
 class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     RelativeLayout(context), ConnectCheckerRtmp, SurfaceHolder.Callback,
@@ -45,7 +45,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
     private var rtmpUrl: String? = null
     private var mSurfaceView: OpenGlView? = null
-    private var mRtmpCamera1: RtmpCamera1? = null
+    private var mRtmpCamera: RtmpCamera1? = null
     private var currentDateAndTime: String = ""
     private var mFaceTrack: FaceTrack? = null
     private var yuvBuffer: ByteArray? = null
@@ -54,6 +54,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     private var previewBuffer: ByteArray? = null
     private var beautyFilterIndex: Int = -1
     private var otherFilterIndex: Int = -1
+    private lateinit var curFilterType: FilterType
 
     private val mRecordFolder: File
         get() {
@@ -62,22 +63,13 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
             return File(storageDir.absolutePath)
         }
 
-    private val previewSize: Size
-        get() {
-            return if (CamcorderProfile.hasProfile(CamcorderProfile.QUALITY_1080P)) {
-                Size(1920, 1080)
-            } else if (CamcorderProfile.hasProfile(CamcorderProfile.QUALITY_720P)) {
-                Size(1280, 720)
-            } else {
-                Size(640, 480)
-            }
-        }
+    private val previewSize: Size = Size(640, 480)
 
     init {
         mContext = context
         mCallback = callback
         createSurfaceView()
-        initRtmpCamera1()
+        initRtmpCamera()
     }
 
     fun setRtmpUrl(url: String) {
@@ -98,16 +90,24 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         addView(mSurfaceView)
     }
 
-    override fun surfaceCreated(surfaceHolder: SurfaceHolder) {}
+    override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
+        Log.d(TAG, "[surfaceCreated]")
+    }
 
     override fun surfaceChanged(
         surfaceHolder: SurfaceHolder, format: Int, width: Int, height: Int
-    ) = start()
+    ) {
+        Log.d(TAG, "[surfaceChanged]")
+        start()
+    }
 
-    override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) = release()
+    override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
+        Log.d(TAG, "[surfaceDestroyed]")
+        release()
+    }
 
-    private fun initRtmpCamera1() {
-        mRtmpCamera1 = RtmpCamera1(mSurfaceView, this)
+    private fun initRtmpCamera() {
+        mRtmpCamera = RtmpCamera1(mSurfaceView, this)
         hookCameraManager()
     }
 
@@ -118,7 +118,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
             mSurfaceView?.surfaceTexture, mSurfaceView?.context
         )
         proxy.addPreviewCallback(this)
-        field.set(mRtmpCamera1, proxy)
+        field.set(mRtmpCamera, proxy)
     }
 
     private fun hookCameraPreviewListen() {
@@ -126,7 +126,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
         val proxyField = RtmpCamera1::class.java.superclass.getDeclaredField("cameraManager")
         proxyField.isAccessible = true
-        val proxyObj = proxyField.get(mRtmpCamera1) as Camera1ApiManagerProxy
+        val proxyObj = proxyField.get(mRtmpCamera) as Camera1ApiManagerProxy
 
         val cameraField = Camera1ApiManagerProxy::class.java.superclass.getDeclaredField("camera")
         cameraField.isAccessible = true
@@ -137,6 +137,10 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     }
 
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
+        Log.d(
+            TAG,
+            "[onPreviewFrame] previewSize.with ${camera.parameters.previewSize.width} previewSize.height ${camera.parameters.previewSize.height}"
+        )
         mFaceTrack?.detector(data)
         previewBuffer = data
         camera.addCallbackBuffer(yuvBuffer)
@@ -175,7 +179,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     }
 
     override fun onAuthErrorRtmp() {
-        mRtmpCamera1?.stopStream()
+        mRtmpCamera?.stopStream()
         Log.e(TAG, "[onAuthErrorRtmp] Auth Error")
     }
 
@@ -185,7 +189,7 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
     override fun onConnectionFailedRtmp(reason: String) {
         Log.e(TAG, "[onConnectionFailedRtmp] Connection failed. Reason: $reason")
-        mRtmpCamera1?.stopStream()
+        mRtmpCamera?.stopStream()
     }
 
     override fun onConnectionStartedRtmp(rtmpUrl: String) {}
@@ -202,12 +206,12 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
     @SuppressLint("SdCardPath")
     private fun start() {
-        mRtmpCamera1?.startPreview(CameraHelper.Facing.FRONT, previewSize.width, previewSize.height)
+        mRtmpCamera?.startPreview(CameraHelper.Facing.FRONT, previewSize.width, previewSize.height)
         hookCameraPreviewListen()
         mFaceTrack = FaceTrack(
             "/sdcard/Android/data/${mContext.packageName}/cache/lbpcascade_frontalface.xml",
             "/sdcard/Android/data/${mContext.packageName}/cache/seeta_fa_v1.1.bin",
-            mRtmpCamera1?.cameraFacing,
+            mRtmpCamera?.cameraFacing,
             previewSize.width,
             previewSize.height
         )
@@ -215,14 +219,16 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     }
 
     fun resume() {
-        if (mRtmpCamera1?.isStreaming == true) {
+        if (mRtmpCamera?.isStreaming == true) {
             return
         }
-        if (mRtmpCamera1?.isRecording == true || mRtmpCamera1?.prepareAudio() == true && mRtmpCamera1?.prepareVideo() == true) {
-            mRtmpCamera1?.startStream(rtmpUrl)
+        if (mRtmpCamera?.isRecording == true || mRtmpCamera?.prepareAudio() == true && mRtmpCamera?.prepareVideo() == true) {
+            mRtmpCamera?.startStream(rtmpUrl)
         } else {
             Log.w(TAG, "[resume] Error preparing stream, This device cant do it")
         }
+        hookCameraPreviewListen()
+        restoreFilters()
         Utils.normalThreadPool.execute {
             generatePreviewImage(previewBuffer)
         }
@@ -231,18 +237,27 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         }, 15, TimeUnit.MINUTES)
     }
 
+    private fun restoreFilters() {
+        if (beautyFilterIndex != -1) {
+            addBeautyFilter()
+        }
+        if (otherFilterIndex != -1) {
+            addOtherFilter(curFilterType)
+        }
+    }
+
     fun pause() {
-        if (mRtmpCamera1?.isStreaming != true) {
+        if (mRtmpCamera?.isStreaming != true) {
             return
         }
-        mRtmpCamera1?.stopStream()
+        mRtmpCamera?.stopStream()
         mScheduleTask?.cancel(true)
         mScheduleTask = null
     }
 
     fun release() {
-        if (mRtmpCamera1?.isRecording == true) {
-            mRtmpCamera1?.stopRecord()
+        if (mRtmpCamera?.isRecording == true) {
+            mRtmpCamera?.stopRecord()
             updateGallery("${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4")
             Log.d(
                 TAG,
@@ -250,17 +265,16 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
             )
             currentDateAndTime = ""
         }
-        if (mRtmpCamera1?.isStreaming == true) {
-            mRtmpCamera1?.stopStream()
+        if (mRtmpCamera?.isStreaming == true) {
+            mRtmpCamera?.stopStream()
         }
-        mRtmpCamera1?.glInterface?.clearFilters()
-        mRtmpCamera1?.stopPreview()
-        mSurfaceView?.holder?.removeCallback(this)
+        mRtmpCamera?.glInterface?.clearFilters()
         mFaceTrack?.stopTrack()
         mScheduleTask?.cancel(true)
+        mRtmpCamera?.stopPreview()
 
         mSurfaceView = null
-        mRtmpCamera1 = null
+        mRtmpCamera = null
         mFaceTrack = null
         yuvBuffer = null
         mScheduleTask = null
@@ -269,14 +283,14 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
 
     fun switchCamera() {
         try {
-            mRtmpCamera1?.switchCamera()
+            mRtmpCamera?.switchCamera()
         } catch (e: CameraOpenException) {
             Log.e(TAG, "[switchCamera] Exception: ${e.message}")
         }
     }
 
     fun startRecord() {
-        if (mRtmpCamera1?.isRecording == true) {
+        if (mRtmpCamera?.isRecording == true) {
             return
         }
         try {
@@ -285,9 +299,9 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
             }
             val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
             currentDateAndTime = sdf.format(Date())
-            if (mRtmpCamera1?.isStreaming != true) {
-                if (mRtmpCamera1?.prepareAudio() == true && mRtmpCamera1?.prepareVideo() == true) {
-                    mRtmpCamera1?.startRecord(
+            if (mRtmpCamera?.isStreaming != true) {
+                if (mRtmpCamera?.prepareAudio() == true && mRtmpCamera?.prepareVideo() == true) {
+                    mRtmpCamera?.startRecord(
                         "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
                     )
                     Log.d(TAG, "[startRecord] Recording...")
@@ -295,13 +309,13 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
                     Log.w(TAG, "[startRecord] Error preparing stream, This device cant do it")
                 }
             } else {
-                mRtmpCamera1?.startRecord(
+                mRtmpCamera?.startRecord(
                     "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
                 )
                 Log.d(TAG, "[startRecord] Recording...")
             }
         } catch (e: IOException) {
-            mRtmpCamera1?.stopRecord()
+            mRtmpCamera?.stopRecord()
             updateGallery(
                 "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
             )
@@ -310,10 +324,10 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
     }
 
     fun stopRecord(): String? {
-        if (mRtmpCamera1?.isRecording != true) {
+        if (mRtmpCamera?.isRecording != true) {
             return null
         }
-        mRtmpCamera1?.stopRecord()
+        mRtmpCamera?.stopRecord()
         updateGallery(
             "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
         )
@@ -324,137 +338,57 @@ class PushStreamView(context: Context, callback: (filePath: String) -> Unit) :
         return "${mRecordFolder.absolutePath}/video_$currentDateAndTime.mp4"
     }
 
-    fun clearFilter() {
+    fun clearOtherFilter() {
         if (otherFilterIndex != -1) {
-            mRtmpCamera1?.glInterface?.removeFilter(otherFilterIndex)
+            mRtmpCamera?.glInterface?.removeFilter(otherFilterIndex)
+            if (beautyFilterIndex > otherFilterIndex) {
+                beautyFilterIndex--
+            }
             otherFilterIndex = -1
         }
     }
 
-    fun addVintageTVFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(AnalogTVFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, AnalogTVFilterRender())
+    fun addOtherFilter(type: FilterType) {
+        curFilterType = type
+        val curFilter = when (type) {
+            FilterType.vintageTV -> AnalogTVFilterRender()
+            FilterType.wave -> BasicDeformationFilterRender()
+            FilterType.cartoon -> CartoonFilterRender()
+            FilterType.profound -> EarlyBirdFilterRender()
+            FilterType.snow -> SnowFilterRender()
+            FilterType.oldPhoto -> SepiaFilterRender()
+            FilterType.lamoish -> LamoishFilterRender()
+            FilterType.money -> MoneyFilterRender()
+            FilterType.waterRipple -> RippleFilterRender()
+            FilterType.bigEye -> BigEyeFilterRender(mFaceTrack)
+            FilterType.stick -> StickFilterRender(mContext, mFaceTrack)
         }
-    }
-
-    fun addWaveFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(BasicDeformationFilterRender())
+        val filterCount = mRtmpCamera?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM && otherFilterIndex == -1) {
+            mRtmpCamera?.glInterface?.addFilter(curFilter)
             otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, BasicDeformationFilterRender())
-        }
-    }
-
-    fun addBeautyFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(BeautyFilterRender())
-            beautyFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(beautyFilterIndex, BeautyFilterRender())
+        } else if (otherFilterIndex != -1) {
+            mRtmpCamera?.glInterface?.setFilter(otherFilterIndex, curFilter)
         }
     }
 
     fun removeBeautyFilter() {
         if (beautyFilterIndex != -1) {
-            mRtmpCamera1?.glInterface?.removeFilter(beautyFilterIndex)
-            beautyFilterIndex  = -1
+            mRtmpCamera?.glInterface?.removeFilter(beautyFilterIndex)
+            if (otherFilterIndex > beautyFilterIndex) {
+                otherFilterIndex--
+            }
+            beautyFilterIndex = -1
         }
     }
 
-    fun addCartoonFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(CartoonFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, CartoonFilterRender())
-        }
-    }
-
-    fun addProfoundFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(EarlyBirdFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, EarlyBirdFilterRender())
-        }
-    }
-
-    fun addSnowFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(SnowFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, SnowFilterRender())
-        }
-    }
-
-    fun addOldPhotoFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(SepiaFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, SepiaFilterRender())
-        }
-    }
-
-    fun addLamoishFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(LamoishFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, LamoishFilterRender())
-        }
-    }
-
-    fun addMoneyFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(MoneyFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, MoneyFilterRender())
-        }
-    }
-
-    fun addWaterRippleFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(RippleFilterRender())
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, RippleFilterRender())
-        }
-    }
-
-    fun addBigEyeFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(BigEyeFilterRender(mFaceTrack))
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, BigEyeFilterRender(mFaceTrack))
-        }
-    }
-
-    fun addStickFilter() {
-        val filterCount = mRtmpCamera1?.glInterface?.filtersCount() ?: 0
-        if (filterCount < FILTER_MAX_NUM) {
-            mRtmpCamera1?.glInterface?.addFilter(StickFilterRender(mContext, mFaceTrack))
-            otherFilterIndex = filterCount
-        } else {
-            mRtmpCamera1?.glInterface?.setFilter(otherFilterIndex, StickFilterRender(mContext, mFaceTrack))
+    fun addBeautyFilter() {
+        val filterCount = mRtmpCamera?.glInterface?.filtersCount() ?: 0
+        if (filterCount < FILTER_MAX_NUM && beautyFilterIndex == -1) {
+            mRtmpCamera?.glInterface?.addFilter(BeautyFilterRender())
+            beautyFilterIndex = filterCount
+        } else if (beautyFilterIndex != -1) {
+            mRtmpCamera?.glInterface?.setFilter(beautyFilterIndex, BeautyFilterRender())
         }
     }
 

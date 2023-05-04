@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.opengl.GLES20
 import android.opengl.GLUtils
+import android.util.DisplayMetrics
 import android.util.Log
 import com.example.graduationdesign.graduationdesign.R
 import com.example.graduationdesign.graduationdesign.Utils
@@ -25,6 +26,7 @@ class StickFilterRender(mContext: Context, private val mFaceTrack: FaceTrack?) :
     private val mVertexBuffer: FloatBuffer // 顶点坐标数据缓冲区buffer
     private val mTextureBuffer: FloatBuffer // 纹理坐标数据缓冲区buffer
     private val mStickTextureBuffer: FloatBuffer
+    private val realScreenSize: DisplayMetrics = mContext.resources.displayMetrics
 
     init {
         val vertex = floatArrayOf(-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f)
@@ -105,11 +107,16 @@ class StickFilterRender(mContext: Context, private val mFaceTrack: FaceTrack?) :
         val y = faceData.landMarks[1]
 
         // opengl的渲染坐标系是以左下角为原点，右为x轴的正方向，上为y轴的正方向
+        // 耳朵要根据人脸框框的变换而变换
+        // 将android屏幕坐标转换成opengl渲染坐标
 
-        val newX = x.toInt() // 耳朵要根据人脸框框的变换而变换
-        val newY = (faceData.screenHeight - y).toInt() // 将android屏幕坐标转换成opengl渲染坐标
+        val newX = x.toInt()
+        val newY = (faceData.screenHeight - y).toInt()
         val viewWidth = faceData.faceWidth
-        val viewHeight = mBitmap.height / 2
+        val viewHeight = (viewWidth * mBitmap.height / mBitmap.width) / 2
+        Log.d(
+            TAG, "[drawStick] newX $newX newY $newY viewWidth $viewWidth viewHeight $viewHeight"
+        )
         GLES20.glViewport(newX, newY, viewWidth, viewHeight)
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, renderHandler.fboId[0])
@@ -145,5 +152,9 @@ class StickFilterRender(mContext: Context, private val mFaceTrack: FaceTrack?) :
     override fun release() {
         mBitmap.recycle()
         GLES20.glDeleteProgram(programId)
+    }
+
+    companion object {
+        const val TAG: String = "StickFilterRender"
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import com.example.graduationdesign.graduationdesign.view.FilterType
 import com.example.graduationdesign.graduationdesign.view.PushStreamView
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -101,17 +102,17 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
     }
 
     private fun clearFilter(result: MethodChannel.Result) {
-        view?.clearFilter()
+        view?.clearOtherFilter()
         result.success(true)
     }
 
     private fun addVintageTVFilter(result: MethodChannel.Result) {
-        view?.addVintageTVFilter()
+        view?.addOtherFilter(FilterType.vintageTV)
         result.success(true)
     }
 
     private fun addWaveFilter(result: MethodChannel.Result) {
-        view?.addWaveFilter()
+        view?.addOtherFilter(FilterType.wave)
         result.success(true)
     }
 
@@ -126,47 +127,47 @@ class PushStreamPlatform(context: Context, messenger: BinaryMessenger) : Platfor
     }
 
     private fun addCartoonFilter(result: MethodChannel.Result) {
-        view?.addCartoonFilter()
+        view?.addOtherFilter(FilterType.cartoon)
         result.success(true)
     }
 
     private fun addLamoishFilter(result: MethodChannel.Result) {
-        view?.addLamoishFilter()
+        view?.addOtherFilter(FilterType.lamoish)
         result.success(true)
     }
 
     private fun addMoneyFilter(result: MethodChannel.Result) {
-        view?.addMoneyFilter()
+        view?.addOtherFilter(FilterType.money)
         result.success(true)
     }
 
     private fun addOldPhotoFilter(result: MethodChannel.Result) {
-        view?.addOldPhotoFilter()
+        view?.addOtherFilter(FilterType.oldPhoto)
         result.success(true)
     }
 
     private fun addProfoundFilter(result: MethodChannel.Result) {
-        view?.addProfoundFilter()
+        view?.addOtherFilter(FilterType.profound)
         result.success(true)
     }
 
     private fun addSnowFilter(result: MethodChannel.Result) {
-        view?.addSnowFilter()
+        view?.addOtherFilter(FilterType.snow)
         result.success(true)
     }
 
     private fun addWaterRippleFilter(result: MethodChannel.Result) {
-        view?.addWaterRippleFilter()
+        view?.addOtherFilter(FilterType.waterRipple)
         result.success(true)
     }
 
     private fun addBigEyeFilter(result: MethodChannel.Result) {
-        view?.addBigEyeFilter()
+        view?.addOtherFilter(FilterType.bigEye)
         result.success(true)
     }
 
     private fun addStickFilter(result: MethodChannel.Result) {
-        view?.addStickFilter()
+        view?.addOtherFilter(FilterType.stick)
         result.success(true)
     }
 }

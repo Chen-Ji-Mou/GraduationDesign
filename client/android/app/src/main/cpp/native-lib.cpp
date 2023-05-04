@@ -73,8 +73,8 @@ Java_com_example_graduationdesign_graduationdesign_track_FaceTrack_native_1detec
 
     // OpenCV旋转数据操作
     Mat src(height + height / 2, width, CV_8UC1, data); // 摄像头数据data 转成 OpenCv的 Mat
-    imwrite("/sdcard/Android/data/com.example.graduationdesign.graduationdesign/cache/camera.jpg",
-            src); // 做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）
+//    // 做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）
+//    imwrite("/sdcard/Android/data/com.example.graduationdesign.graduationdesign/cache/camera.jpg", src);
     cvtColor(src, src, CV_YUV2RGBA_NV21); // 把YUV转成RGBA
     if (camera_id == 1) { // 前摄
         rotate(src, src, ROTATE_90_COUNTERCLOCKWISE); // 逆时针90度
@@ -123,8 +123,8 @@ Java_com_example_graduationdesign_graduationdesign_track_FaceTrack_native_1detec
         for (int i = 1; i < ret; ++i) { // OpenCV内容，你们之前学过的
             circle(src, Point2f(rects[i].x, rects[i].y), 5, Scalar(0, 255, 0));
         }
-        imwrite("/sdcard/Android/data/com.example.graduationdesign.graduationdesign/cache/result.jpg",
-                src); // 做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）
+//        // 做调试的时候用的（方便查看：有没有摆正，有没有灰度化 等）
+//        imwrite("/sdcard/Android/data/com.example.graduationdesign.graduationdesign/cache/result.jpg", src);
         return face; // 返回 jobject == Face.java（已经有值了，有人脸所有的信息了，那么就可以开心，放大眼睛）
     }
     src.release(); // Mat释放工作
