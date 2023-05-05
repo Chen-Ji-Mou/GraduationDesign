@@ -32,7 +32,7 @@ class _PushStreamState extends State<PushStreamScreen> {
   late WebSocketChannel wsChannel;
 
   final PushStreamController controller = PushStreamController();
-  final Completer<void> initialCompleter = Completer<void>();
+  final Completer<void> initialCompleter = Completer<void>.sync();
 
   @override
   void didChangeDependencies() {

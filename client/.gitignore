@@ -31,6 +31,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/apk/
+/lib/generate
 
 # Symbolication related
 app.*.symbols

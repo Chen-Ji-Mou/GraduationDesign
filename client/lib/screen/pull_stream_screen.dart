@@ -35,7 +35,7 @@ class _PullStreamState extends State<PullStreamScreen> {
   late WebSocketChannel wsChannel;
 
   final PullStreamController controller = PullStreamController();
-  final Completer<void> initialCompleter = Completer<void>();
+  final Completer<void> initialCompleter = Completer<void>.sync();
 
   @override
   void didChangeDependencies() {

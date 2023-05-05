@@ -62,11 +62,11 @@ class _LiveHallState extends State<LiveHallScreen>
         if (response.data['code'] == 200) {
           List<_Live> result = [];
           for (var live in response.data['data']) {
-            if (live['ing'] == true) {
+            if (live['status'] == true) {
               result.add(_Live(
                 live['id'],
                 live['userId'],
-                live['ing'],
+                live['status'],
                 live['number'],
                 live['coverUrl'],
               ));
@@ -277,11 +277,11 @@ class _LiveHallState extends State<LiveHallScreen>
 class _Live {
   final String id;
   String blogger;
-  bool ing;
+  bool status;
   int number;
   String? coverUrl;
 
-  _Live(this.id, this.blogger, this.ing, this.number, this.coverUrl);
+  _Live(this.id, this.blogger, this.status, this.number, this.coverUrl);
 
   Future<void> transformBlogger() async {
     Response response =
