@@ -62,6 +62,7 @@ final List<String> _ignoreAuthPaths = [
   Api.sendEmailVerificationCode,
   Api.verifyEmailVerificationCode,
   Api.changePwd,
+  Api.verifyUserToken,
   Api.getLives,
   Api.enterLive,
   Api.exitLive,
@@ -96,6 +97,8 @@ class Api {
       "/user/verifyEmailVerificationCode";
 
   static const String changePwd = "/user/changePwd";
+
+  static const String verifyUserToken = "/user/verifyUserToken";
 
   static const String applyLive = "/live/apply";
 
@@ -203,6 +206,8 @@ class Api {
   static const String getUserFavorites = "/favorite/getUserFavorites";
 
   static const String deleteFavorite = "/favorite/deleteFavorite";
+
+  static const String verifyVideoHasOwnFavorite = "/favorite/verifyVideoHasOwnFavorite";
 
   static const String addOrder = "/order/addOrder";
 

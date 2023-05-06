@@ -30,8 +30,8 @@ public class FavoriteServiceImpl implements IFavoriteService {
     }
 
     @Override
-    public void deleteFavoriteById(String id) {
-        mapper.deleteFavoriteById(id);
+    public void deleteFavoriteByUserIdAndVideoId(String userId, String videoId) {
+        mapper.deleteFavoriteByUserIdAndVideoId(userId, videoId);
     }
 
     @Override

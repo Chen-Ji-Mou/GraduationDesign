@@ -15,8 +15,8 @@ public interface FavoriteMapper {
     @Select("SELECT * FROM favorite WHERE userId=#{userId} ORDER BY timestamp DESC LIMIT #{pageNum},#{pageSize}")
     List<Favorite> findFavoritesByUserId(@Param("userId") String userId, @Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
 
-    @Delete("DELETE FROM favorite WHERE id=#{id}")
-    void deleteFavoriteById(String id);
+    @Delete("DELETE FROM favorite WHERE userId=#{userId} AND videoId=#{videoId}")
+    void deleteFavoriteByUserIdAndVideoId(@Param("userId") String userId, @Param("videoId") String videoId);
 
     @Select("SELECT * FROM favorite WHERE id=#{id}")
     Favorite findFavoriteById(String id);

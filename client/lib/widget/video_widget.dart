@@ -14,8 +14,7 @@ class VideoWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _VideoState();
 }
 
-class _VideoState extends State<VideoWidget>
-    with AutomaticKeepAliveClientMixin<VideoWidget> {
+class _VideoState extends State<VideoWidget> {
   String get videoUrl => widget.videoUrl;
 
   late BetterPlayerController controller;
@@ -63,7 +62,6 @@ class _VideoState extends State<VideoWidget>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     double aspectRatio = calculateAspectRatio(context);
     controller.setOverriddenAspectRatio(aspectRatio);
     return AspectRatio(
@@ -91,7 +89,4 @@ class _VideoState extends State<VideoWidget>
 
   double calculateAspectRatio(BuildContext context) =>
       MediaQuery.of(context).size.width / MediaQuery.of(context).size.height;
-
-  @override
-  bool get wantKeepAlive => true;
 }

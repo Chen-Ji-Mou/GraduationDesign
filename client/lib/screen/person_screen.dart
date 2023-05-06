@@ -397,9 +397,8 @@ class _PersonState extends State<PersonScreen>
         Fluttertoast.showToast(msg: '已退出登录');
         onUserLogout?.call();
       }
-    } else {
-      exiting = false;
     }
+    exiting = false;
   }
 
   Future<bool> showAlert() async {

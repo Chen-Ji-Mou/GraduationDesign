@@ -14,8 +14,8 @@ if [ -f log.txt ]; then
   rm -rf log.txt
 fi
 
-if [ -f upload ]; then
-  rm -rf upload
+if [ -d upload ]; then
+  rm -rf upload/
 fi
 
 if [ -f backend-release.jar ];

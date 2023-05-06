@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface VideoMapper {
-    @Insert("INSERT INTO video(id, userId, fileName, timestamp) VALUES(#{id}, #{userId}, #{fileName}, #{timestamp})")
+    @Insert("INSERT INTO video(id, userId, fileName, timestamp, shareCount) VALUES(#{id}, #{userId}, #{fileName}, #{timestamp}, #{shareCount})")
     void addVideo(Video video);
 
     @Select("SELECT * FROM video ORDER BY timestamp DESC LIMIT #{pageNum},#{pageSize}")

@@ -111,7 +111,11 @@ class _PullStreamState extends State<PullStreamScreen> {
           future: initialCompleter.future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return buildControlView();
+              return _ControllerView(
+                liveId: liveId,
+                screenSize: screenSize,
+                wsChannel: wsChannel,
+              );
             } else {
               return const LoadingWidget();
             }
@@ -120,16 +124,43 @@ class _PullStreamState extends State<PullStreamScreen> {
       ],
     );
   }
+}
 
-  Widget buildControlView() {
+class _ControllerView extends StatefulWidget {
+  const _ControllerView({
+    Key? key,
+    required this.liveId,
+    required this.screenSize,
+    required this.wsChannel,
+  }) : super(key: key);
+
+  final String liveId;
+  final Size screenSize;
+  final WebSocketChannel wsChannel;
+
+  @override
+  State<StatefulWidget> createState() => _ControllerViewState();
+}
+
+class _ControllerViewState extends State<_ControllerView> {
+  String get liveId => widget.liveId;
+
+  Size get screenSize => widget.screenSize;
+
+  WebSocketChannel get wsChannel => widget.wsChannel;
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
         Positioned(
           left: 16,
           bottom: 86,
-          child:
-              ScrollBarrageWidget(screenSize: screenSize, wsChannel: wsChannel),
+          child: ScrollBarrageWidget(
+            screenSize: screenSize,
+            wsChannel: wsChannel,
+          ),
         ),
         Positioned(
           left: 16,

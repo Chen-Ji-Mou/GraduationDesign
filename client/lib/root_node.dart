@@ -276,7 +276,12 @@ class _BottomSheet extends StatelessWidget {
               buildItem(
                 context,
                 _BottomSheetType.uploadVideo,
-                onTap: uploadVideo,
+                onTap: () {
+                  UserContext.checkLoginCallback(
+                    context,
+                    uploadVideo,
+                  );
+                },
               ),
             ],
           ),

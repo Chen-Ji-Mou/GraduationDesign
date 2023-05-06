@@ -59,8 +59,7 @@ public class FavoriteController {
     }
 
     @RequestMapping(value = "/getUserFavorites", method = RequestMethod.GET)
-    private Result getUserFavorites(HttpServletRequest request, @RequestParam("pageNum") Integer pageNum,
-                                    @RequestParam("pageSize") Integer pageSize) {
+    private Result getUserFavorites(HttpServletRequest request, @RequestParam("pageNum") Integer pageNum, @RequestParam("pageSize") Integer pageSize) {
         pageNum *= pageSize;
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         List<Favorite> favorites = favoriteService.findFavoritesByUserId(userId, pageNum, pageSize);
@@ -69,15 +68,34 @@ public class FavoriteController {
     }
 
     @RequestMapping(value = "/deleteFavorite", method = RequestMethod.POST)
-    private Result deleteFavorite(HttpServletRequest request, @RequestParam("favoriteId") String favoriteId) {
+    private Result deleteFavorite(HttpServletRequest request, @RequestParam("videoId") String videoId) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        Favorite favorite = favoriteService.findFavoriteById(favoriteId);
-        if (favorite == null) {
-            log.info("[FavoriteController] deleteFavorite 用户收藏项不存在 userId {} favoriteId {}", userId, favoriteId);
-            return Result.failed(500, "用户收藏项不存在");
+        Video video = videoService.findVideoById(videoId);
+        if (video == null) {
+            log.info("[FavoriteController] deleteFavorite 视频不存在 videoId {}", videoId);
+            return Result.failed(500, "视频不存在");
         }
-        favoriteService.deleteFavoriteById(favoriteId);
-        log.info("[FavoriteController] deleteFavorite 用户收藏项删除成功 userId {} favoriteId {}", userId, favoriteId);
+        favoriteService.deleteFavoriteByUserIdAndVideoId(userId, videoId);
+        log.info("[FavoriteController] deleteFavorite 用户取消收藏成功 userId {} videoId {}", userId, videoId);
+        return Result.success();
+    }
+
+    @RequestMapping(value = "/verifyVideoHasOwnFavorite", method = RequestMethod.GET)
+    private Result verifyVideoHasOwnFavorite(HttpServletRequest request, @RequestParam("videoId") String videoId) {
+        String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        List<Favorite> favorites = favoriteService.findFavoritesByVideoId(videoId);
+        boolean result = false;
+        for (Favorite favorite : favorites) {
+            if (favorite.getUserId().equals(userId)) {
+                result = true;
+                break;
+            }
+        }
+        if (!result) {
+            log.info("[FavoriteController] verifyVideoHasOwnFavorite 视频未被当前用户收藏 videoId {} userId {}", videoId, userId);
+            return Result.failed(500, "视频未被当前用户收藏");
+        }
+        log.info("[FavoriteController] verifyVideoHasOwnFavorite 视频已被当前用户收藏 videoId {} userId {}", videoId, userId);
         return Result.success();
     }
 }

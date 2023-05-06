@@ -127,4 +127,24 @@ public class UserController {
             return Result.failed(500, "密码修改失败");
         }
     }
+
+    @RequestMapping(value = "/verifyUserToken", method = RequestMethod.GET)
+    private Result verifyUserToken(@RequestParam("token") String token) {
+        if (token == null) {
+            log.info("[UserController] verifyUserToken token不存在");
+            return Result.failed(500, "token不存在");
+        }
+        String userId = Utils.getUserIdFromToken(token);
+        if (userId == null) {
+            log.info("[UserController] verifyUserToken token已过期 token {}", token);
+            return Result.failed(500, "token已过期");
+        }
+        boolean result = userService.verifyUserById(userId);
+        if (!result) {
+            log.info("[UserController] verifyUserToken userId不存在 userId {}", userId);
+            return Result.failed(500, "userId不存在");
+        }
+        log.info("[UserController] verifyUserToken token验证成功 userId {}", userId);
+        return Result.success();
+    }
 }
