@@ -168,11 +168,7 @@ class _PersonState extends State<PersonScreen>
               ],
             ),
             child: UserContext.avatarUrl.isEmpty
-                ? const DefaultAvatarWidget(
-                    width: 109,
-                    height: 109,
-                    iconSize: 64,
-                  )
+                ? const DefaultAvatarWidget(size: 109)
                 : CachedNetworkImage(
                     imageUrl: UserContext.avatarUrl,
                     width: 109,

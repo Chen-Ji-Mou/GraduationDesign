@@ -177,20 +177,18 @@ class ErrorWidget extends StatelessWidget {
 class DefaultAvatarWidget extends StatelessWidget {
   const DefaultAvatarWidget({
     Key? key,
-    required this.width,
-    required this.height,
-    required this.iconSize,
-  }) : super(key: key);
+    required this.size,
+  })  : iconSize = size / 2,
+        super(key: key);
 
-  final double width;
-  final double height;
+  final double size;
   final double iconSize;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width,
-      height: height,
+      width: size,
+      height: size,
       alignment: Alignment.center,
       decoration: const BoxDecoration(
         gradient: LinearGradient(

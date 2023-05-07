@@ -25,4 +25,10 @@
     <color name="grayB2B6C0">#B2B6C0</color>
     <color name="grayBFBFBF">#BFBFBF</color>
     <color name="gray8A8A8A">#8A8A8A</color>
+    <color name="black333333">#333333</color>
+    <color name="grayF4F5F9">#F4F5F9</color>
+    <color name="gray999999">#999999</color>
+    <color name="grayF5F5F5">#F5F5F5</color>
+    <color name="blue48A4EB">#48A4EB</color>
+    <color name="grayE1E1E1">#E1E1E1</color>
 </resources>

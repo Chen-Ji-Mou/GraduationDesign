@@ -8,11 +8,13 @@ import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/video_widget.dart';
 import 'package:like_button/like_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:share_plus/share_plus.dart';
 
-typedef _SuccessCallback = void Function(List<_Video> videos);
+typedef _SuccessCallback<T> = void Function(List<T> videos);
 
 class ShortVideoScreen extends StatefulWidget {
   const ShortVideoScreen({Key? key}) : super(key: key);
@@ -23,17 +25,15 @@ class ShortVideoScreen extends StatefulWidget {
 
 class _ShortVideoState extends State<ShortVideoScreen>
     with AutomaticKeepAliveClientMixin {
-  final RefreshController controller = RefreshController();
-  final Completer<bool> initialCompleter = Completer<bool>();
+  final RefreshController refreshController = RefreshController();
   final ValueNotifier<int> curPageNotifier = ValueNotifier(0);
 
   late PageController pageController;
 
   final List<_Video> videos = [];
-  final int pageSize = 2;
+  final int pageSize = 1;
 
   int curPageNum = 0;
-  bool isLastPage = false;
   bool loading = false;
 
   @override
@@ -48,17 +48,15 @@ class _ShortVideoState extends State<ShortVideoScreen>
           loading = false;
         });
       }
-      initialCompleter.complete(videos.isNotEmpty);
     }, errorCall: () {
       if (mounted) {
         setState(() => loading = false);
       }
-      initialCompleter.complete(false);
     });
   }
 
   void getVideos({
-    required _SuccessCallback successCall,
+    required _SuccessCallback<_Video> successCall,
     VoidCallback? errorCall,
   }) {
     DioClient.get(Api.getVideos, {
@@ -84,7 +82,6 @@ class _ShortVideoState extends State<ShortVideoScreen>
             Future.wait(result.map((e) => e.setCommentCount())),
             Future.wait(result.map((e) => e.verifyOwnLiked())),
           ]);
-          isLastPage = result.length < pageSize;
           successCall.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
@@ -110,18 +107,19 @@ class _ShortVideoState extends State<ShortVideoScreen>
           loading = false;
         });
       }
-      controller.refreshCompleted();
+      refreshController.refreshCompleted();
     }, errorCall: () {
       if (mounted) {
         setState(() => loading = false);
       }
-      controller.refreshCompleted();
+      refreshController.refreshCompleted();
     });
   }
 
   @override
   void dispose() {
     pageController.dispose();
+    refreshController.dispose();
     super.dispose();
   }
 
@@ -136,7 +134,7 @@ class _ShortVideoState extends State<ShortVideoScreen>
           ScrollConfiguration(
             behavior: NoBoundaryRippleBehavior(),
             child: SmartRefresher(
-              controller: controller,
+              controller: refreshController,
               enablePullDown: videos.isEmpty,
               enablePullUp: false,
               onRefresh: onRefresh,
@@ -144,26 +142,8 @@ class _ShortVideoState extends State<ShortVideoScreen>
                   ? PageView.builder(
                       controller: pageController,
                       scrollDirection: Axis.vertical,
-                      itemCount: videos.length + (isLastPage ? 0 : 1),
-                      onPageChanged: (index) {
-                        curPageNotifier.value = index;
-                        if (index == videos.length) {
-                          curPageNum++;
-                          getVideos(successCall: (result) {
-                            if (mounted && result.isNotEmpty) {
-                              setState(() => videos.addAll(result));
-                            } else if (result.isEmpty) {
-                              setState(() {
-                                pageController.animateToPage(
-                                  index - 1,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              });
-                            }
-                          });
-                        }
-                      },
+                      itemCount: videos.length + 1,
+                      onPageChanged: onPageChanged,
                       itemBuilder: (context, index) {
                         if (index == videos.length) {
                           return Container(
@@ -181,23 +161,35 @@ class _ShortVideoState extends State<ShortVideoScreen>
                       : const _VideoEmptyWidget(),
             ),
           ),
-          FutureBuilder(
-            future: initialCompleter.future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.data == true) {
-                return _ControllerView(
-                  videos: videos,
-                  curPageNotifier: curPageNotifier,
-                );
-              } else {
-                return const C(0);
-              }
-            },
-          ),
+          if (videos.isNotEmpty)
+            _ControllerView(
+              videos: videos,
+              curPageNotifier: curPageNotifier,
+            )
+          else
+            const C(0),
         ],
       ),
     );
+  }
+
+  void onPageChanged(int index) {
+    curPageNotifier.value = index;
+    if (index == videos.length) {
+      curPageNum++;
+      getVideos(successCall: (result) {
+        if (mounted && result.isNotEmpty) {
+          setState(() => videos.addAll(result));
+        } else if (result.isEmpty) {
+          curPageNum--;
+          pageController.animateToPage(
+            index - 1,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.ease,
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -214,7 +206,7 @@ class _Video {
   late String? avatarUrl;
   late int favoriteCount;
   late int commentCount;
-  late bool isOwnLiked;
+  bool isOwnLiked = false;
 
   _Video(this.id, this.userId, this.fileName, this.timestamp, this.shareCount);
 
@@ -257,10 +249,12 @@ class _Video {
   }
 
   Future<void> verifyOwnLiked() async {
-    Response response =
-        await DioClient.get(Api.verifyVideoHasOwnFavorite, {'videoId': id});
-    if (response.statusCode == 200 && response.data != null) {
-      isOwnLiked = response.data['code'] == 200;
+    if (UserContext.isLogin) {
+      Response response =
+          await DioClient.get(Api.verifyVideoHasOwnFavorite, {'videoId': id});
+      if (response.statusCode == 200 && response.data != null) {
+        isOwnLiked = response.data['code'] == 200;
+      }
     }
   }
 }
@@ -284,8 +278,10 @@ class _ControllerViewState extends State<_ControllerView> {
 
   ValueNotifier<int> get curPageNotifier => widget.curPageNotifier;
 
-  late ValueNotifier<int> favoriteCount;
+  final ValueNotifier<int> favoriteCount = ValueNotifier(0);
+
   late _Video video;
+  late Size screenSize;
 
   int curIndex = 0;
   bool isLoadMore = false;
@@ -294,8 +290,12 @@ class _ControllerViewState extends State<_ControllerView> {
   void initState() {
     super.initState();
     curPageNotifier.addListener(onPageChanged);
-    favoriteCount =
-        ValueNotifier(videos.isNotEmpty ? videos[curIndex].favoriteCount : 0);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenSize = MediaQuery.of(context).size;
   }
 
   @override
@@ -312,15 +312,12 @@ class _ControllerViewState extends State<_ControllerView> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-        '[$runtimeType] build curPageNotifier.value ${curPageNotifier.value}');
-    debugPrint('[$runtimeType] build videos.length ${videos.length}');
-    debugPrint('[$runtimeType] build curIndex $curIndex');
     isLoadMore = curPageNotifier.value == videos.length;
     if (isLoadMore) {
       return const C(0);
     } else {
       video = videos[curIndex];
+      favoriteCount.value = video.favoriteCount;
       return Stack(
         fit: StackFit.expand,
         children: [
@@ -334,20 +331,35 @@ class _ControllerViewState extends State<_ControllerView> {
                 const C(24),
                 buildLikeButton(
                   onTap: (isLiked) async {
-                    bool result =
-                        isLiked ? await removeFavorite() : await addFavorite();
-                    video.isOwnLiked = result;
-                    result ? favoriteCount.value++ : favoriteCount.value--;
+                    bool result = isLiked;
+                    UserContext.awaitLogin(context);
+                    if (UserContext.isLogin) {
+                      result = isLiked
+                          ? await removeFavorite()
+                          : await addFavorite();
+                      video.isOwnLiked = result;
+                      result ? favoriteCount.value++ : favoriteCount.value--;
+                    }
                     return result;
                   },
                 ),
                 const C(24),
                 buildCommentButton(
-                  onTap: () => Fluttertoast.showToast(msg: '功能还未开发，敬请期待'),
+                  onTap: showCommentBottomSheet,
                 ),
                 const C(24),
                 buildShareButton(
-                  onTap: () => Fluttertoast.showToast(msg: '功能还未开发，敬请期待'),
+                  onTap: () {
+                    UserContext.checkLoginCallback(context, () async {
+                      await Share.share(
+                        '这里有一个很有趣的视频快来查收哦\n${video.videoUrl}\n——直播电商定制APP',
+                      );
+                      int result = await updateShareCount();
+                      if (mounted) {
+                        setState(() => video.shareCount = result);
+                      }
+                    });
+                  },
                 ),
               ],
             ),
@@ -366,11 +378,7 @@ class _ControllerViewState extends State<_ControllerView> {
           shape: BoxShape.circle,
         ),
         child: video.avatarUrl == null
-            ? const DefaultAvatarWidget(
-                width: 56,
-                height: 56,
-                iconSize: 32,
-              )
+            ? const DefaultAvatarWidget(size: 56)
             : CachedNetworkImage(
                 imageUrl: video.avatarUrl!,
                 width: 56,
@@ -492,6 +500,33 @@ class _ControllerViewState extends State<_ControllerView> {
       return true;
     }
   }
+
+  Future<bool?> showCommentBottomSheet() async {
+    return await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CommentBottomSheet(
+        screenSize: screenSize,
+        videoId: video.id,
+      ),
+    );
+  }
+
+  Future<int> updateShareCount() async {
+    Response response =
+        await DioClient.post(Api.updateShareCount, {'videoId': video.id});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        return response.data['data'];
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        return video.shareCount;
+      }
+    } else {
+      return video.shareCount;
+    }
+  }
 }
 
 class _FavoriteCountWidget extends StatefulWidget {
@@ -539,6 +574,524 @@ class _FavoriteCountState extends State<_FavoriteCountWidget> {
       ),
     );
   }
+}
+
+class _Comment {
+  final String id;
+  final String userId;
+  final String videoId;
+  final String content;
+  final int timestamp;
+  late String date;
+  late String userName;
+  late String? userAvatarUrl;
+
+  _Comment(this.id, this.userId, this.videoId, this.content, this.timestamp);
+
+  void setDate() {
+    date = DateTime.fromMillisecondsSinceEpoch(timestamp)
+        .toLocal()
+        .toString()
+        .substring(0, 16);
+  }
+
+  Future<void> getUserInfo() async {
+    Response response =
+        await DioClient.get(Api.getUserInfo, {'userId': userId});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Map<String, dynamic> map = response.data['data'];
+        userName = map['name'];
+        userAvatarUrl = map['avatarUrl'] != null
+            ? 'http://${Api.host}:${Api.port}/person/downloadAvatar?fileName=${map['avatarUrl']}'
+            : null;
+      }
+    }
+  }
+}
+
+class _CommentBottomSheet extends StatefulWidget {
+  const _CommentBottomSheet({
+    Key? key,
+    required this.screenSize,
+    required this.videoId,
+  }) : super(key: key);
+
+  final Size screenSize;
+  final String videoId;
+
+  @override
+  State<StatefulWidget> createState() => _CommentBottomSheetState();
+}
+
+class _CommentBottomSheetState extends State<_CommentBottomSheet> {
+  Size get screenSize => widget.screenSize;
+
+  String get videoId => widget.videoId;
+
+  final RefreshController refreshController = RefreshController();
+  final List<_Comment> comments = [];
+  final int pageSize = 10;
+
+  int curPageNum = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getComments(successCall: (result) {
+      if (mounted) {
+        setState(() => comments.addAll(result));
+      }
+    });
+  }
+
+  void getComments({
+    required _SuccessCallback<_Comment> successCall,
+    VoidCallback? errorCall,
+  }) {
+    DioClient.get(Api.getComments, {
+      'videoId': videoId,
+      'pageNum': curPageNum,
+      'pageSize': pageSize,
+    }).then((response) async {
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          List<_Comment> result = [];
+          for (var comment in response.data['data']) {
+            _Comment item = _Comment(
+              comment['id'],
+              comment['userId'],
+              comment['videoId'],
+              comment['content'],
+              comment['timestamp'],
+            )..setDate();
+            result.add(item);
+          }
+          await Future.wait(result.map((e) => e.getUserInfo()));
+          successCall.call(result);
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+          errorCall?.call();
+        }
+      } else {
+        errorCall?.call();
+      }
+    });
+  }
+
+  void onRefresh() {
+    curPageNum = 0;
+    getComments(successCall: (result) {
+      if (mounted) {
+        setState(() => comments
+          ..clear()
+          ..addAll(result));
+      }
+      refreshController.refreshCompleted();
+    }, errorCall: () {
+      refreshController.refreshFailed();
+    });
+  }
+
+  void onLoading() {
+    curPageNum++;
+    getComments(successCall: (result) {
+      if (mounted && result.isNotEmpty) {
+        setState(() => comments.addAll(result));
+      } else if (result.isEmpty) {
+        curPageNum--;
+      }
+      refreshController.loadComplete();
+    }, errorCall: () {
+      curPageNum--;
+      refreshController.loadFailed();
+    });
+  }
+
+  @override
+  void dispose() {
+    refreshController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          buildHeader(),
+          Container(
+            width: screenSize.width,
+            height: 14,
+            color: ColorName.grayF4F5F9,
+          ),
+          buildCommentList(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeader() {
+    return Row(
+      children: [
+        const C(16),
+        InkWell(
+          onTap: exit,
+          child: const Icon(
+            Icons.close,
+            size: 24,
+            color: ColorName.black333333,
+          ),
+        ),
+        Container(
+          height: 48,
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(left: screenSize.width / 2 - 56),
+          child: Text(
+            '评论',
+            style: GoogleFonts.roboto(
+              height: 1.2,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: ColorName.black333333,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCommentList() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const C(12),
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            '所有评论',
+            style: GoogleFonts.roboto(
+              height: 1,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: ColorName.black333333,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: screenSize.height - 196,
+          child: Stack(
+            children: [
+              ScrollConfiguration(
+                behavior: NoBoundaryRippleBehavior(),
+                child: SmartRefresher(
+                  controller: refreshController,
+                  enablePullDown: true,
+                  enablePullUp: true,
+                  onRefresh: onRefresh,
+                  onLoading: onLoading,
+                  child: ListView.builder(
+                    itemCount: comments.length,
+                    itemBuilder: buildCommentItem,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                child: InkWell(
+                  onTap: () {
+                    UserContext.checkLoginCallback(context, () {
+                      _InputBottomSheet.show(
+                        context,
+                        screenSize,
+                        onInputComplete: addComment,
+                      );
+                    });
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: screenSize.width,
+                        height: 1,
+                        color: ColorName.grayE1E1E1,
+                      ),
+                      Container(
+                        width: screenSize.width,
+                        height: 46,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 6),
+                        child: Row(
+                          children: [
+                            const C(10),
+                            Container(
+                              width: screenSize.width * 0.8,
+                              height: 34,
+                              padding: const EdgeInsets.only(left: 16, top: 4),
+                              clipBehavior: Clip.antiAlias,
+                              alignment: Alignment.centerLeft,
+                              decoration: BoxDecoration(
+                                color: ColorName.grayF5F5F5,
+                                borderRadius: BorderRadius.circular(23),
+                              ),
+                              child: Text(
+                                '添加你的评论',
+                                style: GoogleFonts.roboto(
+                                  height: 1,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.normal,
+                                  color: ColorName.gray999999,
+                                ),
+                              ),
+                            ),
+                            const C(12),
+                            Assets.images.send.image(
+                              width: 24,
+                              height: 24,
+                              color: ColorName.blue48A4EB,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCommentItem(BuildContext context, int index) {
+    _Comment comment = comments[index];
+    return Container(
+      padding: const EdgeInsets.only(left: 16, top: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            clipBehavior: Clip.antiAlias,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+            ),
+            child: comment.userAvatarUrl == null
+                ? const DefaultAvatarWidget(size: 36)
+                : CachedNetworkImage(
+                    imageUrl: comment.userAvatarUrl!,
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.cover,
+                  ),
+          ),
+          const C(16),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                comment.userName,
+                style: GoogleFonts.roboto(
+                  height: 1.2,
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: ColorName.black333333,
+                ),
+              ),
+              Text(
+                comment.date,
+                style: GoogleFonts.roboto(
+                  height: 1.2,
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                  color: ColorName.gray999999,
+                ),
+              ),
+              const C(14),
+              Text(
+                comment.content,
+                style: GoogleFonts.roboto(
+                  height: 1.2,
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: ColorName.black333333,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> addComment(String content) async {
+    Response response = await DioClient.post(
+        Api.addComment, {'videoId': videoId, 'content': content});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        onRefresh();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+      }
+    }
+  }
+
+  void exit() => Navigator.pop(context);
+}
+
+class _InputBottomSheet extends StatefulWidget {
+  const _InputBottomSheet(
+    this.screenSize, {
+    required this.onInputComplete,
+  });
+
+  final ValueChanged<String> onInputComplete;
+  final Size screenSize;
+
+  static Future<void> show(
+    BuildContext context,
+    Size screenSize, {
+    required ValueChanged<String> onInputComplete,
+  }) async {
+    await Navigator.push(
+      context,
+      _BottomPopupRoute(
+        child: _InputBottomSheet(screenSize, onInputComplete: onInputComplete),
+      ),
+    );
+  }
+
+  @override
+  State<StatefulWidget> createState() => _InputBottomState();
+}
+
+class _InputBottomState extends State<_InputBottomSheet> {
+  ValueChanged<String> get onInputComplete => widget.onInputComplete;
+
+  Size get screenSize => widget.screenSize;
+
+  final double height = 46;
+  final TextEditingController controller = TextEditingController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Container(
+            width: screenSize.width,
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            color: Colors.white,
+            child: Row(
+              children: [
+                const C(10),
+                Container(
+                  width: screenSize.width * 0.8,
+                  height: 34,
+                  padding: const EdgeInsets.only(left: 16),
+                  clipBehavior: Clip.antiAlias,
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    color: ColorName.grayF5F5F5,
+                    borderRadius: BorderRadius.circular(23),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLines: 1,
+                    style: GoogleFonts.roboto(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14,
+                      height: 1.2,
+                    ),
+                    textInputAction: TextInputAction.send,
+                    onEditingComplete: onEditingComplete,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '请输入评论内容',
+                      hintStyle: GoogleFonts.roboto(
+                        fontWeight: FontWeight.normal,
+                        color: ColorName.gray999999,
+                        fontSize: 14,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                const C(12),
+                InkWell(
+                  onTap: onEditingComplete,
+                  child: Assets.images.send.image(
+                    width: 24,
+                    height: 24,
+                    color: ColorName.blue48A4EB,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void onEditingComplete() {
+    onInputComplete.call(controller.text);
+    Navigator.pop(context);
+  }
+}
+
+class _BottomPopupRoute extends PopupRoute {
+  _BottomPopupRoute({required this.child});
+
+  final Duration _duration = const Duration(milliseconds: 300);
+  Widget child;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  bool get barrierDismissible => true;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return child;
+  }
+
+  @override
+  Duration get transitionDuration => _duration;
 }
 
 class _VideoEmptyWidget extends StatelessWidget {

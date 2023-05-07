@@ -100,7 +100,6 @@ class _RootNodeState extends State<RootNode>
   @override
   Widget build(BuildContext context) {
     Widget child = Scaffold(
-      resizeToAvoidBottomInset: false,
       body: Container(
         padding: EdgeInsets.only(top: toolbarHeight),
         child: TabBarView(

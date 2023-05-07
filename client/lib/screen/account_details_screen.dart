@@ -76,7 +76,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
               detail['income'],
               detail['expenditure'],
               detail['timestamp'],
-            )..transformTimestamp();
+            )..setDate();
             result.add(item);
           }
           successCall?.call(result);
@@ -263,7 +263,7 @@ class _Detail {
 
   _Detail(this.id, this.income, this.expenditure, this.timestamp);
 
-  void transformTimestamp() {
+  void setDate() {
     date = DateTime.fromMillisecondsSinceEpoch(timestamp)
         .toLocal()
         .toString()

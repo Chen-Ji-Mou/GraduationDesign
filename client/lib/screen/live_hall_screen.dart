@@ -62,15 +62,13 @@ class _LiveHallState extends State<LiveHallScreen>
         if (response.data['code'] == 200) {
           List<_Live> result = [];
           for (var live in response.data['data']) {
-            if (live['status'] == true) {
-              result.add(_Live(
-                live['id'],
-                live['userId'],
-                live['status'],
-                live['number'],
-                live['coverUrl'],
-              ));
-            }
+            result.add(_Live(
+              live['id'],
+              live['userId'],
+              live['status'],
+              live['number'],
+              live['coverUrl'],
+            ));
           }
           await Future.wait(result.map((e) => e.transformBlogger()));
           successCall.call(result);

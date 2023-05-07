@@ -37,7 +37,7 @@ public class VideoController {
                             @RequestParam(name = "pageSize") Integer pageSize) {
         pageNum *= pageSize;
         List<Video> videos = videoService.findVideos(pageNum, pageSize);
-        log.info("[VideoController] getVideos 获取视频列表成功 pageNum " + pageNum + " pageSize " + pageSize);
+        log.info("[VideoController] getVideos 获取视频列表成功 pageNum {} pageSize {}", pageNum, pageSize);
         return Result.success(videos);
     }
 

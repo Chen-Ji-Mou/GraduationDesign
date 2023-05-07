@@ -10,7 +10,7 @@ public interface VideoMapper {
     @Insert("INSERT INTO video(id, userId, fileName, timestamp, shareCount) VALUES(#{id}, #{userId}, #{fileName}, #{timestamp}, #{shareCount})")
     void addVideo(Video video);
 
-    @Select("SELECT * FROM video ORDER BY timestamp DESC LIMIT #{pageNum},#{pageSize}")
+    @Select("SELECT * FROM video ORDER BY timestamp ASC LIMIT #{pageNum},#{pageSize}")
     List<Video> findVideos(@Param("pageNum") Integer pageNum, @Param("pageSize") Integer pageSize);
 
     @Select("SELECT * FROM video WHERE fileName=#{fileName}")

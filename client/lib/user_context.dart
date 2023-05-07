@@ -23,11 +23,35 @@ class UserContext {
 
   static bool get isLogin => SpManager.containsKey('token') ?? false;
 
-  static Future<List<bool>> refreshUser() async {
-    return await Future.wait<bool>([
-      _getUserInfo(),
-      _verifyUserHasAuthenticated(),
-    ]);
+  static Future<List<bool>?> refreshUser() async {
+    if (isLogin) {
+      bool result = await _verifyUserToken();
+      if (result) {
+        return await Future.wait<bool>([
+          _getUserInfo(),
+          _verifyUserHasAuthenticated(),
+        ]);
+      } else {
+        await _cleanUserLoginState();
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  static Future<bool> _verifyUserToken() async {
+    Response response = await DioClient.get(
+        Api.verifyUserToken, {'token': SpManager.getString('token')});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   static Future<bool> _getUserInfo() async {
@@ -85,7 +109,9 @@ class UserContext {
     return tokenSaveSuccess;
   }
 
-  static Future<bool> onUserLogout() async {
+  static Future<bool> onUserLogout() async => await _cleanUserLoginState();
+
+  static Future<bool> _cleanUserLoginState() async {
     bool result = await SpManager.remove('token');
     _name = null;
     _email = null;
