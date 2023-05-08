@@ -20,11 +20,11 @@ class AccountDetailsScreen extends StatefulWidget {
 class _AccountDetailsState extends State<AccountDetailsScreen>
     with LifecycleObserver {
   final RefreshController controller = RefreshController();
+  final List<_Detail> details = [];
   final int pageSize = 10;
 
   late Size screenSize;
 
-  List<_Detail> details = [];
   int pageNum = 0;
   int balance = 0;
 
@@ -41,8 +41,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
       if (mounted) {
         setState(() => details
           ..clear()
-          ..addAll(result)
-          ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
+          ..addAll(result));
       }
     });
   }
@@ -62,8 +61,11 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
     });
   }
 
-  void getDetails({_SuccessCallback? successCall, _ErrorCallback? errorCall}) {
-    DioClient.get(Api.getDetail, {
+  void getDetails({
+    _SuccessCallback? successCall,
+    _ErrorCallback? errorCall,
+  }) {
+    DioClient.get(Api.getDetails, {
       'pageNum': pageNum,
       'pageSize': pageSize,
     }).then((response) {
@@ -93,13 +95,17 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
   void onLoading() {
     pageNum++;
     getDetails(successCall: (result) {
-      if (mounted) {
-        setState(() => details
-          ..addAll(result)
-          ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
+      if (mounted && result.isNotEmpty) {
+        if (result.length < pageSize) {
+          pageNum--;
+        }
+        setState(() => details.addAll(result));
+      } else if (result.isEmpty) {
+        pageNum--;
       }
       controller.loadComplete();
     }, errorCall: () {
+      pageNum--;
       controller.loadComplete();
     });
   }
@@ -108,16 +114,16 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.9),
+        backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: Colors.black.withOpacity(0.9),
+        iconTheme: const IconThemeData(
+          color: Colors.black,
         ),
         title: Text(
           '账户明细',
           style: GoogleFonts.roboto(
-            color: Colors.black.withOpacity(0.9),
+            color: Colors.black,
             fontWeight: FontWeight.normal,
             fontSize: 16,
           ),
@@ -125,7 +131,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
       ),
       body: Container(
         alignment: Alignment.center,
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white,
         child: Column(
           children: [
             buildHeader(),
@@ -156,8 +162,8 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
       child: Container(
         width: screenSize.width,
         height: screenSize.height / 7,
-        decoration: BoxDecoration(
-          color: ColorName.yellowFFB52D.withOpacity(0.9),
+        decoration: const BoxDecoration(
+          color: ColorName.yellowFFB52D,
         ),
         child: Stack(
           children: [
@@ -170,7 +176,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
                   height: 1,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -183,7 +189,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
                   height: 1,
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -195,7 +201,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Text(
@@ -204,7 +210,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
                     height: 1,
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
-                    color: ColorName.yellowFFB52D.withOpacity(0.9),
+                    color: ColorName.yellowFFB52D,
                   ),
                 ),
               ),
@@ -235,7 +241,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
               height: 1,
               fontSize: 14,
               fontWeight: FontWeight.normal,
-              color: Colors.black.withOpacity(0.9),
+              color: Colors.black,
             ),
           ),
           const C(6),

@@ -21,7 +21,7 @@ class LiveHallScreen extends StatefulWidget {
 
 class _LiveHallState extends State<LiveHallScreen>
     with AutomaticKeepAliveClientMixin {
-  final RefreshController controller = RefreshController();
+  final RefreshController refreshController = RefreshController();
   final double aspectRatio = 168 / 216;
   final int pageSize = 6;
 
@@ -68,9 +68,9 @@ class _LiveHallState extends State<LiveHallScreen>
               live['status'],
               live['number'],
               live['coverUrl'],
-            ));
+            )..setCoverUrl());
           }
-          await Future.wait(result.map((e) => e.transformBlogger()));
+          await Future.wait(result.map((e) => e.getUserInfo()));
           successCall.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
@@ -90,9 +90,9 @@ class _LiveHallState extends State<LiveHallScreen>
           ..clear()
           ..addAll(result));
       }
-      controller.refreshCompleted();
+      refreshController.refreshCompleted();
     }, errorCall: () {
-      controller.refreshCompleted();
+      refreshController.refreshFailed();
     });
   }
 
@@ -102,9 +102,9 @@ class _LiveHallState extends State<LiveHallScreen>
       if (mounted && result.isNotEmpty) {
         setState(() => lives.addAll(result));
       }
-      controller.loadComplete();
+      refreshController.loadComplete();
     }, errorCall: () {
-      controller.loadComplete();
+      refreshController.loadFailed();
     });
   }
 
@@ -121,7 +121,7 @@ class _LiveHallState extends State<LiveHallScreen>
             child: ScrollConfiguration(
               behavior: NoBoundaryRippleBehavior(),
               child: SmartRefresher(
-                controller: controller,
+                controller: refreshController,
                 enablePullDown: true,
                 enablePullUp: true,
                 onRefresh: onRefresh,
@@ -207,8 +207,7 @@ class _LiveHallState extends State<LiveHallScreen>
           image: DecorationImage(
             image: live.coverUrl == null
                 ? Assets.images.cover.provider()
-                : CachedNetworkImageProvider(
-                    'http://${Api.host}:${Api.port}/live/downloadCover?fileName=${live.coverUrl}'),
+                : CachedNetworkImageProvider(live.coverUrl!),
             fit: BoxFit.cover,
           ),
         ),
@@ -218,7 +217,7 @@ class _LiveHallState extends State<LiveHallScreen>
               left: 10,
               bottom: 10,
               child: Text(
-                live.blogger,
+                live.userName,
                 style: GoogleFonts.roboto(
                   fontSize: 16,
                   height: 12 / 16,
@@ -274,20 +273,28 @@ class _LiveHallState extends State<LiveHallScreen>
 
 class _Live {
   final String id;
-  String blogger;
+  final String userId;
   bool status;
   int number;
   String? coverUrl;
+  late String userName;
 
-  _Live(this.id, this.blogger, this.status, this.number, this.coverUrl);
+  _Live(this.id, this.userId, this.status, this.number, this.coverUrl);
 
-  Future<void> transformBlogger() async {
+  void setCoverUrl() {
+    if (coverUrl != null) {
+      coverUrl =
+          'http://${Api.host}:${Api.port}/live/downloadCover?fileName=$coverUrl';
+    }
+  }
+
+  Future<void> getUserInfo() async {
     Response response =
-        await DioClient.get(Api.getUserInfo, {'userId': blogger});
-    if (response.statusCode == 200) {
+        await DioClient.get(Api.getUserInfo, {'userId': userId});
+    if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
         Map<String, dynamic> map = response.data['data'];
-        blogger = map['name'];
+        userName = map['name'];
       }
     }
   }

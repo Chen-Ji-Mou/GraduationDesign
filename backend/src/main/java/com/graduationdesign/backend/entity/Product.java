@@ -15,7 +15,7 @@ public class Product {
     @Nullable
     private String coverUrl;
     @Nullable
-    private String desc;
+    private String intro;
     private Boolean status;
     private Integer inventory;
 }

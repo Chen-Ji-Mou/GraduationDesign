@@ -39,17 +39,7 @@ class _SendBarrageState extends State<SendBarrageWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        UserContext.checkLoginCallback(context, () {
-          _InputBottomSheet.show(
-            context,
-            screenSize,
-            onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
-              Barrage(UserContext.name, content, null).toJsonMap(),
-            )),
-          );
-        });
-      },
+      onTap: showInputBottomSheet,
       child: Container(
         width: width,
         height: height,
@@ -75,72 +65,25 @@ class _SendBarrageState extends State<SendBarrageWidget> {
       ),
     );
   }
-}
 
-class _InputBottomSheet extends StatefulWidget {
-  const _InputBottomSheet(this.screenSize, {required this.onInputComplete});
-
-  final ValueChanged<String> onInputComplete;
-  final Size screenSize;
-
-  static Future<void> show(
-    BuildContext context,
-    Size screenSize, {
-    required ValueChanged<String> onInputComplete,
-  }) async {
-    await Navigator.push(
-      context,
-      _BottomPopupRoute(
-        child: _InputBottomSheet(screenSize, onInputComplete: onInputComplete),
-      ),
-    );
-  }
-
-  @override
-  State<StatefulWidget> createState() => _InputBottomState();
-}
-
-class _InputBottomState extends State<_InputBottomSheet> {
-  ValueChanged<String> get onInputComplete => widget.onInputComplete;
-
-  Size get screenSize => widget.screenSize;
-
-  final double height = 40;
-  late TextEditingController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-          Container(
-            height: height,
+  void showInputBottomSheet() {
+    UserContext.checkLoginCallback(context, () {
+      InputBottomSheet.show(
+        context,
+        screenSize: screenSize,
+        onInputComplete: (content) => wsChannel.sink.add(mapToJsonString(
+          Barrage(UserContext.name, content, null).toJsonMap(),
+        )),
+        builder: (inputController, onEditingComplete) {
+          return Container(
+            height: 40,
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(height / 2),
-                topRight: Radius.circular(height / 2),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
             ),
             child: Row(
@@ -153,14 +96,14 @@ class _InputBottomState extends State<_InputBottomSheet> {
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(height / 2),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: ColorName.redF958A3.withOpacity(0.8),
                       width: 1,
                     ),
                   ),
                   child: TextField(
-                    controller: controller,
+                    controller: inputController,
                     autofocus: true,
                     maxLines: 1,
                     style: GoogleFonts.roboto(
@@ -184,7 +127,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                   ),
                 ),
                 const C(12),
-                GestureDetector(
+                InkWell(
                   onTap: onEditingComplete,
                   child: Assets.images.send.image(
                     width: 24,
@@ -194,39 +137,9 @@ class _InputBottomState extends State<_InputBottomSheet> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+        },
+      );
+    });
   }
-
-  void onEditingComplete() {
-    onInputComplete.call(controller.text);
-    Navigator.pop(context);
-  }
-}
-
-class _BottomPopupRoute extends PopupRoute {
-  _BottomPopupRoute({required this.child});
-
-  final Duration _duration = const Duration(milliseconds: 300);
-  Widget child;
-
-  @override
-  Color? get barrierColor => null;
-
-  @override
-  bool get barrierDismissible => true;
-
-  @override
-  String? get barrierLabel => null;
-
-  @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
-    return child;
-  }
-
-  @override
-  Duration get transitionDuration => _duration;
 }

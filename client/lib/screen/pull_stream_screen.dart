@@ -13,7 +13,6 @@ import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
 import 'package:graduationdesign/widget/send_barrage_widget.dart';
-import 'package:like_button/like_button.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PullStreamScreen extends StatefulWidget {
@@ -61,9 +60,9 @@ class _PullStreamState extends State<PullStreamScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
+        color: Colors.black,
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: toolbarHeight),
-        decoration: BoxDecoration(color: Colors.black.withOpacity(0.9)),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -183,8 +182,10 @@ class _ControllerViewState extends State<_ControllerView> {
         Positioned(
           left: 76,
           bottom: 20,
-          child:
-              SendBarrageWidget(screenSize: screenSize, wsChannel: wsChannel),
+          child: SendBarrageWidget(
+            screenSize: screenSize,
+            wsChannel: wsChannel,
+          ),
         ),
         Positioned(
           right: 69,
@@ -199,29 +200,22 @@ class _ControllerViewState extends State<_ControllerView> {
                 });
               });
             },
-            child: Assets.images.bag.image(width: 37, height: 37),
+            child: Assets.images.bag.image(
+              width: 37,
+              height: 37,
+              color: Colors.white,
+            ),
           ),
         ),
         Positioned(
           right: 16,
           bottom: 27,
-          child: LikeButton(
-            size: 37,
-            circleColor: const CircleColor(
-                start: ColorName.redEC008E, end: ColorName.redFC6767),
-            bubblesColor: const BubblesColor(
-              dotPrimaryColor: ColorName.redF958A3,
-              dotSecondaryColor: ColorName.redFF6FA2,
+          child: InkWell(
+            child: Assets.images.cartIcon.image(
+              width: 37,
+              height: 37,
+              color: Colors.white,
             ),
-            likeBuilder: (bool isLiked) {
-              return Assets.images.heart.image(
-                width: 37,
-                height: 37,
-                color: isLiked
-                    ? ColorName.redF14336
-                    : Colors.white.withOpacity(0.9),
-              );
-            },
           ),
         ),
       ],
@@ -232,8 +226,11 @@ class _ControllerViewState extends State<_ControllerView> {
     return await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) =>
-          _BottomSheet(screenSize: screenSize, liveId: liveId, isBag: isBag),
+      builder: (context) => _BottomSheet(
+        screenSize: screenSize,
+        liveId: liveId,
+        isBag: isBag,
+      ),
     );
   }
 }
@@ -275,7 +272,7 @@ class _BagWrapper {
   }
 }
 
-typedef _SuccessCallback = void Function(List<dynamic> data);
+typedef _SuccessCallback<T> = void Function(List<T> data);
 typedef _ErrorCallback = void Function();
 
 class _BottomSheet extends StatefulWidget {
@@ -400,31 +397,38 @@ class _BottomSheetState extends State<_BottomSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Row(
         children: [
-          Assets.images.giftIcon.image(width: 18, height: 18),
-          const C(8.5),
-          Text(
-            '礼物',
-            style: GoogleFonts.roboto(
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.9),
-              height: 18 / 15,
-              fontSize: 15,
-            ),
-          ),
           if (isBag) ...[
-            const C(46.5),
-            Assets.images.bagIcon.image(width: 18, height: 18),
-            const C(11),
+            Assets.images.bagIcon.image(
+              width: 18,
+              height: 18,
+              color: Colors.white,
+            ),
+            const C(8.5),
             Text(
               '背包',
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w600,
-                color: ColorName.gray76787A,
+                color: Colors.white,
                 height: 18 / 15,
                 fontSize: 15,
               ),
             ),
-          ] else
+          ] else ...[
+            Assets.images.giftIcon.image(
+              width: 18,
+              height: 18,
+              color: Colors.white,
+            ),
+            const C(8.5),
+            Text(
+              '礼物',
+              style: GoogleFonts.roboto(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 18 / 15,
+                fontSize: 15,
+              ),
+            ),
             Expanded(
               child: Container(
                 alignment: Alignment.centerRight,
@@ -437,7 +441,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                       balance.toString(),
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white,
                         height: 18 / 15,
                         fontSize: 15,
                       ),
@@ -446,6 +450,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                 ),
               ),
             ),
+          ],
         ],
       ),
     );
@@ -476,8 +481,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                     color: index == selectIndex
                         ? ColorName.redF63C77.withOpacity(0.5)
                         : null,
-                    border: Border.all(
-                        color: Colors.white.withOpacity(0.9), width: 0.5),
+                    border: Border.all(color: Colors.white, width: 0.5),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -488,7 +492,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                         getGiftName(pageIndex, index),
                         style: GoogleFonts.roboto(
                           fontWeight: FontWeight.w500,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white,
                           height: 14 / 13,
                           fontSize: 13,
                         ),
@@ -504,7 +508,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                               getGiftPrice(pageIndex, index),
                               style: GoogleFonts.roboto(
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white,
                                 height: 14 / 13,
                                 fontSize: 13,
                               ),
@@ -566,7 +570,7 @@ class _BottomSheetState extends State<_BottomSheet> {
               '数量',
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
                 height: 18 / 15,
                 fontSize: 15,
               ),
@@ -576,7 +580,7 @@ class _BottomSheetState extends State<_BottomSheet> {
               bagWrappers[selectIndex].bag.number.toString(),
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
                 height: 18 / 15,
                 fontSize: 15,
               ),
@@ -595,10 +599,10 @@ class _BottomSheetState extends State<_BottomSheet> {
                           horizontal: 28, vertical: 6),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14.5),
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            ColorName.purpleB83AF3.withOpacity(0.9),
-                            ColorName.purple6950FB.withOpacity(0.9),
+                            ColorName.purpleB83AF3,
+                            ColorName.purple6950FB,
                           ],
                         ),
                       ),
@@ -606,7 +610,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                         '购买',
                         style: GoogleFonts.roboto(
                           fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white,
                           height: 18 / 15,
                           fontSize: 15,
                         ),
@@ -622,10 +626,10 @@ class _BottomSheetState extends State<_BottomSheet> {
                             horizontal: 28, vertical: 6),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14.5),
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
-                              ColorName.redEC008E.withOpacity(0.9),
-                              ColorName.redFC6767.withOpacity(0.9),
+                              ColorName.redEC008E,
+                              ColorName.redFC6767,
                             ],
                           ),
                         ),
@@ -633,7 +637,7 @@ class _BottomSheetState extends State<_BottomSheet> {
                           '发送',
                           style: GoogleFonts.roboto(
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white,
                             height: 18 / 15,
                             fontSize: 15,
                           ),

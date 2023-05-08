@@ -208,3 +208,139 @@ class DefaultAvatarWidget extends StatelessWidget {
     );
   }
 }
+
+class DefaultProductWidget extends StatelessWidget {
+  const DefaultProductWidget({Key? key, required this.size})
+      : iconSize = size / 2,
+        super(key: key);
+
+  final double size;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomCenter,
+          colors: [
+            ColorName.blue48A4EB,
+            ColorName.green35C2C1,
+          ],
+        ),
+      ),
+      child: Assets.images.productIcon.image(
+        width: iconSize,
+        height: iconSize,
+        color: Colors.white,
+      ),
+    );
+  }
+}
+
+typedef InputBottomSheetBuilder = Widget Function(
+  TextEditingController inputController,
+  VoidCallback? onEditingComplete,
+);
+
+class InputBottomSheet extends StatefulWidget {
+  const InputBottomSheet({
+    Key? key,
+    required this.screenSize,
+    required this.builder,
+    this.onInputComplete,
+  }) : super(key: key);
+
+  final Size screenSize;
+  final InputBottomSheetBuilder builder;
+  final ValueChanged<String>? onInputComplete;
+
+  static Future<void> show(
+    BuildContext context, {
+    required Size screenSize,
+    required InputBottomSheetBuilder builder,
+    ValueChanged<String>? onInputComplete,
+  }) async {
+    await Navigator.push(
+      context,
+      _BottomPopupRoute(
+        child: InputBottomSheet(
+          screenSize: screenSize,
+          builder: builder,
+          onInputComplete: onInputComplete,
+        ),
+      ),
+    );
+  }
+
+  @override
+  State<StatefulWidget> createState() => _InputBottomState();
+}
+
+class _InputBottomState extends State<InputBottomSheet> {
+  ValueChanged<String>? get onInputComplete => widget.onInputComplete;
+
+  InputBottomSheetBuilder get builder => widget.builder;
+
+  Size get screenSize => widget.screenSize;
+
+  final TextEditingController inputController = TextEditingController();
+
+  @override
+  void dispose() {
+    inputController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          builder.call(inputController, onEditingComplete),
+        ],
+      ),
+    );
+  }
+
+  void onEditingComplete() {
+    onInputComplete?.call(inputController.text);
+    Navigator.pop(context);
+  }
+}
+
+class _BottomPopupRoute extends PopupRoute {
+  _BottomPopupRoute({required this.child});
+
+  final Duration _duration = const Duration(milliseconds: 300);
+  Widget child;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  bool get barrierDismissible => true;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+    return child;
+  }
+
+  @override
+  Duration get transitionDuration => _duration;
+}

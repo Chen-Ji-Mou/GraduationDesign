@@ -112,7 +112,7 @@ class _ShortVideoState extends State<ShortVideoScreen>
       if (mounted) {
         setState(() => loading = false);
       }
-      refreshController.refreshCompleted();
+      refreshController.refreshFailed();
     });
   }
 
@@ -809,15 +809,7 @@ class _CommentBottomSheetState extends State<_CommentBottomSheet> {
               Positioned(
                 bottom: 0,
                 child: InkWell(
-                  onTap: () {
-                    UserContext.checkLoginCallback(context, () {
-                      _InputBottomSheet.show(
-                        context,
-                        screenSize,
-                        onInputComplete: addComment,
-                      );
-                    });
-                  },
+                  onTap: showInputBottomSheet,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -937,74 +929,14 @@ class _CommentBottomSheetState extends State<_CommentBottomSheet> {
     );
   }
 
-  Future<void> addComment(String content) async {
-    Response response = await DioClient.post(
-        Api.addComment, {'videoId': videoId, 'content': content});
-    if (response.statusCode == 200 && response.data != null) {
-      if (response.data['code'] == 200) {
-        onRefresh();
-      } else {
-        Fluttertoast.showToast(msg: response.data['msg']);
-      }
-    }
-  }
-
-  void exit() => Navigator.pop(context);
-}
-
-class _InputBottomSheet extends StatefulWidget {
-  const _InputBottomSheet(
-    this.screenSize, {
-    required this.onInputComplete,
-  });
-
-  final ValueChanged<String> onInputComplete;
-  final Size screenSize;
-
-  static Future<void> show(
-    BuildContext context,
-    Size screenSize, {
-    required ValueChanged<String> onInputComplete,
-  }) async {
-    await Navigator.push(
-      context,
-      _BottomPopupRoute(
-        child: _InputBottomSheet(screenSize, onInputComplete: onInputComplete),
-      ),
-    );
-  }
-
-  @override
-  State<StatefulWidget> createState() => _InputBottomState();
-}
-
-class _InputBottomState extends State<_InputBottomSheet> {
-  ValueChanged<String> get onInputComplete => widget.onInputComplete;
-
-  Size get screenSize => widget.screenSize;
-
-  final double height = 46;
-  final TextEditingController controller = TextEditingController();
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-          Container(
+  void showInputBottomSheet() {
+    UserContext.checkLoginCallback(context, () {
+      InputBottomSheet.show(
+        context,
+        screenSize: screenSize,
+        onInputComplete: addComment,
+        builder: (inputController, onEditingComplete) {
+          return Container(
             width: screenSize.width,
             height: 46,
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
@@ -1023,7 +955,7 @@ class _InputBottomState extends State<_InputBottomSheet> {
                     borderRadius: BorderRadius.circular(23),
                   ),
                   child: TextField(
-                    controller: controller,
+                    controller: inputController,
                     autofocus: true,
                     maxLines: 1,
                     style: GoogleFonts.roboto(
@@ -1057,41 +989,25 @@ class _InputBottomState extends State<_InputBottomSheet> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+        },
+      );
+    });
   }
 
-  void onEditingComplete() {
-    onInputComplete.call(controller.text);
-    Navigator.pop(context);
-  }
-}
-
-class _BottomPopupRoute extends PopupRoute {
-  _BottomPopupRoute({required this.child});
-
-  final Duration _duration = const Duration(milliseconds: 300);
-  Widget child;
-
-  @override
-  Color? get barrierColor => null;
-
-  @override
-  bool get barrierDismissible => true;
-
-  @override
-  String? get barrierLabel => null;
-
-  @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
-    return child;
+  Future<void> addComment(String content) async {
+    Response response = await DioClient.post(
+        Api.addComment, {'videoId': videoId, 'content': content});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        onRefresh();
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+      }
+    }
   }
 
-  @override
-  Duration get transitionDuration => _duration;
+  void exit() => Navigator.pop(context);
 }
 
 class _VideoEmptyWidget extends StatelessWidget {

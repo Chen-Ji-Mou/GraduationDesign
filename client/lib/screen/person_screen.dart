@@ -315,6 +315,7 @@ class _PersonState extends State<PersonScreen>
             ),
           ] else ...[
             buildOptionListItem(
+              onTap: () => Navigator.pushNamed(context, 'product'),
               icon: Assets.images.productIcon.provider(),
               title: '我的产品',
             ),

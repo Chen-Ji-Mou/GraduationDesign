@@ -1,7 +1,6 @@
 package com.graduationdesign.backend.controller;
 
 import com.graduationdesign.backend.Result;
-import com.graduationdesign.backend.Utils;
 import com.graduationdesign.backend.entity.Enterprise;
 import com.graduationdesign.backend.entity.Live;
 import com.graduationdesign.backend.entity.Product;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.List;
@@ -116,7 +114,7 @@ public class ProductController {
     private Result addProduct(@RequestParam("enterpriseId") String enterpriseId,
                               @RequestParam("name") String name,
                               @Nullable @RequestParam("coverUrl") String coverUrl,
-                              @Nullable @RequestParam("desc") String desc,
+                              @Nullable @RequestParam("intro") String intro,
                               @RequestParam("status") Boolean status,
                               @RequestParam("inventory") Integer inventory) {
         Enterprise enterprise = enterpriseService.findEnterpriseById(enterpriseId);
@@ -130,7 +128,7 @@ public class ProductController {
         product.setEnterpriseId(enterpriseId);
         product.setName(name);
         product.setCoverUrl(coverUrl);
-        product.setDesc(desc);
+        product.setIntro(intro);
         product.setStatus(status);
         product.setInventory(inventory);
         productService.addProduct(product);
@@ -183,7 +181,7 @@ public class ProductController {
         }
         product.setName(name);
         product.setCoverUrl(coverUrl);
-        product.setDesc(desc);
+        product.setIntro(desc);
         product.setStatus(status);
         product.setInventory(inventory);
         productService.updateProductById(productId, product);

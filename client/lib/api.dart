@@ -150,7 +150,7 @@ class Api {
 
   static const String addDetail = "/detail/addDetail";
 
-  static const String getDetail = "/detail/getDetail";
+  static const String getDetails = "/detail/getDetails";
 
   static const String getTotalIncome = "/detail/getTotalIncome";
 
