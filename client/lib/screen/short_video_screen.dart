@@ -728,6 +728,7 @@ class _CommentBottomSheetState extends State<_CommentBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const C(8),
           buildHeader(),
           Container(
             width: screenSize.width,
@@ -789,7 +790,7 @@ class _CommentBottomSheetState extends State<_CommentBottomSheet> {
           ),
         ),
         SizedBox(
-          height: screenSize.height - 196,
+          height: screenSize.height * 2 / 3,
           child: Stack(
             children: [
               ScrollConfiguration(

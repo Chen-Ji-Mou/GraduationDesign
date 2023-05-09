@@ -18,4 +18,5 @@ public class Product {
     private String intro;
     private Boolean status;
     private Integer inventory;
+    private Double price;
 }

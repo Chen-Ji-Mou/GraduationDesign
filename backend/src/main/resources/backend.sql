@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 08/05/2023 18:35:55
+ Date: 09/05/2023 20:55:46
 */
 
 SET NAMES utf8mb4;
@@ -215,6 +215,7 @@ CREATE TABLE `product`  (
   `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `status` tinyint(1) UNSIGNED NOT NULL,
   `inventory` int(11) UNSIGNED NOT NULL,
+  `price` double(12, 2) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `8`(`enterpriseId`) USING BTREE,
   CONSTRAINT `8` FOREIGN KEY (`enterpriseId`) REFERENCES `enterprise` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION

@@ -116,7 +116,8 @@ public class ProductController {
                               @Nullable @RequestParam("coverUrl") String coverUrl,
                               @Nullable @RequestParam("intro") String intro,
                               @RequestParam("status") Boolean status,
-                              @RequestParam("inventory") Integer inventory) {
+                              @RequestParam("inventory") Integer inventory,
+                              @RequestParam("price") Double price) {
         Enterprise enterprise = enterpriseService.findEnterpriseById(enterpriseId);
         if (enterprise == null) {
             log.info("[ProductController] addProduct 商家不存在 enterpriseId {}", enterpriseId);
@@ -131,6 +132,7 @@ public class ProductController {
         product.setIntro(intro);
         product.setStatus(status);
         product.setInventory(inventory);
+        product.setPrice(price);
         productService.addProduct(product);
         log.info("[ProductController] addProduct 商家添加商品成功 enterpriseId {} productId {}", enterpriseId, productId);
         return Result.success();
@@ -169,21 +171,35 @@ public class ProductController {
 
     @RequestMapping(value = "/updateProduct", method = RequestMethod.POST)
     private Result updateProduct(@RequestParam("productId") String productId,
-                                 @RequestParam("name") String name,
+                                 @Nullable @RequestParam("name") String name,
                                  @Nullable @RequestParam("coverUrl") String coverUrl,
-                                 @Nullable @RequestParam("desc") String desc,
-                                 @RequestParam("status") Boolean status,
-                                 @RequestParam("inventory") Integer inventory) {
+                                 @Nullable @RequestParam("intro") String intro,
+                                 @Nullable @RequestParam("status") Boolean status,
+                                 @Nullable @RequestParam("inventory") Integer inventory,
+                                 @Nullable @RequestParam("price") Double price) {
         Product product = productService.findProductById(productId);
         if (product == null) {
             log.info("[ProductController] updateProduct 商家产品不存在 productId {}", productId);
             return Result.failed(500, "商家产品不存在");
         }
-        product.setName(name);
-        product.setCoverUrl(coverUrl);
-        product.setIntro(desc);
-        product.setStatus(status);
-        product.setInventory(inventory);
+        if (name != null) {
+            product.setName(name);
+        }
+        if (coverUrl != null) {
+            product.setCoverUrl(coverUrl);
+        }
+        if (intro != null) {
+            product.setIntro(intro);
+        }
+        if (status != null) {
+            product.setStatus(status);
+        }
+        if (inventory != null) {
+            product.setInventory(inventory);
+        }
+        if (price != null) {
+            product.setPrice(price);
+        }
         productService.updateProductById(productId, product);
         log.info("[ProductController] updateProduct 修改商家产品成功 productId {}", productId);
         return Result.success();

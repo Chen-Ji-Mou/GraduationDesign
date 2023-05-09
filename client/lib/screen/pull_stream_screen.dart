@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
 import 'package:graduationdesign/widget/send_barrage_widget.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PullStreamScreen extends StatefulWidget {
@@ -165,7 +167,7 @@ class _ControllerViewState extends State<_ControllerView> {
           left: 16,
           bottom: 22,
           child: InkWell(
-            onTap: () => showBottomSheet(isBag: false),
+            onTap: () => showGiftBottomSheet(isBag: false),
             child: Container(
               width: 44,
               height: 44,
@@ -193,9 +195,9 @@ class _ControllerViewState extends State<_ControllerView> {
           child: InkWell(
             onTap: () {
               UserContext.checkLoginCallback(context, () {
-                showBottomSheet(isBag: true).then((result) {
+                showGiftBottomSheet(isBag: true).then((result) {
                   if (result == false) {
-                    showBottomSheet(isBag: false);
+                    showGiftBottomSheet(isBag: false);
                   }
                 });
               });
@@ -211,6 +213,7 @@ class _ControllerViewState extends State<_ControllerView> {
           right: 16,
           bottom: 27,
           child: InkWell(
+            onTap: showProductBottomSheet,
             child: Assets.images.cartIcon.image(
               width: 37,
               height: 37,
@@ -222,14 +225,26 @@ class _ControllerViewState extends State<_ControllerView> {
     );
   }
 
-  Future<bool?> showBottomSheet({required bool isBag}) async {
+  Future<bool?> showGiftBottomSheet({required bool isBag}) async {
     return await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _BottomSheet(
+      builder: (context) => _GiftBottomSheet(
         screenSize: screenSize,
         liveId: liveId,
         isBag: isBag,
+      ),
+    );
+  }
+
+  Future<bool?> showProductBottomSheet() async {
+    return await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ProductBottomSheet(
+        screenSize: screenSize,
+        liveId: liveId,
       ),
     );
   }
@@ -275,8 +290,8 @@ class _BagWrapper {
 typedef _SuccessCallback<T> = void Function(List<T> data);
 typedef _ErrorCallback = void Function();
 
-class _BottomSheet extends StatefulWidget {
-  const _BottomSheet({
+class _GiftBottomSheet extends StatefulWidget {
+  const _GiftBottomSheet({
     Key? key,
     required this.screenSize,
     required this.liveId,
@@ -288,10 +303,10 @@ class _BottomSheet extends StatefulWidget {
   final String liveId;
 
   @override
-  State<StatefulWidget> createState() => _BottomSheetState();
+  State<StatefulWidget> createState() => _GiftBottomSheetState();
 }
 
-class _BottomSheetState extends State<_BottomSheet> {
+class _GiftBottomSheetState extends State<_GiftBottomSheet> {
   Size get screenSize => widget.screenSize;
 
   bool get isBag => widget.isBag;
@@ -767,5 +782,294 @@ class _BottomSheetState extends State<_BottomSheet> {
         false;
   }
 
-  void exit<T>([T? result]) => Navigator.pop(context, result);
+  void exit([bool? result]) => Navigator.pop(context, result);
+}
+
+class _ProductWrapper {
+  final String id;
+  final String enterpriseId;
+  final String name;
+  String? coverUrl;
+  final String? intro;
+  final int inventory;
+  final double price;
+
+  _ProductWrapper(this.id, this.enterpriseId, this.name, this.coverUrl,
+      this.intro, this.inventory, this.price);
+
+  void resetCoverUrl() {
+    if (coverUrl != null) {
+      coverUrl =
+          'http://${Api.host}:${Api.port}/product/downloadCover?fileName=$coverUrl';
+    }
+  }
+}
+
+class _ProductBottomSheet extends StatefulWidget {
+  const _ProductBottomSheet({
+    Key? key,
+    required this.screenSize,
+    required this.liveId,
+  }) : super(key: key);
+
+  final Size screenSize;
+  final String liveId;
+
+  @override
+  State<StatefulWidget> createState() => _ProductBottomSheetState();
+}
+
+class _ProductBottomSheetState extends State<_ProductBottomSheet> {
+  Size get screenSize => widget.screenSize;
+
+  String get liveId => widget.liveId;
+
+  final RefreshController refreshController = RefreshController();
+  final List<_ProductWrapper> products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getProducts(successCall: (result) {
+      if (mounted) {
+        setState(() => products.addAll(result));
+      }
+    });
+  }
+
+  void onRefresh() {
+    getProducts(successCall: (result) {
+      if (mounted) {
+        setState(() => products
+          ..clear()
+          ..addAll(result));
+      }
+      refreshController.refreshCompleted();
+    }, errorCall: () {
+      refreshController.refreshFailed();
+    });
+  }
+
+  void getProducts({
+    required _SuccessCallback<_ProductWrapper> successCall,
+    VoidCallback? errorCall,
+  }) {
+    DioClient.get(Api.getLiveProducts, {
+      'liveId': liveId,
+    }).then((response) async {
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          List<_ProductWrapper> result = [];
+          for (var product in response.data['data']) {
+            if (product['status'] == true) {
+              _ProductWrapper item = _ProductWrapper(
+                product['id'],
+                product['enterpriseId'],
+                product['name'],
+                product['coverUrl'],
+                product['intro'],
+                product['inventory'],
+                product['price'],
+              )..resetCoverUrl();
+              result.add(item);
+            }
+          }
+          successCall.call(result);
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+          errorCall?.call();
+        }
+      } else {
+        errorCall?.call();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    refreshController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const C(8),
+          buildHeader(),
+          buildProductList(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeader() {
+    return Row(
+      children: [
+        const C(16),
+        InkWell(
+          onTap: exit,
+          child: const Icon(
+            Icons.close,
+            size: 24,
+            color: ColorName.black333333,
+          ),
+        ),
+        Container(
+          height: 48,
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(left: screenSize.width / 2 - 64),
+          child: Text(
+            '正在热卖',
+            style: GoogleFonts.roboto(
+              height: 1.2,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: ColorName.black333333,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildProductList() {
+    return SizedBox(
+      height: screenSize.height * 2 / 3,
+      child: ScrollConfiguration(
+        behavior: NoBoundaryRippleBehavior(),
+        child: SmartRefresher(
+          controller: refreshController,
+          enablePullDown: true,
+          enablePullUp: true,
+          onRefresh: onRefresh,
+          child: ListView.builder(
+            itemCount: products.length,
+            itemBuilder: buildProductItem,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildProductItem(BuildContext context, int index) {
+    _ProductWrapper product = products[index];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Divider(color: ColorName.gray8A8A8A),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ColorName.gray76787A),
+                ),
+                child: product.coverUrl == null
+                    ? const DefaultProductWidget(size: 64)
+                    : CachedNetworkImage(
+                        imageUrl: product.coverUrl!,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              const C(20),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: GoogleFonts.roboto(
+                      height: 1,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                  if (product.intro != null) ...[
+                    const C(4),
+                    Text(
+                      product.intro!,
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: ColorName.gray76787A,
+                      ),
+                    ),
+                  ],
+                  const C(8),
+                  Text(
+                    '价格：¥${product.price}',
+                    style: GoogleFonts.roboto(
+                      height: 1,
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const C(12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      buildBottomButton(
+                        title: '加入购物车',
+                      ),
+                      const C(6),
+                      buildBottomButton(
+                        title: '购买',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildBottomButton({
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: ColorName.gray76787A),
+        ),
+        child: Text(
+          title,
+          style: GoogleFonts.roboto(
+            height: 1,
+            fontSize: 12,
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void exit() => Navigator.pop(context);
 }
