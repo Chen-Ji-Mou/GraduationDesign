@@ -7,6 +7,8 @@ import 'package:lottie/lottie.dart';
 
 double toolbarHeight = 0;
 
+typedef RequestSuccessCallback<T> = void Function(List<T> data);
+
 void afterRender(VoidCallback callback) {
   WidgetsBinding.instance.addPostFrameCallback((_) => callback);
 }

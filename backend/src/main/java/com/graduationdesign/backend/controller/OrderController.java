@@ -68,7 +68,7 @@ public class OrderController {
         order.setTimestamp(System.currentTimeMillis());
         orderService.addOrder(order);
         log.info("[OrderController] addOrder 新增订单成功 orderId {}", orderId);
-        return Result.success();
+        return Result.success(orderId);
     }
 
     @RequestMapping(value = "/getUserOrders", method = RequestMethod.GET)
@@ -82,7 +82,7 @@ public class OrderController {
             orders.addAll(orderService.findOrdersByAddressId(address.getId()));
         }
         Collections.sort(orders);
-        orders = orders.subList(pageNum, pageSize);
+        orders = orders.subList(pageNum, orders.size() - pageNum > pageSize ? pageNum + pageSize : orders.size());
         log.info("[OrderController] getUserOrders 获取用户订单列表成功 userId {} pageNum {} pageSize {}", userId, pageNum, pageSize);
         return Result.success(orders);
     }
@@ -103,7 +103,7 @@ public class OrderController {
             orders.addAll(orderService.findOrdersByProductId(product.getId()));
         }
         Collections.sort(orders);
-        orders = orders.subList(pageNum, pageSize);
+        orders = orders.subList(pageNum, orders.size() - pageNum > pageSize ? pageNum + pageSize : orders.size());
         log.info("[OrderController] getEnterpriseOrders 获取商家订单列表成功 enterpriseId {} pageNum {} pageSize {}", enterpriseId, pageNum, pageSize);
         return Result.success(orders);
     }

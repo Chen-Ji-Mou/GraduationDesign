@@ -23,6 +23,7 @@ class _LiveHallState extends State<LiveHallScreen>
     with AutomaticKeepAliveClientMixin {
   final RefreshController refreshController = RefreshController();
   final double aspectRatio = 168 / 216;
+  final List<_Live> lives = [];
   final int pageSize = 6;
 
   late Size screenSize;
@@ -30,7 +31,7 @@ class _LiveHallState extends State<LiveHallScreen>
   late double itemHeight;
 
   int curPageNum = 0;
-  List<_Live> lives = [];
+  bool isLastPage = false;
 
   @override
   void initState() {
@@ -71,6 +72,7 @@ class _LiveHallState extends State<LiveHallScreen>
             )..setCoverUrl());
           }
           await Future.wait(result.map((e) => e.getUserInfo()));
+          isLastPage = result.length < pageSize;
           successCall.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
@@ -97,7 +99,9 @@ class _LiveHallState extends State<LiveHallScreen>
   }
 
   void onLoading() {
-    curPageNum++;
+    if (!isLastPage) {
+      curPageNum++;
+    }
     requestLives(successCall: (result) {
       if (mounted && result.isNotEmpty) {
         setState(() => lives.addAll(result));
@@ -196,75 +200,110 @@ class _LiveHallState extends State<LiveHallScreen>
 
   Widget buildLiveItem(_Live live) {
     return InkWell(
-      onTap: () => itemClick(live),
+      onTap: () =>
+          Navigator.pushNamed(context, 'enterLive', arguments: live.id),
       child: Container(
         width: itemWidth,
         height: itemHeight,
         alignment: Alignment.center,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          image: DecorationImage(
-            image: live.coverUrl == null
-                ? Assets.images.cover.provider()
-                : CachedNetworkImageProvider(live.coverUrl!),
-            fit: BoxFit.cover,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: ColorName.gray969696.withOpacity(0.3),
+              offset: const Offset(2, 4),
+              blurRadius: 3,
+            ),
+          ],
         ),
         child: Stack(
           children: [
             Positioned(
-              left: 10,
-              bottom: 10,
-              child: Text(
-                live.userName,
-                style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  height: 12 / 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              left: 0,
+              top: 0,
+              right: 0,
+              child: Container(
+                width: itemWidth,
+                height: itemHeight * 4 / 5,
+                color: live.coverUrl == null ? Colors.black : null,
+                child: live.coverUrl != null
+                    ? CachedNetworkImage(imageUrl: live.coverUrl!)
+                    : null,
+              ),
+            ),
+            if (live.status)
+              Positioned(
+                left: 10,
+                top: 10,
+                child: Container(
+                  height: 20,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: ColorName.gray8A8A8A.withOpacity(0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red,
+                        ),
+                        child: Assets.images.liveNumberIcon.image(),
+                      ),
+                      const C(2),
+                      Text(
+                        '${live.number}观看',
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      const C(6),
+                    ],
+                  ),
                 ),
+              ),
+            Positioned(
+              left: 20,
+              top: itemHeight * 4 / 5 - 14,
+              child: Container(
+                width: 28,
+                height: 28,
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(shape: BoxShape.circle),
+                child: live.userAvatarUrl == null
+                    ? const DefaultAvatarWidget(size: 28)
+                    : CachedNetworkImage(
+                        imageUrl: live.userAvatarUrl!,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             Positioned(
-              right: 10,
-              bottom: 10,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    live.number.toString(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 20,
-                      height: 12 / 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 1),
-                    child: Text(
-                      '在看',
-                      style: GoogleFonts.roboto(
-                        height: 1,
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ],
+              left: 10,
+              top: itemHeight * 4 / 5 + 14,
+              child: Text(
+                live.userName,
+                style: GoogleFonts.roboto(
+                  height: 1.4,
+                  fontSize: 16,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  void itemClick(_Live live) {
-    Navigator.pushNamed(context, 'enterLive', arguments: live.id);
   }
 
   @override
@@ -278,6 +317,7 @@ class _Live {
   int number;
   String? coverUrl;
   late String userName;
+  late String? userAvatarUrl;
 
   _Live(this.id, this.userId, this.status, this.number, this.coverUrl);
 
@@ -295,6 +335,9 @@ class _Live {
       if (response.data['code'] == 200) {
         Map<String, dynamic> map = response.data['data'];
         userName = map['name'];
+        userAvatarUrl = map['avatarUrl'] != null
+            ? 'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${map['avatarUrl']}'
+            : null;
       }
     }
   }

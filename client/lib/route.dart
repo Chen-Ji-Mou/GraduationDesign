@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/root_node.dart';
 import 'package:graduationdesign/screen/account_details_screen.dart';
+import 'package:graduationdesign/screen/address_screen.dart';
 import 'package:graduationdesign/screen/enterprise_auth_screen.dart';
 import 'package:graduationdesign/screen/product_screen.dart';
 import 'package:graduationdesign/screen/recharge_species_screen.dart';
@@ -45,6 +46,8 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           builder: (_) => const EnterpriseAuthScreen());
     case 'product':
       return MaterialPageRoute<void>(builder: (_) => const ProductScreen());
+    case 'address':
+      return MaterialPageRoute<void>(builder: (_) => const AddressScreen());
     default:
       return MaterialPageRoute<void>(
           builder: (_) => const RouteNotFoundScreen());

@@ -9,6 +9,7 @@ import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
 import 'package:graduationdesign/screen/person_screen.dart';
+import 'package:graduationdesign/screen/shopping_cart_screen.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -101,6 +102,7 @@ class _RootNodeState extends State<RootNode>
   Widget build(BuildContext context) {
     Widget child = Scaffold(
       body: Container(
+        color: Colors.white,
         padding: EdgeInsets.only(top: toolbarHeight),
         child: TabBarView(
           controller: tabController,
@@ -143,7 +145,7 @@ class _RootNodeState extends State<RootNode>
       case _TabType.publish:
         return const C(0);
       case _TabType.cart:
-        return Container();
+        return const ShoppingCartScreen();
       case _TabType.person:
         return PersonScreen(
           onUserLogout: () => tabController.animateTo(_TabType.home.index),
@@ -156,7 +158,14 @@ class _RootNodeState extends State<RootNode>
     if (index == _TabType.publish.index) {
       showBottomSheet();
       pass = false;
-    } else if (index == _TabType.person.index) {
+    } else if ([_TabType.favorite.index].contains(index)) {
+      Fluttertoast.showToast(msg: '功能还未开发，敬请期待');
+      pass = false;
+    } else if ([
+      _TabType.favorite.index,
+      _TabType.cart.index,
+      _TabType.person.index
+    ].contains(index)) {
       if (!UserContext.isLogin) {
         UserContext.checkLoginCallback(context, () {
           if (UserContext.isLogin) {
@@ -165,9 +174,6 @@ class _RootNodeState extends State<RootNode>
         });
       }
       pass = UserContext.isLogin;
-    } else if ([_TabType.favorite.index, _TabType.cart.index].contains(index)) {
-      Fluttertoast.showToast(msg: '功能还未开发，敬请期待');
-      pass = false;
     }
     return pass;
   }

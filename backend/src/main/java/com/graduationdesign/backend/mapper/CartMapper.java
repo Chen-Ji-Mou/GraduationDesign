@@ -15,8 +15,8 @@ public interface CartMapper {
     @Select("SELECT * FROM cart WHERE id=#{id}")
     Cart findCartById(String id);
 
-    @Delete("DELETE FROM cart WHERE id=#{id}")
-    void deleteCartById(String id);
+    @Delete("DELETE FROM cart WHERE id IN (#{ids})")
+    void deleteCartsById(String ids);
 
     @Select("SELECT * FROM cart WHERE userId=#{userId} AND productId=#{productId}")
     Cart findCartByUserIdAndProductId(@Param("userId") String userId, @Param("productId") String productId);

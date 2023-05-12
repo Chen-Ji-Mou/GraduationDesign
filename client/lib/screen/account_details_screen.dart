@@ -25,8 +25,9 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
 
   late Size screenSize;
 
-  int pageNum = 0;
+  int curPageNum = 0;
   int balance = 0;
+  bool isLastPage = false;
 
   @override
   void didChangeDependencies() {
@@ -66,7 +67,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
     _ErrorCallback? errorCall,
   }) {
     DioClient.get(Api.getDetails, {
-      'pageNum': pageNum,
+      'pageNum': curPageNum,
       'pageSize': pageSize,
     }).then((response) {
       if (response.statusCode == 200 && response.data != null) {
@@ -81,6 +82,7 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
             )..setDate();
             result.add(item);
           }
+          isLastPage = result.length < pageSize;
           successCall?.call(result);
         } else {
           Fluttertoast.showToast(msg: response.data['msg']);
@@ -93,19 +95,15 @@ class _AccountDetailsState extends State<AccountDetailsScreen>
   }
 
   void onLoading() {
-    pageNum++;
+    if (!isLastPage) {
+      curPageNum++;
+    }
     getDetails(successCall: (result) {
       if (mounted && result.isNotEmpty) {
-        if (result.length < pageSize) {
-          pageNum--;
-        }
         setState(() => details.addAll(result));
-      } else if (result.isEmpty) {
-        pageNum--;
       }
       controller.loadComplete();
     }, errorCall: () {
-      pageNum--;
       controller.loadComplete();
     });
   }

@@ -48,9 +48,11 @@ class PullStreamController {
 }
 
 class PullStreamWidget extends StatefulWidget {
-  const PullStreamWidget(
-      {Key? key, required this.controller, this.initialComplete})
-      : super(key: key);
+  const PullStreamWidget({
+    Key? key,
+    required this.controller,
+    this.initialComplete,
+  }) : super(key: key);
 
   final PullStreamController controller;
   final VoidCallback? initialComplete;
@@ -59,20 +61,10 @@ class PullStreamWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _PullStreamState();
 }
 
-class _PullStreamState extends State<PullStreamWidget> with LifecycleObserver {
+class _PullStreamState extends State<PullStreamWidget> {
   PullStreamController get controller => widget.controller;
 
   VoidCallback? get initialComplete => widget.initialComplete;
-
-  @override
-  void onResume() {
-    controller.resume();
-  }
-
-  @override
-  void onPause() {
-    controller.pause();
-  }
 
   @override
   void dispose() {

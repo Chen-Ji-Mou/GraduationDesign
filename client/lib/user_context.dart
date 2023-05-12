@@ -87,7 +87,7 @@ class UserContext {
   }
 
   static Future<bool> _verifyUserHasAuthenticated() async {
-    Response response = await DioClient.get(Api.verifyUserHasAuthenticated);
+    Response response = await DioClient.get(Api.verifyOwnHasAuthenticated);
     if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
         _enterpriseId = response.data['data'];

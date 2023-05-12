@@ -1,6 +1,7 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 
 class VideoWidget extends StatefulWidget {
   const VideoWidget({
@@ -16,6 +17,10 @@ class VideoWidget extends StatefulWidget {
 
 class _VideoState extends State<VideoWidget> {
   String get videoUrl => widget.videoUrl;
+
+  bool get isPlaying => controller.isPlaying() ?? false;
+
+  bool get initialized => controller.isVideoInitialized() ?? false;
 
   late BetterPlayerController controller;
 
@@ -48,6 +53,7 @@ class _VideoState extends State<VideoWidget> {
       playerVisibilityChangedBehavior: onVisibilityChanged,
       placeholder: const LoadingWidget(),
       showPlaceholderUntilPlay: true,
+      autoDispose: false,
     );
     controller = BetterPlayerController(config);
     controller.setupDataSource(dataSource);
@@ -57,6 +63,7 @@ class _VideoState extends State<VideoWidget> {
   @override
   void dispose() {
     isDisposing = true;
+    controller.dispose(forceDispose: true);
     super.dispose();
   }
 
@@ -74,14 +81,12 @@ class _VideoState extends State<VideoWidget> {
   }
 
   void onVisibilityChanged(double visibleFraction) async {
-    final bool? isPlaying = controller.isPlaying();
-    final bool? initialized = controller.isVideoInitialized();
     if (visibleFraction >= 0.6) {
-      if (initialized == true && isPlaying == false && !isDisposing) {
+      if (initialized && !isPlaying && !isDisposing) {
         controller.play();
       }
     } else {
-      if (initialized == true && isPlaying == true && !isDisposing) {
+      if (initialized && isPlaying && !isDisposing) {
         controller.pause();
       }
     }

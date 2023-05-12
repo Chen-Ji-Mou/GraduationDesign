@@ -97,8 +97,7 @@ public class EnterpriseController {
     }
 
     @RequestMapping(value = "/authentication", method = RequestMethod.POST)
-    private Result authentication(HttpServletRequest request, @RequestParam("code") String code,
-                            @RequestParam("license") String license) {
+    private Result authentication(HttpServletRequest request, @RequestParam("code") String code, @RequestParam("license") String license) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
         if (enterpriseService.findEnterpriseByUserId(userId) != null) {
             log.info("[EnterpriseController] authentication 当前用户已认证 userId {}", userId);
@@ -115,9 +114,20 @@ public class EnterpriseController {
         return Result.success();
     }
 
-    @RequestMapping(value = "/verifyUserHasAuthenticated", method = RequestMethod.GET)
-    private Result verifyUserHasAuthenticated(HttpServletRequest request) {
+    @RequestMapping(value = "/verifyOwnHasAuthenticated", method = RequestMethod.GET)
+    private Result verifyOwnHasAuthenticated(HttpServletRequest request) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
+        Enterprise enterprise = enterpriseService.findEnterpriseByUserId(userId);
+        if (enterprise == null) {
+            log.info("[EnterpriseController] verifyOwnHasAuthenticated 当前用户未认证 userId {}", userId);
+            return Result.failed(500, "当前用户未认证");
+        }
+        log.info("[EnterpriseController] verifyOwnHasAuthenticated 当前用户已认证 userId {} enterpriseId {}", userId, enterprise.getId());
+        return Result.success(enterprise.getId());
+    }
+
+    @RequestMapping(value = "/verifyUserHasAuthenticated", method = RequestMethod.GET)
+    private Result verifyUserHasAuthenticated(@RequestParam("userId") String userId) {
         Enterprise enterprise = enterpriseService.findEnterpriseByUserId(userId);
         if (enterprise == null) {
             log.info("[EnterpriseController] verifyUserHasAuthenticated 当前用户未认证 userId {}", userId);

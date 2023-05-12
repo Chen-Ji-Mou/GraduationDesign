@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/dialog/filter_bottom_sheet.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
@@ -194,7 +195,12 @@ class _ControllerViewState extends State<_ControllerView> {
               const C(12),
               buildIcon(
                 icon: Assets.images.filterIcon.provider(),
-                onTap: () => showBottomSheet(),
+                onTap: () => FilterBottomSheet.show(
+                  context,
+                  screenSize: screenSize,
+                  controller: controller,
+                  isRecord: true,
+                ),
               ),
             ],
           ),
@@ -314,158 +320,6 @@ class _ControllerViewState extends State<_ControllerView> {
         ) ??
         false;
   }
-
-  Future<bool?> showBottomSheet() async {
-    return await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          _BottomSheet(screenSize: screenSize, controller: controller),
-    );
-  }
-}
-
-class _BottomSheetItem {
-  final Filter filterType;
-  final ImageProvider icon;
-  final String title;
-
-  _BottomSheetItem(
-      {required this.filterType, required this.icon, required this.title});
-}
-
-class _BottomSheet extends StatefulWidget {
-  const _BottomSheet({
-    Key? key,
-    required this.screenSize,
-    required this.controller,
-  }) : super(key: key);
-
-  final Size screenSize;
-  final PushStreamController controller;
-
-  @override
-  State<StatefulWidget> createState() => _BottomSheetState();
-}
-
-class _BottomSheetState extends State<_BottomSheet> {
-  Size get screenSize => widget.screenSize;
-
-  PushStreamController get controller => widget.controller;
-
-  final List<_BottomSheetItem> items = [
-    _BottomSheetItem(
-      filterType: Filter.cancel,
-      icon: Assets.images.filterDefault.provider(),
-      title: '原图',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.vintageTV,
-      icon: Assets.images.filterDefault.provider(),
-      title: '老式电视',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.wave,
-      icon: Assets.images.filterDefault.provider(),
-      title: '波浪',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.cartoon,
-      icon: Assets.images.filterDefault.provider(),
-      title: '卡通',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.profound,
-      icon: Assets.images.filterDefault.provider(),
-      title: '深邃',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.snow,
-      icon: Assets.images.filterDefault.provider(),
-      title: '雪花',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.oldPhoto,
-      icon: Assets.images.filterDefault.provider(),
-      title: '旧照片',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.lamoish,
-      icon: Assets.images.filterDefault.provider(),
-      title: 'Lamoish',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.money,
-      icon: Assets.images.filterDefault.provider(),
-      title: '美元',
-    ),
-    _BottomSheetItem(
-      filterType: Filter.waterRipple,
-      icon: Assets.images.filterDefault.provider(),
-      title: '水波纹',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: screenSize.width / 4 + 16,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
-      ),
-      child: Scrollbar(
-        child: ListView.separated(
-          shrinkWrap: true,
-          itemCount: items.length,
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) => buildItem(items[index]),
-          separatorBuilder: (context, index) => const C(10),
-        ),
-      ),
-    );
-  }
-
-  Widget buildItem(_BottomSheetItem item) {
-    return InkWell(
-      onTap: () async {
-        await controller.selectFilter(item.filterType);
-        exit();
-      },
-      child: Container(
-        width: screenSize.width / 4,
-        height: screenSize.width / 4,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white, width: 0.5),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image(
-              image: item.icon,
-              width: 36,
-              height: 36,
-              fit: BoxFit.cover,
-            ),
-            const C(8),
-            Text(
-              item.title,
-              style: GoogleFonts.roboto(
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-                height: 14 / 13,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void exit() => Navigator.pop(context);
 }
 
 class _ErrorWidget extends StatelessWidget {

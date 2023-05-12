@@ -60,7 +60,7 @@ public class ChatController {
         result.addAll(chatService.findChatByOwnIdAndToId(userId, toId));
         result.addAll(chatService.findChatByOwnIdAndToId(toId, userId));
         Collections.sort(result);
-        result = result.subList(pageNum, pageSize);
+        result = result.subList(pageNum, result.size() - pageNum > pageSize ? pageNum + pageSize : result.size());
         log.info("[ChatController] getChat 获取聊天记录成功 ownId {} toId {}", userId, toId);
         return Result.success(result);
     }

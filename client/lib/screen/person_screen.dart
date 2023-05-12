@@ -101,7 +101,6 @@ class _PersonState extends State<PersonScreen>
     super.build(context);
     return Container(
       alignment: Alignment.center,
-      color: ColorName.whiteF5F6F7,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -292,11 +291,19 @@ class _PersonState extends State<PersonScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (!isEnterprise) ...[
+            buildOptionListItem(
+              onTap: () => Navigator.pushNamed(context, 'address'),
+              icon: Assets.images.addressIcon.provider(),
+              title: '我的收货地址',
+            ),
+            const Divider(indent: 8),
+          ],
           buildOptionListItem(
             icon: Assets.images.orderIcon.provider(),
             title: '我的订单',
           ),
-          const Divider(height: 1, indent: 8),
+          const Divider(indent: 8),
           if (!isEnterprise) ...[
             buildOptionListItem(
               onTap: () async {

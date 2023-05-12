@@ -68,7 +68,7 @@ public class RefundController {
             }
         }
         Collections.sort(refunds);
-        refunds = refunds.subList(pageNum, pageSize);
+        refunds = refunds.subList(pageNum, refunds.size() - pageNum > pageSize ? pageNum + pageSize : refunds.size());
         log.info("[RefundController] getUserRefunds 获取用户退款申请列表成功 userId {} pageNum {} pageSize {}", userId, pageNum, pageSize);
         return Result.success(refunds);
     }
@@ -95,13 +95,14 @@ public class RefundController {
             }
         }
         Collections.sort(refunds);
-        refunds = refunds.subList(pageNum, pageSize);
+        refunds = refunds.subList(pageNum, refunds.size() - pageNum > pageSize ? pageNum + pageSize : refunds.size());
         log.info("[RefundController] getUserRefunds 获取商家退款申请列表成功 enterpriseId {} pageNum {} pageSize {}", enterpriseId, pageNum, pageSize);
         return Result.success(refunds);
     }
 
     @RequestMapping(value = "/updateRefundStatus", method = RequestMethod.POST)
-    private Result updateRefundStatus(@RequestParam("refundId") String refundId, @RequestParam("status") Boolean status) {
+    private Result updateRefundStatus(@RequestParam("refundId") String refundId,
+                                      @RequestParam("status") Boolean status) {
         Refund refund = refundService.findRefundById(refundId);
         if (refund == null) {
             log.info("[RefundController] updateRefundStatus 退款申请不存在 refundId {}", refundId);

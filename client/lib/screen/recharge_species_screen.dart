@@ -138,7 +138,10 @@ class _RechargeSpeciesState extends State<RechargeSpeciesScreen> {
                   child: Container(
                     width: (screenSize.width - 40) / 3,
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6,),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: ColorName.yellowFFB52D.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(4),
@@ -221,7 +224,7 @@ class _RechargeSpeciesState extends State<RechargeSpeciesScreen> {
   }
 
   Future<void> recharge(_Option option) async {
-    bool paySuccess = await AlipayPlatform.payV2(option.price);
+    bool paySuccess = await AlipayPlatform.payV2(option.price.toDouble());
     if (paySuccess) {
       Fluttertoast.showToast(msg: '支付成功');
       await Future.wait([

@@ -42,7 +42,7 @@ class AlipayChannel(binaryMessenger: BinaryMessenger, activity: Activity) :
 		 * orderInfo 的获取必须来自服务端；
 		 */
         val params: Map<String, String> = OrderInfoUtil2_0.buildOrderParamMap(
-            mActivity.getString(R.string.APPID), true, call.arguments as Int
+            mActivity.getString(R.string.APPID), true, call.arguments as Double
         )
         val orderParam: String = OrderInfoUtil2_0.buildOrderParam(params)
 

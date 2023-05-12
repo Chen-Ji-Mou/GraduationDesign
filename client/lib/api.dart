@@ -73,6 +73,7 @@ final List<String> _ignoreAuthPaths = [
   Api.getVideos,
   Api.downloadVideo,
   Api.downloadLicense,
+  Api.verifyUserHasAuthenticated,
   Api.getComments,
   Api.getVideoCommentCount,
   Api.getVideoFavoriteCount,
@@ -173,6 +174,9 @@ class Api {
   static const String verifyUserHasAuthenticated =
       "/enterprise/verifyUserHasAuthenticated";
 
+  static const String verifyOwnHasAuthenticated =
+      "/enterprise/verifyOwnHasAuthenticated";
+
   static const String addAddress = "/address/addAddress";
 
   static const String getAddresses = "/address/getAddresses";
@@ -207,7 +211,8 @@ class Api {
 
   static const String deleteFavorite = "/favorite/deleteFavorite";
 
-  static const String verifyVideoHasOwnFavorite = "/favorite/verifyVideoHasOwnFavorite";
+  static const String verifyVideoHasOwnFavorite =
+      "/favorite/verifyVideoHasOwnFavorite";
 
   static const String addOrder = "/order/addOrder";
 
@@ -230,6 +235,8 @@ class Api {
   static const String uploadProductCover = "/product/uploadCover";
 
   static const String downloadProductCover = "/product/downloadCover";
+
+  static const String getProductInfo = "/product/getProductInfo";
 
   static const String addRefund = "/refund/addRefund";
 

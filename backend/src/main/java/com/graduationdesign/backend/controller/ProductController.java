@@ -37,8 +37,7 @@ public class ProductController {
     private String fileRootPath;
 
     @RequestMapping(value = "/uploadCover", method = RequestMethod.POST)
-    private Result uploadCover(@RequestParam("enterpriseId") String enterpriseId,
-                               @RequestParam("file") MultipartFile file) {
+    private Result uploadCover(@RequestParam("enterpriseId") String enterpriseId, @RequestParam("file") MultipartFile file) {
         Enterprise enterprise = enterpriseService.findEnterpriseById(enterpriseId);
         if (enterprise == null) {
             log.info("[ProductController] uploadCover 商家不存在 enterpriseId {}", enterpriseId);
@@ -111,13 +110,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/addProduct", method = RequestMethod.POST)
-    private Result addProduct(@RequestParam("enterpriseId") String enterpriseId,
-                              @RequestParam("name") String name,
-                              @Nullable @RequestParam("coverUrl") String coverUrl,
-                              @Nullable @RequestParam("intro") String intro,
-                              @RequestParam("status") Boolean status,
-                              @RequestParam("inventory") Integer inventory,
-                              @RequestParam("price") Double price) {
+    private Result addProduct(@RequestParam("enterpriseId") String enterpriseId, @RequestParam("name") String name, @Nullable @RequestParam("coverUrl") String coverUrl, @Nullable @RequestParam("intro") String intro, @RequestParam("status") Boolean status, @RequestParam("inventory") Integer inventory, @RequestParam("price") Double price) {
         Enterprise enterprise = enterpriseService.findEnterpriseById(enterpriseId);
         if (enterprise == null) {
             log.info("[ProductController] addProduct 商家不存在 enterpriseId {}", enterpriseId);
@@ -170,13 +163,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/updateProduct", method = RequestMethod.POST)
-    private Result updateProduct(@RequestParam("productId") String productId,
-                                 @Nullable @RequestParam("name") String name,
-                                 @Nullable @RequestParam("coverUrl") String coverUrl,
-                                 @Nullable @RequestParam("intro") String intro,
-                                 @Nullable @RequestParam("status") Boolean status,
-                                 @Nullable @RequestParam("inventory") Integer inventory,
-                                 @Nullable @RequestParam("price") Double price) {
+    private Result updateProduct(@RequestParam("productId") String productId, @Nullable @RequestParam("name") String name, @Nullable @RequestParam("coverUrl") String coverUrl, @Nullable @RequestParam("intro") String intro, @Nullable @RequestParam("status") Boolean status, @Nullable @RequestParam("inventory") Integer inventory, @Nullable @RequestParam("price") Double price) {
         Product product = productService.findProductById(productId);
         if (product == null) {
             log.info("[ProductController] updateProduct 商家产品不存在 productId {}", productId);
@@ -215,5 +202,16 @@ public class ProductController {
         productService.deleteProductById(productId);
         log.info("[ProductController] deleteProduct 删除商家产品成功 productId {}", productId);
         return Result.success();
+    }
+
+    @RequestMapping(value = "/getProductInfo", method = RequestMethod.GET)
+    private Result getProductInfo(@RequestParam("productId") String productId) {
+        Product product = productService.findProductById(productId);
+        if (product == null) {
+            log.info("[ProductController] getProductInfo 商家产品不存在 productId {}", productId);
+            return Result.failed(500, "商家产品不存在");
+        }
+        log.info("[ProductController] getProductInfo 获取商家产品成功 productId {}", productId);
+        return Result.success(product);
     }
 }

@@ -7,7 +7,7 @@ public interface ICartService {
     void addCart(Cart cart);
     List<Cart> findCartsByUserId(String userId);
     Cart findCartById(String id);
-    void deleteCartById(String id);
+    void deleteCartsById(List<String> ids);
     Cart findCartByUserIdAndProductId(String userId, String productId);
     void updateNumberById(String id, Integer number);
 }

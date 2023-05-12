@@ -56,15 +56,10 @@ public class CartController {
     }
 
     @RequestMapping(value = "/deleteCart", method = RequestMethod.POST)
-    private Result deleteCart(HttpServletRequest request, @RequestParam("cartId") String cartId) {
+    private Result deleteCart(HttpServletRequest request, @RequestParam("cartIds") List<String> cartIds) {
         String userId = Utils.getUserIdFromToken(request.getHeader("token"));
-        Cart cart = cartService.findCartById(cartId);
-        if (cart == null) {
-            log.info("[CartController] deleteCart 用户购物车项不存在 userId {} cartId {}", userId, cartId);
-            return Result.failed(500, "用户购物车项不存在");
-        }
-        cartService.deleteCartById(cartId);
-        log.info("[CartController] deleteCart 用户购物车项删除成功 userId {} cartId {}", userId, cartId);
+        cartService.deleteCartsById(cartIds);
+        log.info("[CartController] deleteCart 用户购物车项删除成功 userId {} cartIds {}", userId, cartIds);
         return Result.success();
     }
 }

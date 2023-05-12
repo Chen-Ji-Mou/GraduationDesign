@@ -125,7 +125,7 @@ class PullStreamView(context: Context) : RelativeLayout(context), SurfaceHolder.
     }
 
     fun pause() {
-        mPlayer?.stop()
+        mPlayer?.pause()
     }
 
     fun release() {

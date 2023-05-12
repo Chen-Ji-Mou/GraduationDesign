@@ -30,8 +30,8 @@ public class CartServiceImpl implements ICartService {
     }
 
     @Override
-    public void deleteCartById(String id) {
-        mapper.deleteCartById(id);
+    public void deleteCartsById(List<String> ids) {
+        mapper.deleteCartsById(String.join(",", ids));
     }
 
     @Override
