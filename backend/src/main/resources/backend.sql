@@ -11,7 +11,7 @@
  Target Server Version : 50729
  File Encoding         : 65001
 
- Date: 12/05/2023 14:57:42
+ Date: 13/05/2023 22:10:12
 */
 
 SET NAMES utf8mb4;
@@ -194,7 +194,7 @@ CREATE TABLE `order`  (
   `addressId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `productId` varchar(11) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `number` int(11) UNSIGNED NOT NULL,
-  `status` int(1) UNSIGNED NOT NULL,
+  `status` int(1) UNSIGNED NOT NULL COMMENT '0表示订单未支付，1表示订单已支付待商家发货，2表示商家已发货待买家收货，3表示买家已收货订单结束',
   `timestamp` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `13`(`productId`) USING BTREE,

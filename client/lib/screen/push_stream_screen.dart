@@ -187,7 +187,7 @@ class _ControllerViewState extends State<_ControllerView> {
           left: 16,
           bottom: 72,
           child: ScrollBarrageWidget(
-            screenSize: screenSize,
+            width: screenSize.width * 2 / 3,
             wsChannel: wsChannel,
           ),
         ),

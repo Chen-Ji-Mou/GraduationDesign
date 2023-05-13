@@ -51,7 +51,7 @@ class _ApiInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     debugPrint(
-        '[ApiInterceptor] DioError: url ${err.requestOptions.uri} message: ${err.response?.statusMessage}');
+        '[ApiInterceptor] DioError: url ${err.requestOptions.uri} message: ${err.message}');
     handler.next(err);
   }
 }
@@ -67,6 +67,7 @@ final List<String> _ignoreAuthPaths = [
   Api.enterLive,
   Api.exitLive,
   Api.downloadCover,
+  Api.getLiveInfo,
   Api.getUserInfo,
   Api.downloadAvatar,
   Api.getGifts,
@@ -118,6 +119,8 @@ class Api {
   static const String uploadCover = "/live/uploadCover";
 
   static const String downloadCover = "/live/downloadCover";
+
+  static const String getLiveInfo = "/live/getLiveInfo";
 
   static const String getUserInfo = "/person/getUserInfo";
 

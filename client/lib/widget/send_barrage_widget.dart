@@ -27,39 +27,34 @@ class _SendBarrageState extends State<SendBarrageWidget> {
 
   WebSocketChannel get wsChannel => widget.wsChannel;
 
-  late double width;
   final double height = 50;
 
   @override
-  void initState() {
-    super.initState();
-    width = screenSize.width * 170 / 375;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: showInputBottomSheet,
-      child: Container(
-        width: width,
-        height: height,
-        padding: const EdgeInsets.only(left: 24),
-        alignment: Alignment.centerLeft,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(27.5),
-          border: Border.all(
-            color: ColorName.redF958A3.withOpacity(0.8),
-            width: 3,
+      child: LayoutBuilder(
+        builder: (context, constraint) => Container(
+          width: constraint.maxWidth,
+          height: height,
+          padding: const EdgeInsets.only(left: 24),
+          alignment: Alignment.centerLeft,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(27.5),
+            border: Border.all(
+              color: ColorName.redF958A3.withOpacity(0.8),
+              width: 3,
+            ),
           ),
-        ),
-        child: Text(
-          '发送弹幕',
-          style: GoogleFonts.roboto(
-            color: ColorName.redFF6FA2.withOpacity(0.8),
-            fontWeight: FontWeight.w400,
-            height: 16 / 14,
-            fontSize: 14,
+          child: Text(
+            '发送弹幕',
+            style: GoogleFonts.roboto(
+              color: ColorName.redFF6FA2.withOpacity(0.8),
+              fontWeight: FontWeight.w400,
+              height: 16 / 14,
+              fontSize: 14,
+            ),
           ),
         ),
       ),

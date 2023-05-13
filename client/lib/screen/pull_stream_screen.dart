@@ -5,6 +5,7 @@ import 'package:graduationdesign/dialog/gift_bottom_sheet.dart';
 import 'package:graduationdesign/dialog/product_bottom_sheet.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
+import 'package:graduationdesign/screen/enter_live_screen.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/pull_stream_widget.dart';
@@ -14,17 +15,17 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class PullStreamScreen extends StatefulWidget {
   const PullStreamScreen({
     Key? key,
-    required this.liveId,
+    required this.liveInfo,
   }) : super(key: key);
 
-  final String liveId;
+  final LiveInfo liveInfo;
 
   @override
   State<StatefulWidget> createState() => _PullStreamState();
 }
 
 class _PullStreamState extends State<PullStreamScreen> {
-  String get liveId => widget.liveId;
+  LiveInfo get liveInfo => widget.liveInfo;
 
   late Size screenSize;
   late WebSocketChannel wsChannel;
@@ -42,7 +43,7 @@ class _PullStreamState extends State<PullStreamScreen> {
   void initState() {
     super.initState();
     wsChannel = WebSocketChannel.connect(
-        Uri.parse('ws://81.71.161.128:8088/websocket?lid=$liveId'));
+        Uri.parse('ws://81.71.161.128:8088/websocket?lid=${liveInfo.id}'));
   }
 
   @override
@@ -95,7 +96,8 @@ class _PullStreamState extends State<PullStreamScreen> {
           controller: controller,
           initialComplete: () async {
             await Future.wait([
-              controller.setRtmpUrl('rtmp://81.71.161.128:1935/live/$liveId'),
+              controller
+                  .setRtmpUrl('rtmp://81.71.161.128:1935/live/${liveInfo.id}'),
               controller.setFillXY(true),
               controller.resume(),
             ]);
@@ -107,7 +109,7 @@ class _PullStreamState extends State<PullStreamScreen> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return _ControllerView(
-                liveId: liveId,
+                liveInfo: liveInfo,
                 screenSize: screenSize,
                 wsChannel: wsChannel,
               );
@@ -124,12 +126,12 @@ class _PullStreamState extends State<PullStreamScreen> {
 class _ControllerView extends StatefulWidget {
   const _ControllerView({
     Key? key,
-    required this.liveId,
+    required this.liveInfo,
     required this.screenSize,
     required this.wsChannel,
   }) : super(key: key);
 
-  final String liveId;
+  final LiveInfo liveInfo;
   final Size screenSize;
   final WebSocketChannel wsChannel;
 
@@ -138,7 +140,7 @@ class _ControllerView extends StatefulWidget {
 }
 
 class _ControllerViewState extends State<_ControllerView> {
-  String get liveId => widget.liveId;
+  LiveInfo get liveInfo => widget.liveInfo;
 
   Size get screenSize => widget.screenSize;
 
@@ -153,83 +155,83 @@ class _ControllerViewState extends State<_ControllerView> {
           left: 16,
           bottom: 86,
           child: ScrollBarrageWidget(
-            screenSize: screenSize,
+            width: screenSize.width * 2 / 3,
             wsChannel: wsChannel,
           ),
         ),
         Positioned(
           left: 16,
-          bottom: 22,
-          child: InkWell(
-            onTap: () => GiftBottomSheet.show(
-              context,
-              screenSize: screenSize,
-              liveId: liveId,
-            ),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: ColorName.redF958A3,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Assets.images.giftBox.image(width: 44, height: 44),
-            ),
-          ),
-        ),
-        Positioned(
-          left: 76,
-          bottom: 20,
-          child: SendBarrageWidget(
-            screenSize: screenSize,
-            wsChannel: wsChannel,
-          ),
-        ),
-        Positioned(
-          right: 69,
-          bottom: 27,
-          child: InkWell(
-            onTap: () {
-              UserContext.checkLoginCallback(context, () {
-                GiftBottomSheet.show(
+          right: 16,
+          bottom: 24,
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () => GiftBottomSheet.show(
                   context,
                   screenSize: screenSize,
-                  liveId: liveId,
-                  isBag: true,
-                ).then((result) {
-                  if (result == false) {
+                  liveId: liveInfo.id,
+                ),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: ColorName.redF958A3,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Assets.images.giftBox.image(width: 44, height: 44),
+                ),
+              ),
+              const C(12),
+              Expanded(
+                child: SendBarrageWidget(
+                  screenSize: screenSize,
+                  wsChannel: wsChannel,
+                ),
+              ),
+              const C(12),
+              InkWell(
+                onTap: () {
+                  UserContext.checkLoginCallback(context, () {
                     GiftBottomSheet.show(
                       context,
                       screenSize: screenSize,
-                      liveId: liveId,
-                    );
-                  }
-                });
-              });
-            },
-            child: Assets.images.bag.image(
-              width: 37,
-              height: 37,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        Positioned(
-          right: 16,
-          bottom: 27,
-          child: InkWell(
-            onTap: () => ProductBottomSheet.show(
-              context,
-              screenSize: screenSize,
-              liveId: liveId,
-            ),
-            child: Assets.images.cartIcon.image(
-              width: 37,
-              height: 37,
-              color: Colors.white,
-            ),
+                      liveId: liveInfo.id,
+                      isBag: true,
+                    ).then((result) {
+                      if (result == false) {
+                        GiftBottomSheet.show(
+                          context,
+                          screenSize: screenSize,
+                          liveId: liveInfo.id,
+                        );
+                      }
+                    });
+                  });
+                },
+                child: Assets.images.bag.image(
+                  width: 37,
+                  height: 37,
+                  color: Colors.white,
+                ),
+              ),
+              if (liveInfo.status && liveInfo.belongEnterprise) ...[
+                const C(12),
+                InkWell(
+                  onTap: () => ProductBottomSheet.show(
+                    context,
+                    screenSize: screenSize,
+                    liveId: liveInfo.id,
+                  ),
+                  child: Assets.images.cartIcon.image(
+                    width: 37,
+                    height: 37,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],

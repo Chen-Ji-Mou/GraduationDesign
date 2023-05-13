@@ -293,13 +293,15 @@ class _PersonState extends State<PersonScreen>
         children: [
           if (!isEnterprise) ...[
             buildOptionListItem(
-              onTap: () => Navigator.pushNamed(context, 'address'),
+              onTap: () =>
+                  Navigator.pushNamed(context, 'address', arguments: false),
               icon: Assets.images.addressIcon.provider(),
               title: '我的收货地址',
             ),
             const Divider(indent: 8),
           ],
           buildOptionListItem(
+            onTap: () => Navigator.pushNamed(context, 'order'),
             icon: Assets.images.orderIcon.provider(),
             title: '我的订单',
           ),

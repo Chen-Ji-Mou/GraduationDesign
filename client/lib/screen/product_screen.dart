@@ -274,55 +274,59 @@ class _ProductState extends State<ProductScreen> with LifecycleObserver {
                         ),
                       ),
                     ])),
-                    const C(12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        buildControlButton(
-                          title: '修改信息',
-                          onTap: () async {
-                            _Product temp = _Product.copyFrom(product);
-                            bool isEdit = await showEditInfoAlert(temp);
-                            if (isEdit) {
+                    const C(24),
+                    Container(
+                      width: screenSize.width - 124,
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          buildControlButton(
+                            title: '修改信息',
+                            onTap: () async {
+                              _Product temp = _Product.copyFrom(product);
+                              bool isEdit = await showEditInfoAlert(temp);
+                              if (isEdit) {
+                                bool result = await editProductInfo(temp);
+                                if (result && mounted) {
+                                  setState(() {
+                                    product.name = temp.name;
+                                    product.intro = temp.intro;
+                                    product.coverUrl = temp.coverUrl;
+                                  });
+                                }
+                              }
+                            },
+                          ),
+                          const C(8),
+                          buildControlButton(
+                            title: product.status == true ? '下架' : '上架',
+                            onTap: () async {
+                              _Product temp = _Product.copyFrom(product);
+                              temp.status = !product.status;
                               bool result = await editProductInfo(temp);
                               if (result && mounted) {
-                                setState(() {
-                                  product.name = temp.name;
-                                  product.intro = temp.intro;
-                                  product.coverUrl = temp.coverUrl;
-                                });
+                                setState(() => product.status = temp.status);
                               }
-                            }
-                          },
-                        ),
-                        const C(6),
-                        buildControlButton(
-                          title: product.status == true ? '下架' : '上架',
-                          onTap: () async {
-                            _Product temp = _Product.copyFrom(product);
-                            temp.status = !product.status;
-                            bool result = await editProductInfo(temp);
-                            if (result && mounted) {
-                              setState(() => product.status = temp.status);
-                            }
-                          },
-                        ),
-                        const C(6),
-                        buildControlButton(
-                          title: '修改库存',
-                          onTap: () async {
-                            _Product temp = _Product.copyFrom(product);
-                            bool isEdit = await showEditInventoryAlert(temp);
-                            if (isEdit) {
-                              bool result = await editProductInfo(temp);
-                              if (result && mounted) {
-                                setState(
-                                    () => product.inventory = temp.inventory);
+                            },
+                          ),
+                          const C(8),
+                          buildControlButton(
+                            title: '修改库存',
+                            onTap: () async {
+                              _Product temp = _Product.copyFrom(product);
+                              bool isEdit = await showEditInventoryAlert(temp);
+                              if (isEdit) {
+                                bool result = await editProductInfo(temp);
+                                if (result && mounted) {
+                                  setState(
+                                      () => product.inventory = temp.inventory);
+                                }
                               }
-                            }
-                          },
-                        ),
-                      ],
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

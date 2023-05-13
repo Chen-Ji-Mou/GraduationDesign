@@ -119,7 +119,7 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
       product.inventory > 0 && product.inventory - curNumber >= 0;
 
   final Completer<String?> productCompleter = Completer<String?>.sync();
-  final Completer<String?> addressCompleter = Completer<String?>.sync();
+  final List<_Address> addresses = [];
   final List<_Payment> payments = [
     _Payment(
       _PaymentType.alipay,
@@ -131,7 +131,7 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
 
   late _Product product;
 
-  _Address? address;
+  _Address? curSelectAddress;
   late int curNumber = orderNumber;
 
   @override
@@ -172,29 +172,26 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
     Response response = await DioClient.get(Api.getAddresses);
     if (response.statusCode == 200 && response.data != null) {
       if (response.data['code'] == 200) {
+        List<_Address> result = [];
         for (var address in response.data['data']) {
-          this.address = _Address(
+          _Address item = _Address(
             address['id'],
             address['name'],
             address['phone'],
             address['area'],
             address['fullAddress'],
           );
-          break;
-        }
-        if (address == null) {
-          addressCompleter.complete('未找到收货地址信息，请点击添加');
-        } else {
-          addressCompleter.complete();
+          result.add(item);
         }
         if (mounted) {
-          setState(() {});
+          setState(() {
+            addresses.addAll(result);
+            curSelectAddress = addresses.firstOrNull;
+          });
         }
       } else {
-        addressCompleter.complete('获取收货地址信息错误：${response.data['msg']}');
+        Fluttertoast.showToast(msg: response.data['msg']);
       }
-    } else {
-      addressCompleter.complete('获取收货地址信息错误：${response.statusMessage}');
     }
   }
 
@@ -334,73 +331,75 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
     return SizedBox(
       width: screenSize.width - 20,
       height: 48,
-      child: FutureBuilder(
-        future: addressCompleter.future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data == null) {
-            return Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.deepOrange,
-                  ),
-                  child: Assets.images.addressIcon.image(
-                    width: 16,
-                    height: 16,
-                    color: Colors.white,
-                  ),
-                ),
-                const C(10),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      address?.fullAddress ?? '',
-                      style: GoogleFonts.roboto(
-                        height: 1.2,
-                        fontSize: 15,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
+      child: curSelectAddress != null
+          ? InkWell(
+              onTap: () async {
+                String? id = await Navigator.pushNamed(context, 'address',
+                    arguments: true);
+                if (mounted) {
+                  setState(() => curSelectAddress =
+                      addresses.firstWhere((e) => e.id == id));
+                }
+              },
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.deepOrange,
                     ),
-                    const C(8),
-                    Text(
-                      '${address?.name}  ${address?.phone}',
-                      style: GoogleFonts.roboto(
-                        height: 1.2,
-                        fontSize: 13,
-                        color: ColorName.gray8A8A8A,
-                        fontWeight: FontWeight.normal,
-                      ),
+                    child: Assets.images.addressIcon.image(
+                      width: 16,
+                      height: 16,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.centerRight,
-                    child: Assets.images.right.image(width: 16, height: 16),
                   ),
-                ),
-              ],
-            );
-          } else if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data != null) {
-            return InkWell(
-              onTap: () => Navigator.pushNamed(context, 'address'),
-              child: _ErrorWidget(errorMsg: snapshot.data!),
-            );
-          } else {
-            return const LoadingWidget();
-          }
-        },
-      ),
+                  const C(10),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        curSelectAddress?.fullAddress ?? '',
+                        style: GoogleFonts.roboto(
+                          height: 1.2,
+                          fontSize: 15,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const C(8),
+                      Text(
+                        '${curSelectAddress?.name}  ${curSelectAddress?.phone}',
+                        style: GoogleFonts.roboto(
+                          height: 1.2,
+                          fontSize: 13,
+                          color: ColorName.gray8A8A8A,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Container(
+                      alignment: Alignment.centerRight,
+                      child: Assets.images.right.image(width: 16, height: 16),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : InkWell(
+              onTap: () async {
+                await Navigator.pushNamed(context, 'address', arguments: false);
+                getAddress();
+              },
+              child: const _ErrorWidget(errorMsg: '未找到收货地址信息，请点击添加'),
+            ),
     );
   }
 
@@ -570,7 +569,9 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
 
   Widget buildBottomButton() {
     bool showButton = isAddCart ||
-        (address != null && hasEnoughInventory && selectPaymentType != null);
+        (curSelectAddress != null &&
+            hasEnoughInventory &&
+            selectPaymentType != null);
     return showButton
         ? Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -623,7 +624,7 @@ class _CreateOrderBottomSheetState extends State<CreateOrderBottomSheet> {
 
   Future<void> createOrder() async {
     Response response = await DioClient.post(Api.addOrder, {
-      'addressId': address!.id,
+      'addressId': curSelectAddress!.id,
       'productId': product.id,
       'number': curNumber,
     });

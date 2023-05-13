@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -79,8 +80,7 @@ public class LiveController {
     }
 
     @RequestMapping(value = "/getLives", method = RequestMethod.GET)
-    private Result getLives(@RequestParam(name = "pageNum") Integer pageNum,
-                            @RequestParam(name = "pageSize") Integer pageSize) {
+    private Result getLives(@RequestParam(name = "pageNum") Integer pageNum, @RequestParam(name = "pageSize") Integer pageSize) {
         pageNum *= pageSize;
         List<Live> lives = liveService.findLives(pageNum, pageSize);
         log.info("[LiveController] getLives 获取直播间列表成功 pageNum " + pageNum + " pageSize " + pageSize);
@@ -187,5 +187,16 @@ public class LiveController {
         } catch (IOException e) {
             log.info("[LiveController] downloadCover 直播间封面文件下载失败 name {}", fileName);
         }
+    }
+
+    @RequestMapping(value = "/getLiveInfo", method = RequestMethod.GET)
+    private Result getLiveInfo(@RequestParam("liveId") String liveId) {
+        Live live = liveService.findLiveById(liveId);
+        if (live == null) {
+            log.info("[LiveController] getLiveInfo 直播间不存在 liveId {}", liveId);
+            return Result.failed(500, "直播间不存在");
+        }
+        log.info("[LiveController] getLiveInfo 获取直播间信息成功 liveId {}" + liveId);
+        return Result.success(live);
     }
 }

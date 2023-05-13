@@ -161,6 +161,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  city_pickers:
+    dependency: "direct main"
+    description:
+      name: city_pickers
+      sha256: "797b6d36c200f8d6e36c2cfbe5d1496448709961a387ecaff2da1572efa911d5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   clock:
     dependency: transitive
     description:
@@ -552,6 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  lpinyin:
+    dependency: transitive
+    description:
+      name: lpinyin
+      sha256: "0bb843363f1f65170efd09fbdfc760c7ec34fc6354f9fcb2f89e74866a0d814a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.3"
   matcher:
     dependency: transitive
     description:

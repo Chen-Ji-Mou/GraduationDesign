@@ -12,11 +12,11 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class ScrollBarrageWidget extends StatefulWidget {
   const ScrollBarrageWidget({
     Key? key,
-    required this.screenSize,
+    required this.width,
     required this.wsChannel,
   }) : super(key: key);
 
-  final Size screenSize;
+  final double width;
   final WebSocketChannel wsChannel;
 
   @override
@@ -25,7 +25,7 @@ class ScrollBarrageWidget extends StatefulWidget {
 
 class _ScrollBarrageState extends State<ScrollBarrageWidget>
     with LifecycleObserver {
-  Size get screenSize => widget.screenSize;
+  double get width => widget.width;
 
   WebSocketChannel get wsChannel => widget.wsChannel;
 
@@ -33,8 +33,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
 
   late Timer timer;
   late ItemScrollController scrollController;
-  late double barrageWidth;
-  late double barrageHeight;
+  late double height;
   late StreamSubscription wsSubscription;
   int curIndex = 0;
   List<Barrage> barrages = [];
@@ -46,8 +45,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
     timer = Timer.periodic(
         const Duration(milliseconds: 600), (_) => scrollScheduleTask());
 
-    barrageWidth = screenSize.width * 2 / 3;
-    barrageHeight = itemMaxHeight * 8; // 最多同时展示8条弹幕
+    height = itemMaxHeight * 8; // 最多同时展示8条弹幕
 
     wsSubscription =
         wsChannel.stream.listen((jsonStr) => receiveBarrage(jsonStr));
@@ -73,8 +71,8 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: barrageWidth,
-      height: barrageHeight,
+      width: width,
+      height: height,
       alignment: Alignment.center,
       child: ScrollConfiguration(
         behavior: NoBoundaryRippleBehavior(),
@@ -107,7 +105,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              constraints: BoxConstraints(maxWidth: barrageWidth / 3),
+              constraints: BoxConstraints(maxWidth: width / 3),
               child: Text(
                 '${barrage.userName} : ',
                 maxLines: 1,
@@ -121,7 +119,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
               ),
             ),
             Container(
-              constraints: BoxConstraints(maxWidth: barrageWidth * 2 / 3),
+              constraints: BoxConstraints(maxWidth: width * 2 / 3),
               child: isGift
                   ? Text.rich(
                       maxLines: 1,
