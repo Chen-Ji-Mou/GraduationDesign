@@ -93,7 +93,7 @@ class PullStreamView(context: Context) : RelativeLayout(context), SurfaceHolder.
         // 创建新的IjkMediaPlayer
         mPlayer = IjkMediaPlayer()
         // 开启debug日志
-        // IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG)
+        IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG)
         // 开启硬解码
         mPlayer?.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1)
         mPlayer?.setOnVideoSizeChangedListener { _, width, height, _, _ ->

@@ -8,6 +8,7 @@ import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
+import 'package:graduationdesign/screen/my_favorite_screen.dart';
 import 'package:graduationdesign/screen/person_screen.dart';
 import 'package:graduationdesign/screen/shopping_cart_screen.dart';
 import 'package:graduationdesign/user_context.dart';
@@ -30,7 +31,6 @@ class _RootNodeState extends State<RootNode>
       data: const TabItem(
         icon: Icons.home_outlined,
         activeIcon: Icons.home,
-        title: '首页',
       ),
     ),
     _BottomTab(
@@ -38,7 +38,6 @@ class _RootNodeState extends State<RootNode>
       data: const TabItem(
         icon: Icons.favorite_border,
         activeIcon: Icons.favorite,
-        title: '收藏',
       ),
     ),
     _BottomTab(
@@ -61,7 +60,6 @@ class _RootNodeState extends State<RootNode>
       data: const TabItem(
         icon: Icons.shopping_cart_outlined,
         activeIcon: Icons.shopping_cart,
-        title: '购物车',
       ),
     ),
     _BottomTab(
@@ -69,7 +67,6 @@ class _RootNodeState extends State<RootNode>
       data: const TabItem(
         icon: Icons.person_outlined,
         activeIcon: Icons.person,
-        title: '我的',
       ),
     ),
   ];
@@ -141,7 +138,7 @@ class _RootNodeState extends State<RootNode>
       case _TabType.home:
         return const HomeScreen();
       case _TabType.favorite:
-        return Container();
+        return const MyFavoriteScreen();
       case _TabType.publish:
         return const C(0);
       case _TabType.cart:
@@ -158,13 +155,10 @@ class _RootNodeState extends State<RootNode>
     if (index == _TabType.publish.index) {
       showBottomSheet();
       pass = false;
-    } else if ([_TabType.favorite.index].contains(index)) {
-      Fluttertoast.showToast(msg: '功能还未开发，敬请期待');
-      pass = false;
     } else if ([
       _TabType.favorite.index,
       _TabType.cart.index,
-      _TabType.person.index
+      _TabType.person.index,
     ].contains(index)) {
       if (!UserContext.isLogin) {
         UserContext.checkLoginCallback(context, () {

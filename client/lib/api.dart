@@ -73,6 +73,7 @@ final List<String> _ignoreAuthPaths = [
   Api.getGifts,
   Api.getVideos,
   Api.downloadVideo,
+  Api.getVideoInfo,
   Api.downloadLicense,
   Api.verifyUserHasAuthenticated,
   Api.getComments,
@@ -167,6 +168,8 @@ class Api {
   static const String downloadVideo = "/video/downloadVideo";
 
   static const String updateShareCount = "/video/updateShareCount";
+
+  static const String getVideoInfo = "/video/getVideoInfo";
 
   static const String uploadLicense = "/enterprise/uploadLicense";
 

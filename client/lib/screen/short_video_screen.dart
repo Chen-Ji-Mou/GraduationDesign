@@ -96,23 +96,14 @@ class _ShortVideoState extends State<ShortVideoScreen>
   final int pageSize = 1;
 
   int curPageNum = 0;
-  bool loading = false;
 
   @override
   void initState() {
     super.initState();
     pageController = PageController(viewportFraction: 1.0);
-    loading = true;
     getVideos(successCall: (result) {
       if (mounted) {
-        setState(() {
-          videos.addAll(result);
-          loading = false;
-        });
-      }
-    }, errorCall: () {
-      if (mounted) {
-        setState(() => loading = false);
+        setState(() => videos.addAll(result));
       }
     });
   }
@@ -156,24 +147,15 @@ class _ShortVideoState extends State<ShortVideoScreen>
   }
 
   void onRefresh() {
-    if (mounted) {
-      setState(() => loading = true);
-    }
     curPageNum = 0;
     getVideos(successCall: (result) {
       if (mounted) {
-        setState(() {
-          videos
-            ..clear()
-            ..addAll(result);
-          loading = false;
-        });
+        setState(() => videos
+          ..clear()
+          ..addAll(result));
       }
       refreshController.refreshCompleted();
     }, errorCall: () {
-      if (mounted) {
-        setState(() => loading = false);
-      }
       refreshController.refreshFailed();
     });
   }
@@ -218,9 +200,7 @@ class _ShortVideoState extends State<ShortVideoScreen>
                         }
                       },
                     )
-                  : loading
-                      ? const _VideoLoadingWidget()
-                      : const _VideoEmptyWidget(),
+                  : const _VideoEmptyWidget(),
             ),
           ),
           if (videos.isNotEmpty)
@@ -578,35 +558,9 @@ class _VideoEmptyWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Assets.images.noMerchants.image(fit: BoxFit.cover),
+          Assets.images.imgVideoEmpty.image(fit: BoxFit.cover),
           Text(
-            '当前没有任何短视频发布',
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: ColorName.black686868.withOpacity(0.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _VideoLoadingWidget extends StatelessWidget {
-  const _VideoLoadingWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 64),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Assets.images.videoLoading.image(fit: BoxFit.cover),
-          Text(
-            '正在加载中，请稍后...',
+            '当前没有短视频信息',
             style: GoogleFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w500,

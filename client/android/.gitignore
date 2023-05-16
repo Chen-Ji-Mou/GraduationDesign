@@ -31,3 +31,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Flutter Generate
+/app/src/main/java/io/flutter/plugins/

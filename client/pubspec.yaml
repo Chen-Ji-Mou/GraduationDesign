@@ -53,6 +53,7 @@ dependencies:
   collection: ^1.16.0
   share_plus: ^6.3.4
   city_pickers: ^1.2.1
+  video_thumbnail: ^0.5.3
 
 dev_dependencies:
   flutter_test:

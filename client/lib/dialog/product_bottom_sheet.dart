@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/dialog/create_order_bottom_sheet.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -193,10 +194,12 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
           enablePullDown: true,
           enablePullUp: false,
           onRefresh: onRefresh,
-          child: ListView.builder(
-            itemCount: products.length,
-            itemBuilder: buildProductItem,
-          ),
+          child: products.isNotEmpty
+              ? ListView.builder(
+                  itemCount: products.length,
+                  itemBuilder: buildProductItem,
+                )
+              : const _ProductEmptyWidget(),
         ),
       ),
     );
@@ -361,4 +364,30 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
   }
 
   void exit() => Navigator.pop(context);
+}
+
+class _ProductEmptyWidget extends StatelessWidget {
+  const _ProductEmptyWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgProductEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有产品信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -33,8 +33,7 @@ public class VideoController {
     private final LRUCache<String, String> videoCache = new LRUCache<>(500); // 最多保存500个视频文件
 
     @RequestMapping(value = "/getVideos", method = RequestMethod.GET)
-    public Result getVideos(@RequestParam(name = "pageNum") Integer pageNum,
-                            @RequestParam(name = "pageSize") Integer pageSize) {
+    public Result getVideos(@RequestParam(name = "pageNum") Integer pageNum, @RequestParam(name = "pageSize") Integer pageSize) {
         pageNum *= pageSize;
         List<Video> videos = videoService.findVideos(pageNum, pageSize);
         log.info("[VideoController] getVideos 获取视频列表成功 pageNum {} pageSize {}", pageNum, pageSize);
@@ -134,6 +133,17 @@ public class VideoController {
         videoService.updateShareCountById(videoId, ++curShareCount);
         log.info("[VideoController] updateShareCount 更新视频分享数成功 videoId {} shareCount {}", videoId, curShareCount);
         return Result.success(curShareCount);
+    }
+
+    @RequestMapping(value = "/getVideoInfo", method = RequestMethod.GET)
+    private Result getVideoInfo(@RequestParam("videoId") String videoId) {
+        Video video = videoService.findVideoById(videoId);
+        if (video == null) {
+            log.info("[VideoController] getVideoInfo 视频不存在 videoId {}", videoId);
+            return Result.failed(500, "视频不存在");
+        }
+        log.info("[VideoController] getVideoInfo 获取视频信息成功 videoId {}", videoId);
+        return Result.success(video);
     }
 
     private void insertCache(String videoId, String fileName) {

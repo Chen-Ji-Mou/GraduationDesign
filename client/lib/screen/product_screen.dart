@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/mixin/lifecycle_observer.dart';
 import 'package:graduationdesign/user_context.dart';
@@ -12,8 +13,38 @@ import 'package:graduationdesign/widget/text_form_field_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-typedef _SuccessCallback = void Function(List<_Product> details);
-typedef _ErrorCallback = void Function();
+class _EmptyProduct {
+  late String name;
+  String? coverUrl;
+  String? intro;
+  bool status = false;
+  late int inventory;
+  late double price;
+}
+
+class _Product extends _EmptyProduct {
+  final String id;
+
+  _Product(this.id);
+
+  factory _Product.copyFrom(_Product product) {
+    _Product newProduct = _Product(product.id);
+    newProduct.name = product.name;
+    newProduct.coverUrl = product.coverUrl;
+    newProduct.intro = product.intro;
+    newProduct.status = product.status;
+    newProduct.inventory = product.inventory;
+    newProduct.price = product.price;
+    return newProduct;
+  }
+
+  void resetCoverUrl() {
+    if (coverUrl != null) {
+      coverUrl =
+          'http://${Api.host}:${Api.port}/product/downloadCover?fileName=$coverUrl';
+    }
+  }
+}
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key}) : super(key: key);
@@ -45,8 +76,8 @@ class _ProductState extends State<ProductScreen> with LifecycleObserver {
   }
 
   void getProducts({
-    _SuccessCallback? successCall,
-    _ErrorCallback? errorCall,
+    RequestSuccessCallback<_Product>? successCall,
+    VoidCallback? errorCall,
   }) {
     DioClient.get(Api.getEnterpriseProducts, {
       'enterpriseId': UserContext.enterpriseId,
@@ -136,10 +167,12 @@ class _ProductState extends State<ProductScreen> with LifecycleObserver {
             enablePullDown: true,
             enablePullUp: false,
             onRefresh: onRefresh,
-            child: ListView.builder(
-              itemCount: products.length,
-              itemBuilder: buildProductItem,
-            ),
+            child: products.isNotEmpty
+                ? ListView.builder(
+                    itemCount: products.length,
+                    itemBuilder: buildProductItem,
+                  )
+                : const _ProductEmptyWidget(),
           ),
         ),
       ),
@@ -784,35 +817,28 @@ class _EditProductInfoState extends State<_EditProductInfoWidget> {
   }
 }
 
-class _EmptyProduct {
-  late String name;
-  String? coverUrl;
-  String? intro;
-  bool status = false;
-  late int inventory;
-  late double price;
-}
+class _ProductEmptyWidget extends StatelessWidget {
+  const _ProductEmptyWidget({Key? key}) : super(key: key);
 
-class _Product extends _EmptyProduct {
-  final String id;
-
-  _Product(this.id);
-
-  factory _Product.copyFrom(_Product product) {
-    _Product newProduct = _Product(product.id);
-    newProduct.name = product.name;
-    newProduct.coverUrl = product.coverUrl;
-    newProduct.intro = product.intro;
-    newProduct.status = product.status;
-    newProduct.inventory = product.inventory;
-    newProduct.price = product.price;
-    return newProduct;
-  }
-
-  void resetCoverUrl() {
-    if (coverUrl != null) {
-      coverUrl =
-          'http://${Api.host}:${Api.port}/product/downloadCover?fileName=$coverUrl';
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgProductEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有产品信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

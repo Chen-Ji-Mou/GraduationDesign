@@ -26,6 +26,7 @@ public class AuthenticationConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/gift/getGifts")
                 .excludePathPatterns("/video/getVideos")
                 .excludePathPatterns("/video/downloadVideo")
+                .excludePathPatterns("/video/getVideoInfo")
                 .excludePathPatterns("/enterprise/downloadLicense")
                 .excludePathPatterns("/enterprise/verifyUserHasAuthenticated")
                 .excludePathPatterns("/comment/getComments")

@@ -88,8 +88,8 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
   final PageController pageController = PageController();
   final int pageNum = 0;
   final int pageSize = 8;
-  List<_Gift> giftWrappers = [];
-  List<_Bag> bagWrappers = [];
+  List<_Gift> gifts = [];
+  List<_Bag> bags = [];
   int curPageIndex = 0;
   int selectIndex = -1;
   int balance = 0;
@@ -110,13 +110,13 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
           Future.wait(result.map((e) => e.setGiftInfo())),
           Future.wait(result.map((e) => e.setGiftNumber())),
         ]);
-        if (mounted) setState(() => bagWrappers.addAll(result));
+        if (mounted) setState(() => bags.addAll(result));
       } else {
         List<_Gift> result = [];
         for (var gift in data) {
           result.add(_Gift(Gift.fromJsonMap(gift)));
         }
-        if (mounted) setState(() => giftWrappers.addAll(result));
+        if (mounted) setState(() => gifts.addAll(result));
       }
     });
     if (!isBag) {
@@ -173,7 +173,11 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           buildHeader(),
-          buildList(),
+          if ((isBag && bags.isNotEmpty) ||
+              (!isBag && gifts.isNotEmpty))
+            buildList()
+          else
+            _GiftEmptyWidget(screenSize: screenSize),
           buildBottom(),
         ],
       ),
@@ -328,24 +332,24 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
   }
 
   int getPageCount() => isBag
-      ? (bagWrappers.length / pageSize + 1).toInt()
-      : (giftWrappers.length / pageSize + 1).toInt();
+      ? (bags.length / pageSize + 1).toInt()
+      : (gifts.length / pageSize + 1).toInt();
 
   int getGridCount(int pageIndex) => isBag
-      ? bagWrappers.length - pageSize * pageIndex < 8
-          ? (bagWrappers.length - pageSize * pageIndex) % 8
+      ? bags.length - pageSize * pageIndex < 8
+          ? (bags.length - pageSize * pageIndex) % 8
           : 8
-      : giftWrappers.length - pageSize * pageIndex < 8
-          ? (giftWrappers.length - pageSize * pageIndex) % 8
+      : gifts.length - pageSize * pageIndex < 8
+          ? (gifts.length - pageSize * pageIndex) % 8
           : 8;
 
   String getGiftName(int pageIndex, int gridIndex) => isBag
-      ? bagWrappers[pageSize * pageIndex + gridIndex].giftName
-      : giftWrappers[pageSize * pageIndex + gridIndex].gift.name;
+      ? bags[pageSize * pageIndex + gridIndex].giftName
+      : gifts[pageSize * pageIndex + gridIndex].gift.name;
 
   String getGiftPrice(int pageIndex, int gridIndex) =>
-      giftWrappers[pageSize * pageIndex + gridIndex].gift.price != 0
-          ? (giftWrappers[pageSize * pageIndex + gridIndex].gift.price)
+      gifts[pageSize * pageIndex + gridIndex].gift.price != 0
+          ? (gifts[pageSize * pageIndex + gridIndex].gift.price)
               .toString()
           : '免费';
 
@@ -366,7 +370,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
             ),
             const C(8),
             Text(
-              bagWrappers[selectIndex].bag.number.toString(),
+              bags[selectIndex].bag.number.toString(),
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -444,34 +448,26 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
   }
 
   void sendGift() {
-    Future.wait([
-      DioClient.post(Api.sendGift, {
-        'liveId': liveId,
-        'giftId': bagWrappers[selectIndex].bag.giftId,
-      }),
-      DioClient.post(Api.reduceBag, {
-        'giftId': isBag
-            ? bagWrappers[selectIndex].bag.giftId
-            : giftWrappers[selectIndex].gift.id,
-      }),
-    ]).then((responses) {
-      bool success = false;
-      for (var response in responses) {
-        if (response.statusCode == 200 && response.data != null) {
-          if (response.data['code'] == 200) {
-            success = true;
-          } else {
-            Fluttertoast.showToast(msg: response.data['msg']);
-            success = false;
-            break;
-          }
+    DioClient.post(Api.sendGift, {
+      'liveId': liveId,
+      'giftId': bags[selectIndex].bag.giftId,
+    }).then((response) {
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          DioClient.post(Api.reduceBag, {
+            'giftId': bags[selectIndex].bag.giftId,
+          }).then((response) {
+            if (response.statusCode == 200 && response.data != null) {
+              if (response.data['code'] == 200) {
+                exit();
+              } else {
+                Fluttertoast.showToast(msg: response.data['msg']);
+              }
+            }
+          });
         } else {
-          success = false;
-          break;
+          Fluttertoast.showToast(msg: response.data['msg']);
         }
-      }
-      if (success) {
-        exit();
       }
     });
   }
@@ -484,20 +480,20 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
     if (isBag) {
       exit(false);
     } else {
-      bool canBuy = giftWrappers[selectIndex].gift.price >= 0 &&
-          balance - giftWrappers[selectIndex].gift.price >= 0;
+      bool canBuy = gifts[selectIndex].gift.price >= 0 &&
+          balance - gifts[selectIndex].gift.price >= 0;
       if (!canBuy) {
         await Navigator.pushNamed(context, 'recharge');
         refreshBalance();
       } else {
-        if (giftWrappers[selectIndex].gift.price > 0) {
+        if (gifts[selectIndex].gift.price > 0) {
           await Future.wait([
             DioClient.post(Api.spendAccount, {
-              'amount': giftWrappers[selectIndex].gift.price,
+              'amount': gifts[selectIndex].gift.price,
             }),
             DioClient.post(Api.addDetail, {
               'income': 0,
-              'expenditure': giftWrappers[selectIndex].gift.price,
+              'expenditure': gifts[selectIndex].gift.price,
             }),
           ]);
           refreshBalance();
@@ -506,7 +502,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         if (isSend) {
           DioClient.post(Api.sendGift, {
             'liveId': liveId,
-            'giftId': giftWrappers[selectIndex].gift.id,
+            'giftId': gifts[selectIndex].gift.id,
           }).then((response) {
             if (response.statusCode == 200 && response.data != null) {
               if (response.data['code'] == 200) {
@@ -514,12 +510,23 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
                 exit();
               } else {
                 Fluttertoast.showToast(msg: response.data['msg']);
+                DioClient.post(Api.addBag, {
+                  'giftId': gifts[selectIndex].gift.id,
+                }).then((response) {
+                  if (response.statusCode == 200 && response.data != null) {
+                    if (response.data['code'] == 200) {
+                      Fluttertoast.showToast(msg: '礼物购买成功，已放入背包');
+                    } else {
+                      Fluttertoast.showToast(msg: response.data['msg']);
+                    }
+                  }
+                });
               }
             }
           });
         } else {
           DioClient.post(Api.addBag, {
-            'giftId': giftWrappers[selectIndex].gift.id,
+            'giftId': gifts[selectIndex].gift.id,
           }).then((response) {
             if (response.statusCode == 200 && response.data != null) {
               if (response.data['code'] == 200) {
@@ -557,4 +564,36 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
   }
 
   void exit([bool? result]) => Navigator.pop(context, result);
+}
+
+class _GiftEmptyWidget extends StatelessWidget {
+  const _GiftEmptyWidget({
+    Key? key,
+    required this.screenSize,
+  }) : super(key: key);
+
+  final Size screenSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: (screenSize.width / 4) * 2,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgGiftEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有礼物信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -172,11 +172,13 @@ class _AddressState extends State<AddressScreen> {
                       enablePullDown: true,
                       enablePullUp: false,
                       onRefresh: onRefresh,
-                      child: ListView.separated(
-                        itemCount: addresses.length,
-                        itemBuilder: buildAddressItem,
-                        separatorBuilder: (context, index) => const C(8),
-                      ),
+                      child: addresses.isNotEmpty
+                          ? ListView.separated(
+                              itemCount: addresses.length,
+                              itemBuilder: buildAddressItem,
+                              separatorBuilder: (context, index) => const C(8),
+                            )
+                          : const _AddressEmptyWidget(),
                     ),
                   ),
                 ),
@@ -583,4 +585,30 @@ class _AddressState extends State<AddressScreen> {
   }
 
   void exit([String? id]) => Navigator.pop(context, id);
+}
+
+class _AddressEmptyWidget extends StatelessWidget {
+  const _AddressEmptyWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgAddressEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有地址信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -44,7 +44,7 @@ public class WebSocketServiceImpl implements IWebSocketService {
     @Override
     public void broadCast(WebSocketSession session, WebSocketMessage<?> message) throws IOException {
         for (WebSocketSession curSession : sessions) {
-            if (curSession.isOpen() && curSession.getAttributes().get("lid") == session.getAttributes().get("lid")) {
+            if (curSession.isOpen() && curSession.getAttributes().get("lid").toString().equals(session.getAttributes().get("lid").toString())) {
                 curSession.sendMessage(message);
             }
         }
@@ -59,7 +59,7 @@ public class WebSocketServiceImpl implements IWebSocketService {
     public WebSocketSession getSession(String liveId) {
         WebSocketSession session = null;
         for (WebSocketSession curSession : sessions) {
-            if (curSession.isOpen() && curSession.getAttributes().get("lid") == liveId) {
+            if (curSession.isOpen() && curSession.getAttributes().get("lid").toString().equals(liveId)) {
                 session = curSession;
                 break;
             }

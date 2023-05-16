@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/alipay_platform.dart';
 import 'package:graduationdesign/screen/home_screen.dart';
@@ -146,6 +147,7 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
             }
           }
           await Future.wait(result.map((e) => e.getProductInfo()));
+          isLastPage = result.length < pageSize;
           if (UserContext.isEnterprise) {
             result.removeWhere((e) => e.orderStatus == TabType.payment);
           }
@@ -219,6 +221,7 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
           children: [
             TabBar(
               controller: tabController,
+              isScrollable: true,
               labelColor: ColorName.redF63C77,
               labelStyle: GoogleFonts.roboto(
                 fontWeight: FontWeight.w700,
@@ -258,11 +261,13 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
                     enablePullUp: true,
                     onRefresh: onRefresh,
                     onLoading: onLoading,
-                    child: ListView.separated(
-                      itemCount: orders.length,
-                      itemBuilder: buildAddressItem,
-                      separatorBuilder: (context, index) => const C(8),
-                    ),
+                    child: orders.isNotEmpty
+                        ? ListView.separated(
+                            itemCount: orders.length,
+                            itemBuilder: buildAddressItem,
+                            separatorBuilder: (context, index) => const C(8),
+                          )
+                        : const _OrderEmptyWidget(),
                   ),
                 ),
               ),
@@ -536,5 +541,31 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
         setState(() => order.orderStatus = TabType.done);
       }
     }
+  }
+}
+
+class _OrderEmptyWidget extends StatelessWidget {
+  const _OrderEmptyWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgOrderEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有订单信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

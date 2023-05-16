@@ -9,8 +9,38 @@ import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-typedef _SuccessCallback = void Function(List<_Live> lives);
-typedef _ErrorCallback = void Function();
+class _Live {
+  final String id;
+  final String userId;
+  bool status;
+  int number;
+  String? coverUrl;
+  late String userName;
+  late String? userAvatarUrl;
+
+  _Live(this.id, this.userId, this.status, this.number, this.coverUrl);
+
+  void setCoverUrl() {
+    if (coverUrl != null) {
+      coverUrl =
+          'http://${Api.host}:${Api.port}/live/downloadCover?fileName=$coverUrl';
+    }
+  }
+
+  Future<void> getUserInfo() async {
+    Response response =
+        await DioClient.get(Api.getUserInfo, {'userId': userId});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Map<String, dynamic> map = response.data['data'];
+        userName = map['name'];
+        userAvatarUrl = map['avatarUrl'] != null
+            ? 'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${map['avatarUrl']}'
+            : null;
+      }
+    }
+  }
+}
 
 class LiveHallScreen extends StatefulWidget {
   const LiveHallScreen({Key? key}) : super(key: key);
@@ -36,7 +66,7 @@ class _LiveHallState extends State<LiveHallScreen>
   @override
   void initState() {
     super.initState();
-    requestLives(successCall: (result) {
+    getLives(successCall: (result) {
       if (mounted) {
         setState(() => lives.addAll(result));
       }
@@ -51,9 +81,9 @@ class _LiveHallState extends State<LiveHallScreen>
     itemHeight = itemWidth / aspectRatio;
   }
 
-  void requestLives({
-    required _SuccessCallback successCall,
-    _ErrorCallback? errorCall,
+  void getLives({
+    required RequestSuccessCallback<_Live> successCall,
+    VoidCallback? errorCall,
   }) {
     DioClient.get(Api.getLives, {
       'pageNum': curPageNum,
@@ -86,7 +116,7 @@ class _LiveHallState extends State<LiveHallScreen>
 
   void onRefresh() {
     curPageNum = 0;
-    requestLives(successCall: (result) {
+    getLives(successCall: (result) {
       if (mounted) {
         setState(() => lives
           ..clear()
@@ -102,7 +132,7 @@ class _LiveHallState extends State<LiveHallScreen>
     if (!isLastPage) {
       curPageNum++;
     }
-    requestLives(successCall: (result) {
+    getLives(successCall: (result) {
       if (mounted && result.isNotEmpty) {
         setState(() => lives.addAll(result));
       }
@@ -139,27 +169,9 @@ class _LiveHallState extends State<LiveHallScreen>
                           childAspectRatio: aspectRatio,
                         ),
                         itemCount: lives.length,
-                        itemBuilder: (context, index) =>
-                            buildLiveItem(lives[index]),
+                        itemBuilder: buildLiveItem,
                       )
-                    : Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: 48),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Assets.images.noMerchants.image(fit: BoxFit.cover),
-                            Text(
-                              '当前没有直播间正在直播',
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: ColorName.black686868.withOpacity(0.4),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    : const _LiveEmptyWidget(),
               ),
             ),
           ),
@@ -198,7 +210,8 @@ class _LiveHallState extends State<LiveHallScreen>
     );
   }
 
-  Widget buildLiveItem(_Live live) {
+  Widget buildLiveItem(BuildContext context, int index) {
+    _Live live = lives[index];
     return InkWell(
       onTap: () =>
           Navigator.pushNamed(context, 'enterLive', arguments: live.id),
@@ -229,7 +242,10 @@ class _LiveHallState extends State<LiveHallScreen>
                 height: itemHeight * 4 / 5,
                 color: live.coverUrl == null ? Colors.black : null,
                 child: live.coverUrl != null
-                    ? CachedNetworkImage(imageUrl: live.coverUrl!)
+                    ? CachedNetworkImage(
+                        imageUrl: live.coverUrl!,
+                        fit: BoxFit.cover,
+                      )
                     : null,
               ),
             ),
@@ -257,7 +273,7 @@ class _LiveHallState extends State<LiveHallScreen>
                         ),
                         child: Assets.images.liveNumberIcon.image(),
                       ),
-                      const C(2),
+                      const C(4),
                       Text(
                         '${live.number}观看',
                         style: GoogleFonts.roboto(
@@ -266,7 +282,7 @@ class _LiveHallState extends State<LiveHallScreen>
                           fontWeight: FontWeight.normal,
                         ),
                       ),
-                      const C(6),
+                      const C(8),
                     ],
                   ),
                 ),
@@ -310,35 +326,28 @@ class _LiveHallState extends State<LiveHallScreen>
   bool get wantKeepAlive => true;
 }
 
-class _Live {
-  final String id;
-  final String userId;
-  bool status;
-  int number;
-  String? coverUrl;
-  late String userName;
-  late String? userAvatarUrl;
+class _LiveEmptyWidget extends StatelessWidget {
+  const _LiveEmptyWidget({Key? key}) : super(key: key);
 
-  _Live(this.id, this.userId, this.status, this.number, this.coverUrl);
-
-  void setCoverUrl() {
-    if (coverUrl != null) {
-      coverUrl =
-          'http://${Api.host}:${Api.port}/live/downloadCover?fileName=$coverUrl';
-    }
-  }
-
-  Future<void> getUserInfo() async {
-    Response response =
-        await DioClient.get(Api.getUserInfo, {'userId': userId});
-    if (response.statusCode == 200 && response.data != null) {
-      if (response.data['code'] == 200) {
-        Map<String, dynamic> map = response.data['data'];
-        userName = map['name'];
-        userAvatarUrl = map['avatarUrl'] != null
-            ? 'http://${Api.host}:${Api.port}${Api.downloadAvatar}?fileName=${map['avatarUrl']}'
-            : null;
-      }
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgLiveEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有直播间信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

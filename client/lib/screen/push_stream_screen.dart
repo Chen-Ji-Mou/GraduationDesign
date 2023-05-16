@@ -35,6 +35,9 @@ class _PushStreamState extends State<PushStreamScreen> {
   final PushStreamController controller = PushStreamController();
   final Completer<void> initialCompleter = Completer<void>.sync();
 
+  final ValueNotifier<bool> isLivingNotifier = ValueNotifier(false);
+  DateTime? lastPressedTime;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -51,6 +54,9 @@ class _PushStreamState extends State<PushStreamScreen> {
   @override
   void dispose() {
     wsChannel.sink.close();
+    if (isLivingNotifier.value) {
+      stopLive();
+    }
     super.dispose();
   }
 
@@ -65,7 +71,7 @@ class _PushStreamState extends State<PushStreamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    Widget child = Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
         alignment: Alignment.center,
@@ -114,6 +120,24 @@ class _PushStreamState extends State<PushStreamScreen> {
         ),
       ),
     );
+    return WillPopScope(
+      onWillPop: () async {
+        if (isLivingNotifier.value) {
+          if (lastPressedTime == null ||
+              DateTime.now().difference(lastPressedTime!) >
+                  const Duration(milliseconds: 3000)) {
+            Fluttertoast.showToast(msg: '当前正在直播，再次返回将会将会自动结束直播');
+            lastPressedTime = DateTime.now();
+            return false;
+          }
+          await stopLive();
+          await controller.pause();
+          Fluttertoast.showToast(msg: '直播结束');
+        }
+        return true;
+      },
+      child: child,
+    );
   }
 
   Widget buildContent() {
@@ -137,6 +161,7 @@ class _PushStreamState extends State<PushStreamScreen> {
                 wsChannel: wsChannel,
                 screenSize: screenSize,
                 liveId: liveId,
+                isLivingNotifier: isLivingNotifier,
               );
             } else {
               return const LoadingWidget();
@@ -145,6 +170,20 @@ class _PushStreamState extends State<PushStreamScreen> {
         ),
       ],
     );
+  }
+
+  Future<bool> stopLive() async {
+    Response response = await DioClient.post(Api.stopLive, {'liveId': liveId});
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        return true;
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 }
 
@@ -155,12 +194,14 @@ class _ControllerView extends StatefulWidget {
     required this.wsChannel,
     required this.screenSize,
     required this.liveId,
+    required this.isLivingNotifier,
   }) : super(key: key);
 
   final PushStreamController controller;
   final WebSocketChannel wsChannel;
   final Size screenSize;
   final String liveId;
+  final ValueNotifier<bool> isLivingNotifier;
 
   @override
   State<StatefulWidget> createState() => _ControllerViewState();
@@ -175,7 +216,8 @@ class _ControllerViewState extends State<_ControllerView> {
 
   String get liveId => widget.liveId;
 
-  bool pushStreaming = false;
+  ValueNotifier<bool> get isLivingNotifier => widget.isLivingNotifier;
+
   bool isBeauty = false;
 
   @override
@@ -232,13 +274,15 @@ class _ControllerViewState extends State<_ControllerView> {
           child: buildButton(
             onTap: () {
               reportServer(
-                pushStreaming ? Api.stopLive : Api.startLive,
+                isLivingNotifier.value ? Api.stopLive : Api.startLive,
                 successCall: () async {
-                  pushStreaming
+                  isLivingNotifier.value
                       ? await controller.pause()
                       : await controller.resume();
-                  Fluttertoast.showToast(msg: pushStreaming ? '直播结束' : '直播开始');
-                  setState(() => pushStreaming = !pushStreaming);
+                  Fluttertoast.showToast(
+                      msg: isLivingNotifier.value ? '直播结束' : '直播开始');
+                  setState(
+                      () => isLivingNotifier.value = !isLivingNotifier.value);
                 },
               );
             },
@@ -279,15 +323,15 @@ class _ControllerViewState extends State<_ControllerView> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: pushStreaming ? Colors.red : null,
-          gradient: !pushStreaming
+          color: isLivingNotifier.value ? Colors.red : null,
+          gradient: !isLivingNotifier.value
               ? const LinearGradient(
                   colors: [ColorName.redEC008E, ColorName.redFC6767],
                 )
               : null,
         ),
         child: Text(
-          pushStreaming ? '停止推流' : '开始推流',
+          isLivingNotifier.value ? '停止推流' : '开始推流',
           style: GoogleFonts.roboto(
             fontWeight: FontWeight.w600,
             color: Colors.white,

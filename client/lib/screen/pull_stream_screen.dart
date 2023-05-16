@@ -98,7 +98,6 @@ class _PullStreamState extends State<PullStreamScreen> {
             await Future.wait([
               controller
                   .setRtmpUrl('rtmp://81.71.161.128:1935/live/${liveInfo.id}'),
-              controller.setFillXY(true),
               controller.resume(),
             ]);
             initialCompleter.complete();

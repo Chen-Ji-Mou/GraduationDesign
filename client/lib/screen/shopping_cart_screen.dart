@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/dialog/create_order_bottom_sheet.dart';
+import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/user_context.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -157,11 +158,13 @@ class _ShoppingCartState extends State<ShoppingCartScreen>
                       enablePullDown: true,
                       enablePullUp: false,
                       onRefresh: onRefresh,
-                      child: ListView.separated(
-                        itemCount: carts.length,
-                        itemBuilder: buildCartItem,
-                        separatorBuilder: (context, index) => const C(16),
-                      ),
+                      child: carts.isNotEmpty
+                          ? ListView.separated(
+                              itemCount: carts.length,
+                              itemBuilder: buildCartItem,
+                              separatorBuilder: (context, index) => const C(16),
+                            )
+                          : const _CartEmptyWidget(),
                     ),
                   ),
                   Positioned(
@@ -495,4 +498,30 @@ class _ShoppingCartState extends State<ShoppingCartScreen>
 
   @override
   bool get wantKeepAlive => UserContext.isLogin;
+}
+
+class _CartEmptyWidget extends StatelessWidget {
+  const _CartEmptyWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Assets.images.imgCartEmpty.image(fit: BoxFit.cover),
+          Text(
+            '当前没有购物车信息',
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColorName.black686868.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
