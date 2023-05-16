@@ -33,4 +33,4 @@ google-services.json
 *.hprof
 
 # Flutter Generate
-/app/src/main/java/io/flutter/plugins/
+/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
