@@ -421,28 +421,26 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
                       Container(
                         width: screenSize.width - 120,
                         alignment: Alignment.centerRight,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            buildControlButton(
-                              title: getControlButtonTitle(order.orderStatus),
-                              onTap: () {
-                                switch (order.orderStatus) {
-                                  case TabType.payment:
-                                    payForOrder(order);
-                                    break;
-                                  case TabType.send:
-                                    confirmSend(order);
-                                    break;
-                                  case TabType.receive:
-                                    confirmReceive(order);
-                                    break;
-                                  default:
-                                    break;
-                                }
-                              },
-                            ),
-                          ],
+                        child: buildControlButton(
+                          title: getControlButtonTitle(order.orderStatus),
+                          onTap: () {
+                            switch (order.orderStatus) {
+                              case TabType.payment:
+                                payForOrder(order);
+                                break;
+                              case TabType.send:
+                                confirmSend(order);
+                                break;
+                              case TabType.receive:
+                                confirmReceive(order);
+                                break;
+                              case TabType.done:
+                                requestRefund(order);
+                                break;
+                              default:
+                                break;
+                            }
+                          },
                         ),
                       ),
                     ],
@@ -486,13 +484,13 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
       case TabType.all:
         return '';
       case TabType.payment:
-        return UserContext.isEnterprise ? '支付' : '';
+        return UserContext.isEnterprise ? '继续支付' : '';
       case TabType.send:
         return UserContext.isEnterprise ? '确认发货' : '催发';
       case TabType.receive:
-        return UserContext.isEnterprise ? '' : '收货';
+        return UserContext.isEnterprise ? '' : '确认收货';
       case TabType.done:
-        return '';
+        return UserContext.isEnterprise ? '' : '申请退款';
     }
   }
 
@@ -505,11 +503,14 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
         'orderId': order.id,
         'status': 1,
       });
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          response.data['code'] == 200) {
-        if (mounted) {
-          setState(() => order.orderStatus = TabType.send);
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          Fluttertoast.showToast(msg: '订单状态改变');
+          if (mounted) {
+            setState(() => order.orderStatus = TabType.send);
+          }
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
         }
       }
     }
@@ -520,11 +521,14 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
       'orderId': order.id,
       'status': 2,
     });
-    if (response.statusCode == 200 &&
-        response.data != null &&
-        response.data['code'] == 200) {
-      if (mounted) {
-        setState(() => order.orderStatus = TabType.receive);
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '订单状态改变');
+        if (mounted) {
+          setState(() => order.orderStatus = TabType.receive);
+        }
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
       }
     }
   }
@@ -534,11 +538,27 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
       'orderId': order.id,
       'status': 3,
     });
-    if (response.statusCode == 200 &&
-        response.data != null &&
-        response.data['code'] == 200) {
-      if (mounted) {
-        setState(() => order.orderStatus = TabType.done);
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '订单状态改变');
+        if (mounted) {
+          setState(() => order.orderStatus = TabType.done);
+        }
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+      }
+    }
+  }
+
+  Future<void> requestRefund(_Order order) async {
+    Response response = await DioClient.post(Api.addRefund, {
+      'orderId': order.id,
+    });
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '申请退款成功');
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
       }
     }
   }

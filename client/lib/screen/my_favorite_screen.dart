@@ -93,11 +93,11 @@ class _MyFavoriteState extends State<MyFavoriteScreen>
       if (response.statusCode == 200 && response.data != null) {
         if (response.data['code'] == 200) {
           List<_Favorite> result = [];
-          for (var cart in response.data['data']) {
+          for (var favorite in response.data['data']) {
             _Favorite item = _Favorite(
-              cart['id'],
-              cart['videoId'],
-              cart['timestamp'],
+              favorite['id'],
+              favorite['videoId'],
+              favorite['timestamp'],
             );
             result.add(item);
           }
@@ -206,6 +206,8 @@ class _MyFavoriteState extends State<MyFavoriteScreen>
   Widget buildFavoriteItem(BuildContext context, int index) {
     _Favorite favorite = favorites[index];
     return InkWell(
+      onTap: () =>
+          Navigator.pushNamed(context, 'favoriteDetail', arguments: index),
       onLongPress: () => deleteFavorite(favorite),
       child: Container(
         width: itemWidth,

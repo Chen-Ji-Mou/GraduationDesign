@@ -3,6 +3,7 @@ import 'package:graduationdesign/root_node.dart';
 import 'package:graduationdesign/screen/account_details_screen.dart';
 import 'package:graduationdesign/screen/address_screen.dart';
 import 'package:graduationdesign/screen/enterprise_auth_screen.dart';
+import 'package:graduationdesign/screen/my_favorite_detail_screen.dart';
 import 'package:graduationdesign/screen/order_screen.dart';
 import 'package:graduationdesign/screen/product_screen.dart';
 import 'package:graduationdesign/screen/recharge_species_screen.dart';
@@ -52,6 +53,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           builder: (_) => AddressScreen(isSelect: settings.arguments as bool));
     case 'order':
       return MaterialPageRoute<void>(builder: (_) => const OrderScreen());
+    case 'favoriteDetail':
+      return MaterialPageRoute<void>(
+          builder: (_) =>
+              MyFavoriteDetailScreen(initialIndex: settings.arguments as int));
     default:
       return MaterialPageRoute<void>(
           builder: (_) => const RouteNotFoundScreen());
