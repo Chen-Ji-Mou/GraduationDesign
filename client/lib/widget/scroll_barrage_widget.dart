@@ -29,7 +29,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
 
   WebSocketChannel get wsChannel => widget.wsChannel;
 
-  final double itemMaxHeight = 26;
+  final double itemHeight = 26;
 
   late Timer timer;
   late ItemScrollController scrollController;
@@ -45,7 +45,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
     timer = Timer.periodic(
         const Duration(milliseconds: 600), (_) => scrollScheduleTask());
 
-    height = itemMaxHeight * 8; // 最多同时展示8条弹幕
+    height = itemHeight * 8; // 最多同时展示8条弹幕
 
     wsSubscription =
         wsChannel.stream.listen((jsonStr) => receiveBarrage(jsonStr));
@@ -79,25 +79,23 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
         child: ScrollablePositionedList.builder(
           itemScrollController: scrollController,
           itemCount: barrages.length,
-          itemBuilder: (context, index) => item(index),
+          itemBuilder: buildItem,
           physics: const NeverScrollableScrollPhysics(),
         ),
       ),
     );
   }
 
-  Widget item(int index) {
+  Widget buildItem(BuildContext context, int index) {
     Barrage barrage = barrages[index != -1 ? index : 0];
     bool isGift = barrage.gift != null;
     return GestureDetector(
       child: Container(
-        constraints: BoxConstraints(maxHeight: itemMaxHeight),
+        height: itemHeight,
         alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(top: 5),
         decoration: BoxDecoration(
           color: isGift
-              ? Color(barrage.gift?.backgroundColor ?? 0x000000)
-                  .withOpacity(0.9)
+              ? Color(barrage.gift?.backgroundColor ?? 0x000000).withOpacity(1)
               : null,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -106,13 +104,14 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
           children: [
             Container(
               constraints: BoxConstraints(maxWidth: width / 3),
+              padding: const EdgeInsets.only(left: 12),
               child: Text(
                 '${barrage.userName} : ',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.roboto(
-                  color: Colors.white.withOpacity(0.9),
-                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  fontWeight: FontWeight.normal,
                   height: 16 / 14,
                   fontSize: 14,
                 ),
@@ -129,8 +128,8 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
                           TextSpan(
                             text: '送出一个',
                             style: GoogleFonts.roboto(
-                              color: ColorName.yellowFFB52D.withOpacity(0.9),
-                              fontWeight: FontWeight.w400,
+                              color: ColorName.yellowFFB52D,
+                              fontWeight: FontWeight.normal,
                               height: 16 / 14,
                               fontSize: 14,
                             ),
@@ -139,7 +138,7 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
                             text: barrage.gift?.name,
                             style: GoogleFonts.roboto(
                               color: Color(barrage.gift?.titleColor ?? 0x000000)
-                                  .withOpacity(0.9),
+                                  .withOpacity(1),
                               fontWeight: FontWeight.w600,
                               height: 16 / 14,
                               fontSize: 14,
@@ -152,8 +151,8 @@ class _ScrollBarrageState extends State<ScrollBarrageWidget>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.roboto(
-                        color: ColorName.yellowFFB52D.withOpacity(0.9),
-                        fontWeight: FontWeight.w400,
+                        color: ColorName.yellowFFB52D,
+                        fontWeight: FontWeight.normal,
                         height: 16 / 14,
                         fontSize: 14,
                       ),

@@ -5,10 +5,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/dialog/filter_bottom_sheet.dart';
+import 'package:graduationdesign/dialog/product_bottom_sheet.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/platform/file_load_platform.dart';
 import 'package:graduationdesign/platform/permission_platform.dart';
+import 'package:graduationdesign/user_context.dart';
 import 'package:graduationdesign/widget/scroll_barrage_widget.dart';
 import 'package:graduationdesign/widget/push_stream_widget.dart';
 import 'package:graduationdesign/common.dart';
@@ -268,24 +270,28 @@ class _ControllerViewState extends State<_ControllerView> {
           ),
         ),
         Positioned(
-          left: 60,
-          right: 60,
+          left: 24,
+          right: 24,
           bottom: 20,
-          child: buildButton(
-            onTap: () {
-              reportServer(
-                isLivingNotifier.value ? Api.stopLive : Api.startLive,
-                successCall: () async {
-                  isLivingNotifier.value
-                      ? await controller.pause()
-                      : await controller.resume();
-                  Fluttertoast.showToast(
-                      msg: isLivingNotifier.value ? '直播结束' : '直播开始');
-                  setState(
-                      () => isLivingNotifier.value = !isLivingNotifier.value);
-                },
-              );
-            },
+          child: Row(
+            children: [
+              Expanded(child: buildBottomButton()),
+              if (UserContext.isEnterprise) ...[
+                const C(16),
+                InkWell(
+                  onTap: () => ProductBottomSheet.show(
+                    context,
+                    screenSize: screenSize,
+                    enterpriseId: UserContext.enterpriseId,
+                  ),
+                  child: Assets.images.cartIcon.image(
+                    width: 38,
+                    height: 38,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
@@ -314,11 +320,22 @@ class _ControllerViewState extends State<_ControllerView> {
     );
   }
 
-  Widget buildButton({VoidCallback? onTap}) {
+  Widget buildBottomButton() {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        reportServer(
+          isLivingNotifier.value ? Api.stopLive : Api.startLive,
+          successCall: () async {
+            isLivingNotifier.value
+                ? await controller.pause()
+                : await controller.resume();
+            Fluttertoast.showToast(
+                msg: isLivingNotifier.value ? '直播结束' : '直播开始');
+            setState(() => isLivingNotifier.value = !isLivingNotifier.value);
+          },
+        );
+      },
       child: Container(
-        width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12),
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -335,6 +352,7 @@ class _ControllerViewState extends State<_ControllerView> {
           style: GoogleFonts.roboto(
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            height: 16 / 14,
             fontSize: 14,
           ),
         ),
@@ -370,9 +388,9 @@ class _ErrorWidget extends StatelessWidget {
       child: Text(
         '初始化失败，请退出重试',
         style: GoogleFonts.roboto(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 18,
+          fontSize: 16,
           height: 1,
         ),
       ),

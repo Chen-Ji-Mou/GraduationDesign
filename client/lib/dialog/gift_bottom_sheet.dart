@@ -173,8 +173,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           buildHeader(),
-          if ((isBag && bags.isNotEmpty) ||
-              (!isBag && gifts.isNotEmpty))
+          if ((isBag && bags.isNotEmpty) || (!isBag && gifts.isNotEmpty))
             buildList()
           else
             _GiftEmptyWidget(screenSize: screenSize),
@@ -349,8 +348,7 @@ class _GiftBottomSheetState extends State<GiftBottomSheet> {
 
   String getGiftPrice(int pageIndex, int gridIndex) =>
       gifts[pageSize * pageIndex + gridIndex].gift.price != 0
-          ? (gifts[pageSize * pageIndex + gridIndex].gift.price)
-              .toString()
+          ? (gifts[pageSize * pageIndex + gridIndex].gift.price).toString()
           : '免费';
 
   Widget buildBottom() {
@@ -577,19 +575,22 @@ class _GiftEmptyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: (screenSize.width / 4) * 2,
-      alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 48),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Assets.images.imgGiftEmpty.image(fit: BoxFit.cover),
+          Assets.images.imgGiftEmpty.image(
+            width: screenSize.height - 96,
+            height: (screenSize.width / 4) * 2,
+            fit: BoxFit.cover,
+          ),
+          const C(8),
           Text(
             '当前没有礼物信息',
             style: GoogleFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: ColorName.black686868.withOpacity(0.4),
+              color: Colors.white,
             ),
           ),
         ],

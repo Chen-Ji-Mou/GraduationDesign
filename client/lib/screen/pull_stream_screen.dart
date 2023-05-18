@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:graduationdesign/common.dart';
 import 'package:graduationdesign/dialog/gift_bottom_sheet.dart';
-import 'package:graduationdesign/dialog/product_bottom_sheet.dart';
+import 'package:graduationdesign/dialog/cart_bottom_sheet.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
 import 'package:graduationdesign/screen/enter_live_screen.dart';
@@ -218,7 +218,7 @@ class _ControllerViewState extends State<_ControllerView> {
               if (liveInfo.status && liveInfo.belongEnterprise) ...[
                 const C(12),
                 InkWell(
-                  onTap: () => ProductBottomSheet.show(
+                  onTap: () => CartBottomSheet.show(
                     context,
                     screenSize: screenSize,
                     liveId: liveInfo.id,

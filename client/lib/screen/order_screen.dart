@@ -221,7 +221,7 @@ class _OrderState extends State<OrderScreen> with TickerProviderStateMixin {
           children: [
             TabBar(
               controller: tabController,
-              isScrollable: true,
+              isScrollable: !UserContext.isEnterprise,
               labelColor: ColorName.redF63C77,
               labelStyle: GoogleFonts.roboto(
                 fontWeight: FontWeight.w700,

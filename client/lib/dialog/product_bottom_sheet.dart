@@ -1,13 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graduationdesign/api.dart';
 import 'package:graduationdesign/common.dart';
-import 'package:graduationdesign/dialog/create_order_bottom_sheet.dart';
 import 'package:graduationdesign/generate/assets.gen.dart';
 import 'package:graduationdesign/generate/colors.gen.dart';
-import 'package:graduationdesign/user_context.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class _Product {
@@ -16,11 +15,25 @@ class _Product {
   final String name;
   String? coverUrl;
   final String? intro;
+  bool status = false;
   final int inventory;
   final double price;
 
   _Product(this.id, this.enterpriseId, this.name, this.coverUrl, this.intro,
-      this.inventory, this.price);
+      this.status, this.inventory, this.price);
+
+  factory _Product.copyFrom(_Product product) {
+    return _Product(
+      product.id,
+      product.enterpriseId,
+      product.name,
+      product.coverUrl,
+      product.intro,
+      product.status,
+      product.inventory,
+      product.price,
+    );
+  }
 
   void resetCoverUrl() {
     if (coverUrl != null) {
@@ -34,16 +47,16 @@ class ProductBottomSheet extends StatefulWidget {
   const ProductBottomSheet({
     Key? key,
     required this.screenSize,
-    required this.liveId,
+    required this.enterpriseId,
   }) : super(key: key);
 
   final Size screenSize;
-  final String liveId;
+  final String enterpriseId;
 
   static Future<bool?> show(
     BuildContext context, {
     required Size screenSize,
-    required String liveId,
+    required String enterpriseId,
   }) async {
     return await showModalBottomSheet<bool>(
       context: context,
@@ -51,7 +64,7 @@ class ProductBottomSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => ProductBottomSheet(
         screenSize: screenSize,
-        liveId: liveId,
+        enterpriseId: enterpriseId,
       ),
     );
   }
@@ -63,7 +76,7 @@ class ProductBottomSheet extends StatefulWidget {
 class _ProductBottomSheetState extends State<ProductBottomSheet> {
   Size get screenSize => widget.screenSize;
 
-  String get liveId => widget.liveId;
+  String get enterpriseId => widget.enterpriseId;
 
   final RefreshController refreshController = RefreshController();
   final List<_Product> products = [];
@@ -74,6 +87,40 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
     getProducts(successCall: (result) {
       if (mounted) {
         setState(() => products.addAll(result));
+      }
+    });
+  }
+
+  void getProducts({
+    RequestSuccessCallback<_Product>? successCall,
+    VoidCallback? errorCall,
+  }) {
+    DioClient.get(Api.getEnterpriseProducts, {
+      'enterpriseId': enterpriseId,
+    }).then((response) {
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['code'] == 200) {
+          List<_Product> result = [];
+          for (var product in response.data['data']) {
+            _Product item = _Product(
+              product['id'],
+              product['enterpriseId'],
+              product['name'],
+              product['coverUrl'],
+              product['intro'],
+              product['status'],
+              product['inventory'],
+              product['price'],
+            )..resetCoverUrl();
+            result.add(item);
+          }
+          successCall?.call(result);
+        } else {
+          Fluttertoast.showToast(msg: response.data['msg']);
+          errorCall?.call();
+        }
+      } else {
+        errorCall?.call();
       }
     });
   }
@@ -91,41 +138,6 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
     });
   }
 
-  void getProducts({
-    required RequestSuccessCallback<_Product> successCall,
-    VoidCallback? errorCall,
-  }) {
-    DioClient.get(Api.getLiveProducts, {
-      'liveId': liveId,
-    }).then((response) async {
-      if (response.statusCode == 200 && response.data != null) {
-        if (response.data['code'] == 200) {
-          List<_Product> result = [];
-          for (var product in response.data['data']) {
-            if (product['status'] == true) {
-              _Product item = _Product(
-                product['id'],
-                product['enterpriseId'],
-                product['name'],
-                product['coverUrl'],
-                product['intro'],
-                product['inventory'],
-                product['price'],
-              )..resetCoverUrl();
-              result.add(item);
-            }
-          }
-          successCall.call(result);
-        } else {
-          Fluttertoast.showToast(msg: response.data['msg']);
-          errorCall?.call();
-        }
-      } else {
-        errorCall?.call();
-      }
-    });
-  }
-
   @override
   void dispose() {
     refreshController.dispose();
@@ -137,7 +149,7 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
-        color: ColorName.grayF5F5F5,
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(30),
           topRight: Radius.circular(30),
@@ -171,7 +183,7 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
           alignment: Alignment.center,
           padding: EdgeInsets.only(left: screenSize.width / 2 - 64),
           child: Text(
-            '正在热卖',
+            '我的产品',
             style: GoogleFonts.roboto(
               height: 1.2,
               fontSize: 16,
@@ -208,159 +220,193 @@ class _ProductBottomSheetState extends State<ProductBottomSheet> {
   Widget buildProductItem(BuildContext context, int index) {
     _Product product = products[index];
     return Container(
-      margin: const EdgeInsets.only(left: 5, right: 5, bottom: 8),
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 96,
-            height: 96,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: ColorName.gray76787A),
-            ),
-            child: product.coverUrl == null
-                ? const DefaultProductWidget(size: 96)
-                : CachedNetworkImage(
-                    imageUrl: product.coverUrl!,
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          const C(8),
-          Container(
-            width: screenSize.width - 124,
-            height: 96,
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  style: GoogleFonts.roboto(
-                    height: 1,
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.normal,
-                  ),
+          const Divider(color: ColorName.gray8A8A8A),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ColorName.gray76787A),
                 ),
-                if (product.intro != null) ...[
-                  const C(4),
+                child: product.coverUrl == null
+                    ? const DefaultProductWidget(size: 64)
+                    : CachedNetworkImage(
+                        imageUrl: product.coverUrl!,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              const C(20),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    product.intro!,
+                    product.name,
                     style: GoogleFonts.roboto(
                       height: 1,
-                      fontSize: 12,
-                      color: ColorName.gray76787A,
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                  if (product.intro != null) ...[
+                    const C(4),
+                    Text(
+                      product.intro!,
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: ColorName.gray76787A,
+                      ),
+                    ),
+                  ],
+                  const C(8),
+                  Text.rich(TextSpan(children: [
+                    TextSpan(
+                      text: '状态：',
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    TextSpan(
+                      text: product.status == true ? '已上架' : '已下架',
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color:
+                            product.status == true ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ])),
+                  const C(8),
+                  Text.rich(TextSpan(children: [
+                    TextSpan(
+                      text: '价格：',
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '¥${product.price}',
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color: ColorName.yellowFFB52D,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ])),
+                  const C(8),
+                  Text.rich(TextSpan(children: [
+                    TextSpan(
+                      text: '库存：',
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    TextSpan(
+                      text: product.inventory.toString(),
+                      style: GoogleFonts.roboto(
+                        height: 1,
+                        fontSize: 14,
+                        color:
+                            product.inventory > 0 ? Colors.black : Colors.red,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ])),
+                  const C(8),
+                  Container(
+                    width: screenSize.width - 124,
+                    alignment: Alignment.centerRight,
+                    child: buildControlButton(
+                      title: product.status == true ? '下架' : '上架',
+                      onTap: () async {
+                        _Product temp = _Product.copyFrom(product);
+                        temp.status = !product.status;
+                        bool result = await editProductInfo(temp);
+                        if (result && mounted) {
+                          setState(() => product.status = temp.status);
+                        }
+                      },
                     ),
                   ),
                 ],
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '¥${product.price}',
-                          style: GoogleFonts.roboto(
-                            height: 1,
-                            fontSize: 16,
-                            color: Colors.deepOrange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            alignment: Alignment.bottomRight,
-                            padding: const EdgeInsets.only(right: 4),
-                            child: Container(
-                              height: 32,
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      UserContext.checkLoginCallback(context,
-                                          () {
-                                        CreateOrderBottomSheet.show(
-                                          context,
-                                          screenSize: screenSize,
-                                          productId: product.id,
-                                          from: Position.live,
-                                          isAddCart: true,
-                                        );
-                                      });
-                                    },
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.only(
-                                        left: 14,
-                                        right: 8,
-                                      ),
-                                      color: Colors.orange,
-                                      child: const Icon(
-                                        Icons.add_shopping_cart,
-                                        size: 20,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      UserContext.checkLoginCallback(context,
-                                          () {
-                                        CreateOrderBottomSheet.show(
-                                          context,
-                                          screenSize: screenSize,
-                                          productId: product.id,
-                                          from: Position.live,
-                                        );
-                                      });
-                                    },
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.only(
-                                        left: 12,
-                                        right: 14,
-                                      ),
-                                      color: Colors.deepOrange,
-                                      child: Text(
-                                        '马上抢',
-                                        style: GoogleFonts.roboto(
-                                          height: 1.2,
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Widget buildControlButton({
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: ColorName.gray76787A),
+        ),
+        child: Text(
+          title,
+          style: GoogleFonts.roboto(
+            height: 1,
+            fontSize: 12,
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> editProductInfo(_Product product) async {
+    Response response = await DioClient.post(Api.updateProduct, {
+      'productId': product.id,
+      'name': product.name,
+      if (product.coverUrl != null)
+        'coverUrl':
+            product.coverUrl!.substring(product.coverUrl!.lastIndexOf('=') + 1),
+      if (product.intro != null) 'intro': product.intro,
+      'status': product.status,
+      'inventory': product.inventory,
+      'price': product.price,
+    });
+    if (response.statusCode == 200 && response.data != null) {
+      if (response.data['code'] == 200) {
+        Fluttertoast.showToast(msg: '修改成功');
+        return true;
+      } else {
+        Fluttertoast.showToast(msg: response.data['msg']);
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   void exit() => Navigator.pop(context);

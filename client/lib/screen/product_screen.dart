@@ -121,6 +121,12 @@ class _ProductState extends State<ProductScreen> with LifecycleObserver {
   }
 
   @override
+  void dispose() {
+    refreshController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -326,6 +332,7 @@ class _ProductState extends State<ProductScreen> with LifecycleObserver {
                                     product.name = temp.name;
                                     product.intro = temp.intro;
                                     product.coverUrl = temp.coverUrl;
+                                    product.price = temp.price;
                                   });
                                 }
                               }
